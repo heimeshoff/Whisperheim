@@ -99,11 +99,26 @@ public sealed class CallTranscriptionPipeline : ICallTranscriptionPipeline
         bool systemExists = File.Exists(session.SystemWavFilePath) &&
             !string.Equals(session.MicWavFilePath, session.SystemWavFilePath, StringComparison.OrdinalIgnoreCase);
 
-        // Validate and attempt repair of WAV files before processing
+        // Validate and attempt repair of WAV files before processing.
+        // Mic failure is fatal (nothing to transcribe). System failure is not —
+        // an empty/corrupt loopback file (e.g. nothing captured during the call)
+        // shouldn't block transcribing the mic side of the conversation.
         if (micExists)
             ValidateAndRepairWav(session.MicWavFilePath, "mic");
         if (systemExists)
-            ValidateAndRepairWav(session.SystemWavFilePath, "system");
+        {
+            try
+            {
+                ValidateAndRepairWav(session.SystemWavFilePath, "system");
+            }
+            catch (InvalidOperationException ex)
+            {
+                Trace.TraceWarning(
+                    "[CallTranscriptionPipeline] System WAV unusable, continuing with mic-only: {0}",
+                    ex.Message);
+                systemExists = false;
+            }
+        }
 
         double micDurationSeconds = micExists ? GetWavDuration(session.MicWavFilePath) : 0;
         double systemDurationSeconds = systemExists ? GetWavDuration(session.SystemWavFilePath) : 0;
