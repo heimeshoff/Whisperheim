@@ -169,6 +169,28 @@ public partial class App : Application
         // Run migration from old flat structure to new per-session structure
         _dataPathService.MigrateIfNeeded();
 
+        // Recover any orphaned in-flight WAV recordings left behind by a
+        // crash / hard-kill / failed atomic move on a prior run. These are
+        // moved into RecordingsPath under a `recovered_` prefix so the
+        // transcripts page surfaces them as pending sessions. Best-effort;
+        // never blocks startup.
+        try
+        {
+            var recovered = RecordingFileStager.SweepOrphans(
+                _dataPathService.RecordingStagingPath,
+                _dataPathService.RecordingsPath);
+            if (recovered > 0)
+            {
+                Trace.TraceInformation(
+                    "[App] Startup recovery sweep restored {0} orphaned recording session(s).",
+                    recovered);
+            }
+        }
+        catch (Exception ex)
+        {
+            Trace.TraceWarning("[App] Startup recovery sweep failed: {0}", ex.Message);
+        }
+
         // Initialize path-dependent static services
         ModelManagerService.Initialize(_dataPathService);
         HighQualityLoopbackService.Initialize(_dataPathService);
@@ -227,7 +249,7 @@ public partial class App : Application
             () => _settingsService!.Current.General.DefaultSpeakerName);
 
         _highQualityLoopbackService = new HighQualityLoopbackService();
-        _highQualityRecorderService = new HighQualityRecorderService();
+        _highQualityRecorderService = new HighQualityRecorderService(_dataPathService);
         _ollamaService = new OllamaService(_settingsService);
 
         _streamStorageService = new StreamStorageService(_dataPathService);

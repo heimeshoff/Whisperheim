@@ -27,6 +27,11 @@ public sealed class CallRecordingService : ICallRecordingService
     private WaveFileWriter? _micWaveWriter;
     private string? _micWavFilePath;
 
+    // Per-session paths captured at StartRecording. Used during the atomic move
+    // in FinalizeSession after the WAV writers close. Cleared after the move.
+    private string? _stagingDir;
+    private string? _finalDir;
+
     private CallRecordingSession? _currentSession;
     private bool _micStreamActive;
     private bool _systemStreamActive;
@@ -76,34 +81,43 @@ public sealed class CallRecordingService : ICallRecordingService
             var startTimestamp = DateTimeOffset.UtcNow;
             var sessionId = $"{startTimestamp:yyyyMMdd_HHmmss}_{Guid.NewGuid():N}";
 
-            // Create WAV file paths — use the data path recordings directory if available,
-            // otherwise fall back to %TEMP%
-            string recordingDir;
+            // Resolve the final (potentially cloud-synced) destination first so
+            // collision-suffix numbering uses the shared dir other machines see.
+            // Different machines staging concurrently can't see each other's
+            // staging — only the final dir is shared.
             if (_dataPathService is not null)
             {
                 var sessionName = startTimestamp.LocalDateTime.ToString("yyyyMMdd_HHmmss");
-                recordingDir = Path.Combine(_dataPathService.RecordingsPath, sessionName);
-                // Avoid collision
-                if (Directory.Exists(recordingDir))
+                _finalDir = Path.Combine(_dataPathService.RecordingsPath, sessionName);
+                if (Directory.Exists(_finalDir))
                 {
                     var suffix = 1;
                     string candidate;
                     do
                     {
-                        candidate = $"{recordingDir}_{suffix}";
+                        candidate = $"{_finalDir}_{suffix}";
                         suffix++;
                     } while (Directory.Exists(candidate));
-                    recordingDir = candidate;
+                    _finalDir = candidate;
                 }
+
+                // Stage in a machine-local dir keyed by the GUID-suffixed sessionId
+                // (guaranteed unique across machines and across concurrent starts).
+                _stagingDir = Path.Combine(_dataPathService.RecordingStagingPath, sessionId);
             }
             else
             {
-                recordingDir = Path.Combine(Path.GetTempPath(), "WhisperHeim");
+                // No DataPathService — fall back to a single TEMP location for
+                // both staging and final (test / headless scenarios).
+                _finalDir = Path.Combine(Path.GetTempPath(), "WhisperHeim", sessionId);
+                _stagingDir = _finalDir;
             }
-            Directory.CreateDirectory(recordingDir);
+            Directory.CreateDirectory(_stagingDir);
 
-            _micWavFilePath = Path.Combine(recordingDir, "mic.wav");
-            var systemWavFilePath = Path.Combine(recordingDir, "system.wav");
+            // WAV writers open against the staging dir so NAudio's exclusive
+            // write handle never sits inside a synced folder.
+            _micWavFilePath = Path.Combine(_stagingDir, "mic.wav");
+            var systemWavFilePath = Path.Combine(_stagingDir, "system.wav");
 
             _currentSession = new CallRecordingSession(
                 _micWavFilePath, systemWavFilePath, startTimestamp);
@@ -354,6 +368,30 @@ public sealed class CallRecordingService : ICallRecordingService
             var session = _currentSession;
             CleanupMic();
             CleanupLoopback();
+
+            // Atomically move the staged session into the final (synced) dir
+            // *before* RecordingStopped fires, so downstream consumers
+            // (transcription queue, TranscriptsPage) see the synced location.
+            // If the move fails (Drive unreachable, etc.) the WAVs remain in
+            // staging and the startup sweep will recover them.
+            if (_stagingDir is not null && _finalDir is not null && _stagingDir != _finalDir)
+            {
+                var move = RecordingFileStager.MoveStagedSession(_stagingDir, _finalDir);
+                var resultingDir = move.ResultingDirectory;
+                session.MicWavFilePath = Path.Combine(resultingDir, "mic.wav");
+                session.SystemWavFilePath = Path.Combine(resultingDir, "system.wav");
+                _micWavFilePath = session.MicWavFilePath;
+
+                if (!move.Success)
+                {
+                    Trace.TraceError(
+                        "[CallRecordingService] Recording left in staging at {0}; will retry on next startup.",
+                        resultingDir);
+                }
+            }
+
+            _stagingDir = null;
+            _finalDir = null;
 
             RecordingStopped?.Invoke(this,
                 new CallRecordingStoppedEventArgs(session));

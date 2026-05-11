@@ -16,6 +16,16 @@ public sealed class DataPathService
     public static readonly string LocalRoot =
         Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "WhisperHeim");
 
+    /// <summary>
+    /// Machine-local root for transient files that must never live in a synced
+    /// <see cref="DataPath"/>. Currently used to stage in-flight WAV recordings
+    /// before they are atomically moved into the synced data folder on stop.
+    /// Rooted in <c>%LOCALAPPDATA%\WhisperHeim\</c> so it survives data-path
+    /// reconfiguration and is invisible to Google Drive / OneDrive / Dropbox.
+    /// </summary>
+    public static readonly string LocalAppDataRoot =
+        Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "WhisperHeim");
+
     private static readonly string BootstrapPath =
         Path.Combine(LocalRoot, "bootstrap.json");
 
@@ -57,6 +67,28 @@ public sealed class DataPathService
 
     /// <summary>Root directory for AI models (local, not synced).</summary>
     public string ModelsPath => Path.Combine(LocalRoot, "models");
+
+    /// <summary>
+    /// Machine-local staging directory for in-flight WAV recordings. WAV files
+    /// are written here while NAudio holds an exclusive write handle, then
+    /// atomically moved into <see cref="RecordingsPath"/> on stop so cloud
+    /// sync clients (Google Drive, OneDrive, Dropbox) only see a complete
+    /// file appear. Created on first access.
+    /// </summary>
+    /// <remarks>
+    /// Lives on the OS drive (<c>%LOCALAPPDATA%</c>). Long recordings at
+    /// 32-bit float / 48 kHz can occupy hundreds of MB while in flight —
+    /// watch disk space on the system drive.
+    /// </remarks>
+    public string RecordingStagingPath
+    {
+        get
+        {
+            var path = Path.Combine(LocalAppDataRoot, "recording-staging");
+            Directory.CreateDirectory(path);
+            return path;
+        }
+    }
 
     /// <summary>Path to log file (local, not synced).</summary>
     public string LogPath => Path.Combine(LocalRoot, "whisperheim.log");

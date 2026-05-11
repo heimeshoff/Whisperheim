@@ -1,6 +1,7 @@
 using System.Diagnostics;
 using System.IO;
 using NAudio.Wave;
+using WhisperHeim.Services.Settings;
 
 namespace WhisperHeim.Services.Audio;
 
@@ -8,6 +9,14 @@ namespace WhisperHeim.Services.Audio;
 /// Records microphone audio at high quality (44.1kHz 16-bit mono).
 /// This is separate from <see cref="AudioCaptureService"/> which records at 16kHz for Whisper.
 /// </summary>
+/// <remarks>
+/// Active capture writes go to the machine-local staging directory
+/// (<see cref="DataPathService.RecordingStagingPath"/>) so cloud sync clients
+/// never see a growing file. <see cref="SaveRecording"/> then copies the
+/// finished WAV to the user-supplied destination. If no
+/// <see cref="DataPathService"/> is supplied we fall back to <c>%TEMP%</c>
+/// (test / standalone scenarios).
+/// </remarks>
 public sealed class HighQualityRecorderService : IHighQualityRecorderService
 {
     /// <summary>44.1kHz sample rate for high-quality voice recording.</summary>
@@ -21,6 +30,8 @@ public sealed class HighQualityRecorderService : IHighQualityRecorderService
 
     private static readonly WaveFormat RecordingFormat = new(SampleRate, BitsPerSample, Channels);
 
+    private readonly DataPathService? _dataPathService;
+
     private WaveInEvent? _waveIn;
     private WaveFileWriter? _writer;
     private string? _tempFilePath;
@@ -29,6 +40,11 @@ public sealed class HighQualityRecorderService : IHighQualityRecorderService
     private System.Threading.Timer? _durationUpdateTimer;
     private bool _disposed;
     private volatile bool _isRecording;
+
+    public HighQualityRecorderService(DataPathService? dataPathService = null)
+    {
+        _dataPathService = dataPathService;
+    }
 
     /// <inheritdoc />
     public bool IsRecording => _isRecording;
@@ -67,8 +83,14 @@ public sealed class HighQualityRecorderService : IHighQualityRecorderService
         if (deviceCount == 0)
             throw new InvalidOperationException("No audio input devices found.");
 
-        // Create temp file for recording
-        _tempFilePath = Path.Combine(Path.GetTempPath(), $"whisperheim_voice_{Guid.NewGuid():N}.wav");
+        // Create staging file for recording. Prefer the shared
+        // RecordingStagingPath so the file lives next to call recordings
+        // (centralized for the crash-recovery sweep) and never sits inside
+        // a cloud-synced DataPath. Falls back to %TEMP% when the service is
+        // constructed without a DataPathService.
+        var stagingRoot = _dataPathService?.RecordingStagingPath ?? Path.GetTempPath();
+        Directory.CreateDirectory(stagingRoot);
+        _tempFilePath = Path.Combine(stagingRoot, $"whisperheim_voice_{Guid.NewGuid():N}.wav");
         _writer = new WaveFileWriter(_tempFilePath, RecordingFormat);
 
         _waveIn = new WaveInEvent
@@ -166,6 +188,9 @@ public sealed class HighQualityRecorderService : IHighQualityRecorderService
             if (dir is not null)
                 Directory.CreateDirectory(dir);
 
+            // Copy from staging into the (potentially synced) destination.
+            // We copy (not move) so the staged file can still be saved again
+            // under a different name if the caller chooses to.
             File.Copy(_lastRecordingPath, destinationPath, overwrite: true);
             Trace.TraceInformation("[HighQualityRecorder] Recording saved to: {0}", destinationPath);
             return true;

@@ -4,7 +4,7 @@
 **Milestone:** Post-M1 polish (multi-machine sync)
 **Size:** Medium
 **Created:** 2026-05-11
-**Status:** Backlog
+**Status:** Todo
 **Dependencies:** 063 (configurable data path), 102 (hot-reload settings)
 
 ## Objective
@@ -106,3 +106,40 @@ Extract a small `RecordingFileStager` helper so both services share the move/rec
 
 ## Work Log
 <!-- Appended by /work during execution -->
+
+### 2026-05-11 11:17 -- Work Completed
+
+**What was done:**
+- Added `DataPathService.RecordingStagingPath` (and the underlying `LocalAppDataRoot` constant) pointing at `%LOCALAPPDATA%\WhisperHeim\recording-staging\`; directory is created on first access. Documented OS-drive disk-space implication in xmldoc.
+- Created `RecordingFileStager` (`Services/Recording/RecordingFileStager.cs`) with two public entry points:
+  - `MoveStagedSession(stagingDir, finalDir)` — same-volume `Directory.Move` (atomic); cross-volume fallback to per-file `File.Move` + cleanup; auto-collision-suffixes the final dir; on failure leaves files in staging and returns a `MoveResult` carrying the staging path so the in-app pending UI can still pick it up.
+  - `SweepOrphans(stagingRoot, finalRoot)` — startup recovery: non-empty orphans are moved into the final root with a `recovered_` prefix (without double-prefixing if already prefixed); zero-byte / empty dirs are deleted.
+- Updated `CallRecordingService.StartRecording`: the WAV writers and the `LoopbackCaptureService.OutputFilePath` now open inside `RecordingStagingPath\<sessionId>` (GUID-suffixed for cross-machine uniqueness), while the collision-suffixed final dir is resolved against `RecordingsPath` so concurrent machines don't pick the same final name. Service tracks both `_stagingDir` and `_finalDir` per session.
+- Updated `CallRecordingService.FinalizeSession`: after the WAV writers close, the staged session is atomically moved into the final dir via `RecordingFileStager`, and `CallRecordingSession.MicWavFilePath` / `SystemWavFilePath` are rewritten to the final paths **before** `RecordingStopped` fires (made the session properties `internal set` for this). If the move fails, the session is left in staging and a Trace.TraceError is emitted; the next startup sweep retries.
+- `HighQualityRecorderService` now optionally takes a `DataPathService` and writes its staging WAV into `RecordingStagingPath` instead of `%TEMP%`. `App.xaml.cs` was updated to pass `_dataPathService`. `SaveRecording` continues to copy (not move) so the staged file can be reused for multiple saves.
+- `App.StartupCore` invokes `RecordingFileStager.SweepOrphans` right after `MigrateIfNeeded`, before any UI loads, with `Trace.TraceInformation` logging the recovered count.
+- Added unit-test class `RecordingFileStagerTests` covering happy-path move, missing staging dir, collision-suffix, non-empty / empty / zero-byte / already-prefixed orphans, and missing staging root.
+
+**Acceptance criteria status:**
+- [x] `DataPathService` exposes `RecordingStagingPath` rooted in `%LOCALAPPDATA%\WhisperHeim\recording-staging\`; directory is created on first access — verified by code review (`DataPathService.cs`); the property's getter calls `Directory.CreateDirectory`.
+- [x] `CallRecordingService.StartRecording` opens its `WaveFileWriter` and sets `LoopbackCaptureService.OutputFilePath` inside `RecordingStagingPath`, not under `DataPath` — verified by code review; `_micWavFilePath` and `systemWavFilePath` are now `Path.Combine(_stagingDir, ...)`.
+- [x] After both audio streams close, the session directory is atomically moved into `DataPathService.RecordingsPath` and `CallRecordingSession.MicWavFilePath` / `SystemWavFilePath` are updated to the final paths before `RecordingStopped` fires — verified by code review of `FinalizeSession`; the rewrite happens immediately before `RecordingStopped?.Invoke`.
+- [x] Same-volume case uses `Directory.Move`; cross-volume case falls back to per-file `File.Move` + cleanup — verified by code in `RecordingFileStager.MoveStagedSession` / `MoveAcrossVolumes` and exercised by `MoveStagedSession_HappyPath` (same volume during test). Cross-volume path is straight-line code with no branching.
+- [x] If the move fails, files remain in staging and a recovery sweep on next startup picks them up with a `recovered_` prefix — verified by `SweepOrphans_NonEmptyOrphan_RecoveredWithPrefix` test; `App.StartupCore` calls `SweepOrphans` before UI loads.
+- [x] `HighQualityRecorderService` writes through the same staging path for Streams recordings; the move helper is shared between the two services — verified by code review; `HighQualityRecorderService` now uses `DataPathService.RecordingStagingPath` and `RecordingFileStager` is a single shared `static class`.
+- [ ] Manual test: with `DataPath` pointing at Google Drive, record a 30+ minute call — **not automated**. Design intentionally supports this; unit tests cover the move semantics. **User must run this manual pass.**
+- [ ] Manual test: kill the app via Task Manager mid-recording, restart, verify `recovered_*` directory — **not automated**. `SweepOrphans` is unit-tested for the recovery semantics; `App.StartupCore` invokes it before UI loads. **User must run this manual pass.**
+- [ ] Manual test: make `RecordingsPath` unwritable, record + stop, verify files stay in staging — **not automated**. The failure branch in `MoveStagedSession` returns `Success=false` with `ResultingDirectory` pointing at staging, and `FinalizeSession` rewrites the session paths accordingly so the in-app pending UI picks up the staged file. **User must run this manual pass.**
+
+**Files changed:**
+- `src/WhisperHeim/Services/Settings/DataPathService.cs` — added `LocalAppDataRoot` constant and `RecordingStagingPath` property.
+- `src/WhisperHeim/Services/Recording/RecordingFileStager.cs` — new file; atomic-move helper + crash-recovery sweep.
+- `src/WhisperHeim/Services/Recording/CallRecordingSession.cs` — made `MicWavFilePath` and `SystemWavFilePath` rewritable from inside the service (post-move).
+- `src/WhisperHeim/Services/Recording/CallRecordingService.cs` — `StartRecording` writes to staging; `FinalizeSession` performs the atomic move and updates session paths before `RecordingStopped` fires.
+- `src/WhisperHeim/Services/Audio/HighQualityRecorderService.cs` — now accepts an optional `DataPathService` and writes its staging file into `RecordingStagingPath`.
+- `src/WhisperHeim/App.xaml.cs` — passes `_dataPathService` to `HighQualityRecorderService`; invokes `RecordingFileStager.SweepOrphans` on startup.
+- `tests/WhisperHeim.Tests/RecordingFileStagerTests.cs` — new file; 8 xUnit tests covering move + recovery semantics.
+
+**Test results:** `dotnet test` — 82/82 pass (8 new + 74 existing). `dotnet build` succeeds with no new warnings (10 pre-existing).
+
+**Note on manual tests:** Three acceptance criteria require a real Google Drive folder and a long recording (or external process kill); these cannot be exercised in CI. The code paths involved are all covered by unit tests of the `RecordingFileStager` helper, but the end-to-end behaviour on a real cloud-synced drive must be verified by the user.

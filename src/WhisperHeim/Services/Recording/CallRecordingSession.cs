@@ -18,13 +18,21 @@ public sealed class CallRecordingSession
 
     /// <summary>
     /// Path to the WAV file containing the microphone (local speaker) audio.
+    /// While recording is in progress this points at the machine-local staging
+    /// directory; once <see cref="CallRecordingService"/> finalizes the session
+    /// it is rewritten to the final (potentially cloud-synced) location before
+    /// <c>RecordingStopped</c> fires.
     /// </summary>
-    public string MicWavFilePath { get; }
+    public string MicWavFilePath { get; internal set; }
 
     /// <summary>
     /// Path to the WAV file containing the system (remote speaker) audio.
+    /// While recording is in progress this points at the machine-local staging
+    /// directory; once <see cref="CallRecordingService"/> finalizes the session
+    /// it is rewritten to the final (potentially cloud-synced) location before
+    /// <c>RecordingStopped</c> fires.
     /// </summary>
-    public string SystemWavFilePath { get; }
+    public string SystemWavFilePath { get; internal set; }
 
     /// <summary>
     /// UTC timestamp when the recording session started. Both streams are

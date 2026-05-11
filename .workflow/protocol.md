@@ -2,6 +2,36 @@
 
 ---
 
+## 2026-05-11 11:24 -- Task Completed: 104 - Stage WAV Writes Outside the Synced Data Folder
+
+**Type:** Task Completion
+**Task:** 104 - Stage WAV Writes Outside the Synced Data Folder
+**Summary:** Implemented machine-local WAV staging via a new shared `RecordingFileStager` helper, added `RecordingStagingPath` to `DataPathService`, wired both `CallRecordingService` and `HighQualityRecorderService` to stage writes outside the synced data folder and atomically move on stop, and added a startup orphan-recovery sweep in `App.xaml.cs`. 8 new xUnit tests added; 82/82 tests pass. Manual cloud-sync verification (Drive, mid-recording kill, unwritable destination) remains for the user.
+**Files changed:** 7 files
+
+---
+
+## 2026-05-11 11:12 -- Batch Started: [104]
+
+**Type:** Batch Start
+**Tasks:** 104 - Stage WAV Writes Outside the Synced Data Folder
+**Mode:** Parallel (batch of 1; 105 deferred — conflicts with 104 on CallRecordingService.StartRecording, HighQualityRecorderService, DataPathService)
+
+---
+
+## 2026-05-11 -- Model / Promoted: 104, 105
+
+**Type:** Model / Promote
+**BC:** WhisperHeim (single-context project — `.workflow/tasks/`)
+**From → To:** backlog → todo
+**Tasks:**
+- 104 - Stage WAV writes outside the synced data folder
+- 105 - Origin-machine owns transcription (multi-machine coordination)
+
+Both depend on 063 (done) and 102 (done) — dependencies satisfied. Tasks are independent of each other and can run in either order.
+
+---
+
 ## 2026-05-11 10:58 -- Task Completed: 106 - No Window Frame Flash When Start-Minimized
 
 **Type:** Task Completion

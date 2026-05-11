@@ -4,7 +4,7 @@
 **Milestone:** Post-M1 polish (multi-machine sync)
 **Size:** Medium
 **Created:** 2026-05-11
-**Status:** Backlog
+**Status:** Todo
 **Dependencies:** 063 (configurable data path), 102 (hot-reload settings)
 
 ## Objective
