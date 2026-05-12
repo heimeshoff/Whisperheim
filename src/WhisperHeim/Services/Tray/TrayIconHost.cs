@@ -2,7 +2,6 @@ using System.Diagnostics;
 using System.Globalization;
 using System.Windows;
 using System.Windows.Controls;
-using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WhisperHeim.Services.Recording;
@@ -25,11 +24,23 @@ namespace WhisperHeim.Services.Tray;
 /// </para>
 ///
 /// <para>
-/// The WPF UI <see cref="NotifyIcon"/> registers itself against
-/// <see cref="Application.MainWindow"/>'s HWND, so this host creates a hidden,
-/// off-screen 1x1 window, assigns it as the app's MainWindow (purely as the
-/// tray's Win32 hook), and never shows it. The real settings window is a
-/// separate <c>MainWindow</c> instance that opens lazily.
+/// <c>Wpf.Ui.Tray.TrayManager.Register</c> calls
+/// <c>PresentationSource.FromVisual(Application.Current.MainWindow)</c> and
+/// silently fails if it returns null. <c>WindowInteropHelper.EnsureHandle()</c>
+/// alone is NOT enough — the <c>HwndSource</c> ↔ visual binding is only
+/// established by <c>Window.Show()</c>. So this host <em>does</em> call
+/// <c>Show()</c> on a layered, fully transparent, 1x1, off-screen window
+/// (<c>AllowsTransparency=true</c> + <c>Opacity=0</c> + transparent
+/// background) — DWM composites per-pixel alpha, nothing is ever painted to
+/// the desktop. The window is then left shown for the life of the process;
+/// calling <c>Hide()</c> after <c>Show()</c> would tear down the
+/// PresentationSource and break the tray hook. The app uses
+/// <c>ShutdownMode="OnExplicitShutdown"</c> so a perpetually-shown MainWindow
+/// does not affect exit semantics.
+/// </para>
+/// <para>
+/// The real settings window is a separate <c>MainWindow</c> instance that
+/// opens lazily on first user request (tray click / "Settings" menu).
 /// </para>
 /// </summary>
 public sealed class TrayIconHost : IDisposable
@@ -62,29 +73,29 @@ public sealed class TrayIconHost : IDisposable
         _recordingIcon = CreateMicrophoneIcon(new SolidColorBrush(Color.FromRgb(0x44, 0xCC, 0x44)));
         _callRecordingIcon = CreateMicrophoneIcon(Brushes.Orange);
 
-        // Build a hidden host window. TrayManager looks up
-        // Application.Current.MainWindow.PresentationSource to attach the
-        // Shell_NotifyIcon hook, so we set this window as MainWindow.
-        // It is never shown.
+        // Build a layered, transparent 1x1 off-screen host window. This will
+        // be Show()n once and left shown for the life of the process.
+        // AllowsTransparency=true + Opacity=0 + transparent background means
+        // DWM composites the window with zero alpha across every pixel -- the
+        // user never sees anything, even though the window is technically
+        // "visible". WindowStyle.None removes chrome (required for
+        // AllowsTransparency). ShowActivated=false prevents stealing focus at
+        // logon. ShowInTaskbar=false keeps it out of the taskbar / Alt-Tab.
         _hiddenHostWindow = new Window
         {
             WindowStyle = WindowStyle.None,
+            AllowsTransparency = true,
+            Background = Brushes.Transparent,
+            Opacity = 0.0,
             ShowInTaskbar = false,
             ShowActivated = false,
-            Visibility = Visibility.Hidden,
+            SizeToContent = SizeToContent.Manual,
             Width = 1,
             Height = 1,
             Left = -32000,
             Top = -32000,
-            AllowsTransparency = false,
             Title = "WhisperHeim Tray Host",
         };
-
-        // Create the HWND without ever rendering anything. This gives
-        // PresentationSource.FromVisual a valid HwndSource so the tray
-        // shell hook can be registered.
-        var helper = new WindowInteropHelper(_hiddenHostWindow);
-        helper.EnsureHandle();
 
         // Designate the hidden window as the application MainWindow so that
         // TrayManager.GetParentSource() returns our HwndSource.
@@ -130,8 +141,25 @@ public sealed class TrayIconHost : IDisposable
         _notifyIcon.Menu = contextMenu;
         _notifyIcon.LeftClick += (_, _) => _onShowSettingsRequested();
 
+        // Show the host window. Required: TrayManager.Register reads
+        // PresentationSource.FromVisual(Application.Current.MainWindow), which
+        // is null until Show() establishes the visual ↔ HwndSource binding.
+        // Do NOT call Hide() afterwards -- that tears down the source and
+        // breaks the tray hook. The window is layered/transparent so showing
+        // it is invisible.
+        _hiddenHostWindow.Show();
+
         // Register with the Windows shell.
         _notifyIcon.Register();
+
+        if (!_notifyIcon.IsRegistered)
+        {
+            Trace.TraceError(
+                "[TrayIconHost] NotifyIcon.Register() failed -- tray icon will not appear. " +
+                "MainWindow={0}, PresentationSource={1}",
+                Application.Current.MainWindow?.GetType().Name ?? "(null)",
+                PresentationSource.FromVisual(_hiddenHostWindow)?.GetType().Name ?? "(null)");
+        }
 
         // Wire up call-recording state-machine event handlers.
         _callRecordingService.RecordingStarted += OnCallRecordingStarted;
