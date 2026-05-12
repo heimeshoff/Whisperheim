@@ -29,7 +29,7 @@ dotnet publish src/WhisperHeim/WhisperHeim.csproj `
   -o publish
 
 # 2. Install vpk (one-time; pinned to the version the CI uses)
-dotnet tool install -g vpk --version 0.0.1589
+dotnet tool install -g vpk --version 0.0.1298
 
 # 3. Pack — produces Releases/*-Setup.exe, *-full.nupkg, RELEASES
 vpk pack `

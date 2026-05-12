@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-05-12 14:57 -- Task Completed: 116 - Fix vpk Version Pin in Release Workflow
+
+**Type:** Task Completion
+**Task:** 116 - Fix vpk Version Pin in Release Workflow (0.0.1589 unavailable)
+**Summary:** Pinned vpk to verified version `0.0.1298` (latest on nuget.org per `dotnet tool search vpk`) in both `.github/workflows/release.yml` and `docs/release.md`. Research file left as historical snapshot. Tag-push smoke test deferred to manual user verification before first public release.
+**Files changed:** 3 files
+
+---
+
+## 2026-05-12 14:56 -- Batch Started: [116]
+
+**Type:** Batch Start
+**Tasks:** 116 - Fix vpk Version Pin in Release Workflow
+**Mode:** Parallel (batch of 1; last task in todo)
+
+---
+
 ## 2026-05-12 14:55 -- Task Completed: 115 - Code Signing — Deferred Hook
 
 **Type:** Task Completion

@@ -58,3 +58,27 @@ After the change, push a test tag (e.g. `v0.0.1-test`) to a fork or a private br
 
 - Surfaced by Task 114 local dry-run on 2026-05-12.
 - This is a one-line fix but worth its own task so the orchestrator does not silently embed it in another change.
+
+### 2026-05-12 14:56 — Work Completed
+
+**What was done:**
+- Verified via `dotnet tool search vpk --take 5` that `vpk` latest on nuget.org is `0.0.1298` (Velopack Ltd; 899,739 downloads). `0.0.1589` is not present.
+- Updated `.github/workflows/release.yml` line 50: `--version 0.0.1589` -> `--version 0.0.1298` (Option 1 from task body, matching the version verified by Task 114's local pack).
+- Updated `docs/release.md` line 32 (local-iteration recipe) to match the workflow pin, so the local dry-run instructions stay reproducible alongside CI.
+
+**Cross-references found:**
+- `.github/workflows/release.yml:50` — fixed (this task's primary change).
+- `docs/release.md:32` — fixed (the local-iteration recipe quoted the same pin; updated for parity).
+- `.workflow/research/installer-and-github-distribution.md` (sec. 3 + Source [21]) — left as-is per task instructions; the research file is a dated snapshot. The 0.0.1589 figure there is documented in this work log and in Task 114's work log as a research-vs-reality discrepancy; the snapshot is historical, not authoritative.
+- `.workflow/protocol.md` (entries for Tasks 111, 114, 116) — left as-is (historical log, owned by orchestrator).
+- `.workflow/tasks/done/111-github-actions-release-workflow.md` and `.workflow/tasks/done/114-velopack-pack-dry-run.md` — left as-is (done tasks; the references there are accurate historical records of what was committed at the time).
+- `.workflow/tasks/in-progress/116-fix-vpk-version-pin-in-release-workflow.md` (this file) — references to 0.0.1589 remain in the Objective/Details sections as the description of the bug being fixed; leaving them is correct context.
+
+**Acceptance criteria status:**
+- [x] `release.yml` `vpk` install step uses a version that exists on nuget.org and packs successfully — pinned to `0.0.1298`, confirmed present on nuget.org via `dotnet tool search vpk` and confirmed to pack cleanly by Task 114's local dry-run on 2026-05-12.
+- [~] A tag push runs the workflow at least through the `Install vpk` and `Pack` steps without failure — **deferred to manual user verification before the first public release.** This task is a Windows-runner GitHub Actions step; verifying it requires pushing a real (or test-fork) tag and watching Actions, which is out of scope for an executor sub-agent. The local-equivalent has been verified by Task 114.
+- [x] Any other lingering `0.0.1589` references in the repo are reconciled (or annotated as historical research notes) — `docs/release.md` updated; research file annotated above; protocol/done-task references left intact as historical record.
+
+**Files changed:**
+- `.github/workflows/release.yml` — vpk version pin changed from `0.0.1589` to `0.0.1298`
+- `docs/release.md` — local-iteration recipe vpk version pin changed from `0.0.1589` to `0.0.1298`
