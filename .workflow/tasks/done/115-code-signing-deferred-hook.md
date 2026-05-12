@@ -4,7 +4,7 @@
 **Milestone:** M5 - Public Release (GitHub Distribution)
 **Size:** Small
 **Created:** 2026-05-12
-**Status:** Backlog
+**Status:** Done
 **Dependencies:** 111 (release workflow)
 
 ## Objective
@@ -70,3 +70,23 @@ When the UG is registered, file a single concrete "Enable code signing for relea
 
 ## Work Log
 <!-- Appended by /work during execution -->
+
+### 2026-05-12 14:30 — Work Completed
+
+**What was done:**
+- Refined the inline TODO block at the `vpk pack` step in `.github/workflows/release.yml`. The TODO now names both signing paths (signtool + Azure Trusted Signing), the secret names (`CERT_PFX_BASE64`, `CERT_PASSWORD`) and OIDC variables, and the exact flag to append for each path. Placed as a header comment above `run:` so the diff to flip signing on is genuinely 5 lines.
+- Expanded the "Signing" section of `docs/release.md` from a 3-line stub into a full deferred runbook. Documents both paths with copy-pasteable workflow snippets, lists the GitHub Secrets needed for Path A, OIDC prerequisites for Path B, an example `signing.json`, the SmartScreen reputation impact table (OV warming ~15 000 safe downloads vs EV/Trusted Signing instant trust), and a 7-step "what to do once signing is live" follow-up checklist.
+- Verified the README "we ship unsigned" disclaimer in `README.md:21-31, 116-123` and the supporting `docs/why-unsigned.md`. Both are accurate and cross-link correctly. No edits made to README per task scope.
+- Confirmed no certs were purchased, no Azure resources created, no signing step actually wired in -- this is documentation + plumbing only, as scoped.
+
+**Acceptance criteria status:**
+- [x] `docs/release.md` documents both signtool and Azure Trusted Signing paths with exact `vpk pack` flags — see new "Path A" and "Path B" subsections in the Signing section.
+- [x] Inline TODO comment at the `vpk pack` step of `.github/workflows/release.yml` showing exactly where signing flags go — header comment block above `run:` enumerates both paths, both flags, and the surrounding scaffolding (decode step / `azure/login@v2`).
+- [x] Signing-secret names (`CERT_PFX_BASE64`, `CERT_PASSWORD`) documented so a future task knows what to add to GitHub Secrets — named in both the workflow TODO and the docs/release.md Path A table.
+- [x] README disclaimer "we ship unsigned, signing planned post-UG" remains accurate (Task 112) — verified at `README.md:21-31` and `:116-123`; cross-links to `docs/why-unsigned.md`, no changes needed.
+- [x] Note in docs about post-sign SmartScreen reputation requirements (OV warming period vs EV/Trusted Signing instant trust) — see the "SmartScreen reputation impact after signing" subsection, citing the 2026 numbers from `installer-and-github-distribution.md` §5.
+- [x] No certs purchased, no signing actually happening — confirmed; all signing code in the workflow remains commented and the `vpk pack` invocation is unchanged.
+
+**Files changed:**
+- `.github/workflows/release.yml` — replaced one-line `# TODO post-UG` comment with a structured TODO header documenting both signing paths, the secret/variable names, and the scaffolding steps.
+- `docs/release.md` — expanded "Signing" section from stub into full deferred-runbook with both paths, secrets table, OIDC sketch, SmartScreen reputation table, and follow-up checklist.

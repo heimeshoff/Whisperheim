@@ -2,6 +2,23 @@
 
 ---
 
+## 2026-05-12 14:55 -- Task Completed: 115 - Code Signing — Deferred Hook
+
+**Type:** Task Completion
+**Task:** 115 - Code Signing — Deferred Hook (Wire-Up Now, Flip Post-UG)
+**Summary:** Refined inline TODO at `vpk pack` step in `.github/workflows/release.yml` to enumerate both signtool (`CERT_PFX_BASE64` / `CERT_PASSWORD`) and Azure Trusted Signing paths. Expanded `docs/release.md` Signing section into a full post-UG runbook covering both paths, SmartScreen reputation impact (OV warming vs EV/Trusted Signing instant trust), and a 7-step follow-up checklist. No certs purchased; no actual signing wired up. README disclaimer verified accurate.
+**Files changed:** 3 files
+
+---
+
+## 2026-05-12 14:53 -- Batch Started: [115]
+
+**Type:** Batch Start
+**Tasks:** 115 - Code Signing — Deferred Hook (Wire-Up Now, Flip Post-UG)
+**Mode:** Parallel (batch of 1; 116 promoted from backlog but demoted in this batch due to `release.yml` conflict)
+
+---
+
 ## 2026-05-12 14:52 -- Task Completed: 114 - Velopack End-to-End Dry Run
 
 **Type:** Task Completion

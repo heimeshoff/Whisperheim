@@ -61,6 +61,35 @@ jobs:
 
       - name: Pack (vpk pack)
         shell: pwsh
+        # TODO post-UG (Task 115): insert one of the two signing flags below into the
+        # `vpk pack` command. Velopack does incremental signing of both the app binaries
+        # and its own Update.exe / Setup.exe in the correct order, so signing MUST go
+        # through `vpk pack` -- a post-build `signtool` step would miss bootstrappers.
+        #
+        # Path A -- Traditional signtool (PFX file + password)
+        #   Required GitHub Secrets:
+        #     CERT_PFX_BASE64   base64-encoded PFX bundle (private key + cert chain)
+        #     CERT_PASSWORD     password for the PFX
+        #   Add a step BEFORE this one that decodes the PFX to disk, e.g.:
+        #     [IO.File]::WriteAllBytes("$env:RUNNER_TEMP\cert.pfx",
+        #       [Convert]::FromBase64String($env:CERT_PFX_BASE64))
+        #   Then append to vpk pack:
+        #     --signParams "/td sha256 /fd sha256 /tr http://timestamp.acs.microsoft.com /f $env:RUNNER_TEMP\cert.pfx /p $env:CERT_PASSWORD"
+        #   env block on this step would set:
+        #     CERT_PFX_BASE64: ${{ secrets.CERT_PFX_BASE64 }}
+        #     CERT_PASSWORD:   ${{ secrets.CERT_PASSWORD }}
+        #
+        # Path B -- Azure Trusted Signing (preferred once the UG is registered and
+        # enrolled; ~$10/month, no hardware token, no PFX in CI):
+        #   Auth via OIDC / federated identity (no secrets in the JSON):
+        #     permissions: { id-token: write, contents: write }
+        #     - uses: azure/login@v2 with client-id / tenant-id / subscription-id
+        #   Commit `signing.json` (Account, CodeSigningAccountName, CertificateProfileName,
+        #   EndpointUrl) -- no secrets in the file -- and append to vpk pack:
+        #     --azureTrustedSignFile signing.json
+        #
+        # See docs/release.md "Signing" for the full runbook, and docs/why-unsigned.md
+        # for the user-facing rationale that becomes obsolete once signing is enabled.
         run: |
           vpk pack `
             --packId WhisperHeim `
@@ -69,8 +98,6 @@ jobs:
             --mainExe WhisperHeim.exe `
             --packTitle "WhisperHeim" `
             --packAuthors "Marco Heimeshoff"
-          # TODO post-UG: add --signParams "/td sha256 /fd sha256 /tr http://timestamp.acs.microsoft.com /f cert.pfx /p $env:SIGN_PASS"
-          #               or --azureTrustedSignFile signing.json once a signing identity exists. See Task 115.
 
       - name: SHA-256 of Setup.exe
         id: hash
