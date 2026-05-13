@@ -1,5 +1,5 @@
 <!--
-Release notes template for WhisperHeim.
+Release notes template for Whisperheim.
 
 The `Release` workflow (`.github/workflows/release.yml`) attaches Setup.exe,
 the full + delta nupkgs, and the RELEASES manifest. It also surfaces the
@@ -15,7 +15,7 @@ Placeholders to fill:
   {{CHANGES}}     bullets describing what's new
 -->
 
-# WhisperHeim {{VERSION}}
+# Whisperheim {{VERSION}}
 
 ## What changed
 
@@ -26,7 +26,7 @@ Placeholders to fill:
 1. Download **`{{SETUP_NAME}}`** from the Assets list below.
 2. Run it. Windows SmartScreen will warn ("Windows protected your PC") — click
    **More info** → **Run anyway**.
-3. WhisperHeim drops to the system tray. Right-click for the menu.
+3. Whisperheim drops to the system tray. Right-click for the menu.
 
 Full install instructions (including the Smart App Control caveat) are in the
 [README](https://github.com/heimeshoff/WhisperHeim#install). The SmartScreen
@@ -59,7 +59,7 @@ For YouTube and stream transcription:
 winget install -e --id Gyan.FFmpeg
 ```
 
-WhisperHeim will prompt you the first time a feature needs it. Drag-and-drop
+Whisperheim will prompt you the first time a feature needs it. Drag-and-drop
 WAV/MP3 transcription works without FFmpeg.
 
 ## Known issues

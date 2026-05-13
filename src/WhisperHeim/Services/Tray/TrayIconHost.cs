@@ -105,7 +105,7 @@ public sealed class TrayIconHost : IDisposable
         {
             FocusOnLeftClick = false,
             MenuOnRightClick = true,
-            TooltipText = "WhisperHeim",
+            TooltipText = "Whisperheim",
             Icon = _idleIcon,
         };
 
@@ -182,18 +182,18 @@ public sealed class TrayIconHost : IDisposable
             if (isActive)
             {
                 _notifyIcon.Icon = _recordingIcon;
-                _notifyIcon.TooltipText = "WhisperHeim - Recording...";
+                _notifyIcon.TooltipText = "Whisperheim - Recording...";
             }
             else if (_callRecordingService.IsRecording)
             {
                 _notifyIcon.Icon = _callRecordingIcon;
                 var duration = _callRecordingService.CurrentSession?.Duration ?? TimeSpan.Zero;
-                _notifyIcon.TooltipText = $"WhisperHeim - Recording call ({CallRecordingService.FormatDuration(duration)})";
+                _notifyIcon.TooltipText = $"Whisperheim - Recording call ({CallRecordingService.FormatDuration(duration)})";
             }
             else
             {
                 _notifyIcon.Icon = _idleIcon;
-                _notifyIcon.TooltipText = "WhisperHeim";
+                _notifyIcon.TooltipText = "Whisperheim";
             }
 
             Trace.TraceInformation("[TrayIconHost] Dictation state changed. Active: {0}", isActive);
@@ -205,7 +205,7 @@ public sealed class TrayIconHost : IDisposable
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
             _notifyIcon.Icon = _callRecordingIcon;
-            _notifyIcon.TooltipText = "WhisperHeim - Recording call (00:00)";
+            _notifyIcon.TooltipText = "Whisperheim - Recording call (00:00)";
             _callRecordingMenuItem.Header = "Stop Call Recording (00:00)";
             Trace.TraceInformation("[TrayIconHost] Call recording started.");
         });
@@ -216,7 +216,7 @@ public sealed class TrayIconHost : IDisposable
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
             _notifyIcon.Icon = _idleIcon;
-            _notifyIcon.TooltipText = "WhisperHeim";
+            _notifyIcon.TooltipText = "Whisperheim";
             _callRecordingMenuItem.Header = "Start Call Recording";
 
             if (e.Exception is not null)
@@ -238,7 +238,7 @@ public sealed class TrayIconHost : IDisposable
         {
             var formatted = CallRecordingService.FormatDuration(duration);
             _callRecordingMenuItem.Header = $"Stop Call Recording ({formatted})";
-            _notifyIcon.TooltipText = $"WhisperHeim - Recording call ({formatted})";
+            _notifyIcon.TooltipText = $"Whisperheim - Recording call ({formatted})";
         });
     }
 

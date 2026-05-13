@@ -94,7 +94,7 @@ public partial class GeneralPage : UserControl
         {
             MessageBox.Show(
                 "FFmpeg install prompt is unavailable in this build.",
-                "WhisperHeim",
+                "Whisperheim",
                 MessageBoxButton.OK,
                 MessageBoxImage.Information);
             return;
@@ -104,7 +104,7 @@ public partial class GeneralPage : UserControl
         try
         {
             await promptService.PromptForInstallAsync(
-                "FFmpeg unlocks YouTube and Stream transcription. Install it once and WhisperHeim will find it automatically.");
+                "FFmpeg unlocks YouTube and Stream transcription. Install it once and Whisperheim will find it automatically.");
         }
         finally
         {
@@ -183,7 +183,7 @@ public partial class GeneralPage : UserControl
     {
         var dialog = new Microsoft.Win32.OpenFolderDialog
         {
-            Title = "Select data folder for WhisperHeim",
+            Title = "Select data folder for Whisperheim",
             InitialDirectory = _settingsService.DataPathService.DataPath,
         };
 
@@ -197,10 +197,10 @@ public partial class GeneralPage : UserControl
             if (DataPathService.IsInsideInstallOrLocalAppDataRoot(newPath))
             {
                 MessageBox.Show(
-                    "This folder lives inside WhisperHeim's install directory.\n\n" +
+                    "This folder lives inside Whisperheim's install directory.\n\n" +
                     $"{newPath}\n\n" +
                     "Storing your data here would cause Windows to delete it when " +
-                    "WhisperHeim is updated or uninstalled. Please choose a folder " +
+                    "Whisperheim is updated or uninstalled. Please choose a folder " +
                     "outside the install directory — your Documents folder, a cloud-" +
                     "synced folder (Google Drive, OneDrive), or any other location.",
                     "Folder Inside Install Directory",
@@ -223,7 +223,7 @@ public partial class GeneralPage : UserControl
             {
                 UpdateDataPathDisplay();
                 MessageBox.Show(
-                    "Data folder changed. Please restart WhisperHeim for the change to take full effect.",
+                    "Data folder changed. Please restart Whisperheim for the change to take full effect.",
                     "Restart Required",
                     MessageBoxButton.OK,
                     MessageBoxImage.Information);

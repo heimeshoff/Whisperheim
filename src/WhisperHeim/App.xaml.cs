@@ -134,8 +134,8 @@ public partial class App : Application
             try
             {
                 MessageBox.Show(
-                    $"WhisperHeim encountered an error:\n\n{args.Exception}",
-                    "WhisperHeim Error",
+                    $"Whisperheim encountered an error:\n\n{args.Exception}",
+                    "Whisperheim Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -166,8 +166,8 @@ public partial class App : Application
             try
             {
                 MessageBox.Show(
-                    $"WhisperHeim fatal error:\n\n{ex}",
-                    "WhisperHeim Fatal Error",
+                    $"Whisperheim fatal error:\n\n{ex}",
+                    "Whisperheim Fatal Error",
                     MessageBoxButton.OK,
                     MessageBoxImage.Error);
             }
@@ -187,8 +187,8 @@ public partial class App : Application
         {
             System.Diagnostics.Trace.TraceError("[App] Startup failed: {0}", ex);
             MessageBox.Show(
-                $"WhisperHeim failed to start:\n\n{ex.Message}\n\n{ex.StackTrace}",
-                "WhisperHeim Startup Error",
+                $"Whisperheim failed to start:\n\n{ex.Message}\n\n{ex.StackTrace}",
+                "Whisperheim Startup Error",
                 MessageBoxButton.OK,
                 MessageBoxImage.Error);
             Shutdown(1);

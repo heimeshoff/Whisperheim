@@ -44,7 +44,7 @@
                        Opacity="0.65"
                        TextWrapping="Wrap"
                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
-                       Text="WhisperHeim uses FFmpeg to transcribe YouTube videos, web streams, and certain audio formats. It's a separate program — install it once and WhisperHeim will find it automatically." />
+                       Text="Whisperheim uses FFmpeg to transcribe YouTube videos, web streams, and certain audio formats. It's a separate program — install it once and Whisperheim will find it automatically." />
         </StackPanel>
 
         <!-- Action buttons row -->

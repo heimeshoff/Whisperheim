@@ -1,4 +1,4 @@
-# Why is WhisperHeim unsigned?
+# Why is Whisperheim unsigned?
 
 Short version: code signing for individual developers in Germany is in an
 awkward gap year. We'll sign as soon as we can. Until then, here's exactly what
@@ -21,14 +21,14 @@ with an EV certificate jumps a binary straight into "trusted" reputation, but
 sufficient organic downloads also clear the threshold eventually (currently on
 the order of ~15 000 safe downloads in 25H2).
 
-## Why is WhisperHeim flagged?
+## Why is Whisperheim flagged?
 
 Two reasons:
 
 1. **No code signature.** A signed binary inherits the publisher's reputation
-   immediately. WhisperHeim's `Setup.exe` is unsigned, so it has to earn
+   immediately. Whisperheim's `Setup.exe` is unsigned, so it has to earn
    reputation from scratch each release.
-2. **It's a new binary.** Every WhisperHeim release is a different `Setup.exe`
+2. **It's a new binary.** Every Whisperheim release is a different `Setup.exe`
    with a different hash. SmartScreen warns on each one until enough downloads
    accumulate, which for a personal project never happens before the next
    release ships.
@@ -49,12 +49,12 @@ Three independent checks:
    The hash must match the one in the Release notes byte-for-byte. If it
    doesn't, the download was corrupted or tampered with — delete it.
 
-2. **Read the source.** WhisperHeim is open-source. The release workflow at
+2. **Read the source.** Whisperheim is open-source. The release workflow at
    [`.github/workflows/release.yml`](../.github/workflows/release.yml) is the
    exact recipe that builds the `Setup.exe` you downloaded. `git log` and `git
    blame` are your audit trail.
 
-3. **Check the network.** WhisperHeim's only outbound traffic on a fresh
+3. **Check the network.** Whisperheim's only outbound traffic on a fresh
    install is the one-time ~640 MB Parakeet model download from the Hugging
    Face CDN, and the periodic auto-update check against GitHub Releases. No
    telemetry, no analytics, no usage pings — verify with any process-level
@@ -75,11 +75,11 @@ SAC enforcing without ever having clicked anything.
 If SAC blocks the install:
 
 - **The only "fix" is to turn SAC off**, which is **irreversible without a
-  full OS reinstall**. We do not recommend doing this just for WhisperHeim.
+  full OS reinstall**. We do not recommend doing this just for Whisperheim.
 - **Or wait for a signed build.** Signed binaries are trusted by SAC without
   intervention.
 
-## When will WhisperHeim be signed?
+## When will Whisperheim be signed?
 
 The plan, in order:
 

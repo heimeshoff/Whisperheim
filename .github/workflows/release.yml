@@ -96,7 +96,7 @@ jobs:
             --packVersion ${{ steps.ver.outputs.version }} `
             --packDir publish `
             --mainExe WhisperHeim.exe `
-            --packTitle "WhisperHeim" `
+            --packTitle "Whisperheim" `
             --packAuthors "Marco Heimeshoff"
 
       - name: SHA-256 of Setup.exe
@@ -117,14 +117,14 @@ jobs:
           vpk upload github `
             --repoUrl https://github.com/${{ github.repository }} `
             --tag v${{ steps.ver.outputs.version }} `
-            --releaseName "WhisperHeim ${{ steps.ver.outputs.version }}" `
+            --releaseName "Whisperheim ${{ steps.ver.outputs.version }}" `
             --publish `
             --token ${{ secrets.GITHUB_TOKEN }}
 
       - name: Summary
         shell: pwsh
         run: |
-          "## WhisperHeim ${{ steps.ver.outputs.version }}" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
+          "## Whisperheim ${{ steps.ver.outputs.version }}" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           "" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           "- Setup: ``${{ steps.hash.outputs.setup_name }}``" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8
           "- SHA-256: ``${{ steps.hash.outputs.sha256 }}``" | Out-File -FilePath $env:GITHUB_STEP_SUMMARY -Append -Encoding utf8

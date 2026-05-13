@@ -2,7 +2,7 @@
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
-        Title="Setting up WhisperHeim"
+        Title="Setting up Whisperheim"
         Width="640" Height="520"
         WindowStartupLocation="CenterScreen"
         WindowStyle="SingleBorderWindow"
@@ -27,13 +27,13 @@
 
         <!-- Headline -->
         <TextBlock Grid.Row="0"
-                   Text="Setting up WhisperHeim"
+                   Text="Setting up Whisperheim"
                    FontSize="22"
                    FontWeight="SemiBold"
                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
 
         <TextBlock Grid.Row="2"
-                   Text="WhisperHeim needs to download a few AI models before it can transcribe."
+                   Text="Whisperheim needs to download a few AI models before it can transcribe."
                    FontSize="13"
                    Opacity="0.75"
                    TextWrapping="Wrap"

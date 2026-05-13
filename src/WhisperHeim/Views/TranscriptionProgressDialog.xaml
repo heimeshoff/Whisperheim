@@ -1,7 +1,7 @@
 <Window x:Class="WhisperHeim.Views.TranscriptionProgressDialog"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-        Title="WhisperHeim — Transcribing Call"
+        Title="Whisperheim — Transcribing Call"
         Width="520" Height="320"
         WindowStartupLocation="CenterScreen"
         WindowStyle="SingleBorderWindow"

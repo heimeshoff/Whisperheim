@@ -100,7 +100,7 @@ public static class Program
 
             var notePath = Path.Combine(desktop, "WhisperHeim-data-location.txt");
             var contents =
-                "Thanks for trying WhisperHeim." + Environment.NewLine +
+                "Thanks for trying Whisperheim." + Environment.NewLine +
                 Environment.NewLine +
                 "Your recordings, transcripts, and settings have NOT been deleted." + Environment.NewLine +
                 "They live in:" + Environment.NewLine +
@@ -115,7 +115,7 @@ public static class Program
                 Environment.NewLine +
                 "Delete that folder manually for a fully clean removal." + Environment.NewLine +
                 Environment.NewLine +
-                "If WhisperHeim served you well, a star on GitHub would make our day:" + Environment.NewLine +
+                "If Whisperheim served you well, a star on GitHub would make our day:" + Environment.NewLine +
                 "  https://github.com/heimeshoff/WhisperHeim" + Environment.NewLine;
 
             File.WriteAllText(notePath, contents);

@@ -1,6 +1,6 @@
-# WhisperHeim
+# Whisperheim
 
-WhisperHeim is the audio Swiss army knife for Windows 11. Local dictation, call
+Whisperheim is the audio Swiss army knife for Windows 11. Local dictation, call
 transcription with speaker separation, voice-message transcription. No cloud,
 no subscription, no internet at runtime.
 
@@ -18,7 +18,7 @@ terminal).
 
 ## Install
 
-WhisperHeim is currently **unsigned** (see [why](docs/why-unsigned.md)), so
+Whisperheim is currently **unsigned** (see [why](docs/why-unsigned.md)), so
 Windows will warn you on first run. Two paths:
 
 1. **Windows Defender SmartScreen** — the dialog reads "Windows protected your PC".
@@ -40,7 +40,7 @@ A short screen recording of the click-through lives in
   from Hugging Face. One-time download; cached in `%APPDATA%\WhisperHeim\models`.
   You can skip and configure later — dictation will then prompt for the
   download on first use.
-- WhisperHeim drops to the **system tray**. Right-click the tray icon for the
+- Whisperheim drops to the **system tray**. Right-click the tray icon for the
   menu and settings.
 - The Silero VAD and Pyannote segmentation models ship bundled inside the
   installer; you don't have to download those.
@@ -58,14 +58,14 @@ All hotkeys are remappable from the General settings page.
 ## Optional: install FFmpeg
 
 For YouTube and audio-stream transcription (and as a fallback OGG/Opus
-decoder), WhisperHeim needs FFmpeg on `PATH`. WhisperHeim does **not** bundle
+decoder), Whisperheim needs FFmpeg on `PATH`. Whisperheim does **not** bundle
 FFmpeg — the user picks the build and license. The easiest path:
 
 ```pwsh
 winget install -e --id Gyan.FFmpeg
 ```
 
-The first time you invoke a feature that needs FFmpeg, WhisperHeim shows a
+The first time you invoke a feature that needs FFmpeg, Whisperheim shows a
 modal with the same command and an "Open download page" link. Drag-and-drop
 transcription of common WAV/MP3 files keeps working without FFmpeg.
 
@@ -87,7 +87,7 @@ OneDrive/Dropbox/Google Drive folder) from the **General** settings page.
 
 **Uninstall does NOT delete this data.** If you want a fully clean removal,
 delete `%APPDATA%\WhisperHeim\` and any custom data folder yourself after
-uninstalling. WhisperHeim drops a `WhisperHeim-data-location.txt` on your
+uninstalling. Whisperheim drops a `WhisperHeim-data-location.txt` on your
 desktop on uninstall to remind you where things live.
 
 ## System requirements
@@ -102,7 +102,7 @@ desktop on uninstall to remind you where things live.
 
 - All transcription runs **locally** on your machine. No audio, transcripts, or
   metadata leave the device at runtime.
-- **No telemetry.** WhisperHeim does not call home — no analytics, no
+- **No telemetry.** Whisperheim does not call home — no analytics, no
   crash reporting, no usage pings.
 - **No accounts.** No login, no cloud, no API keys required for the core
   features.
@@ -113,7 +113,7 @@ desktop on uninstall to remind you where things live.
 
 ## Signing and verification
 
-WhisperHeim is **not yet code-signed**. Microsoft Trusted Signing isn't
+Whisperheim is **not yet code-signed**. Microsoft Trusted Signing isn't
 available to individual developers in Germany at the time of writing; signing
 is planned post-UG (Unternehmergesellschaft) registration. Until then:
 
@@ -138,7 +138,7 @@ see [`docs/release.md`](docs/release.md).
 
 ## Support
 
-If WhisperHeim is useful to you and you want to chip in, there's a tip jar:
+If Whisperheim is useful to you and you want to chip in, there's a tip jar:
 
 [**Ko-fi — heimeshoff**](https://ko-fi.com/heimeshoff)
 

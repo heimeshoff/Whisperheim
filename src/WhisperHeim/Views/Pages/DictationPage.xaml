@@ -68,7 +68,7 @@
 
                 <!-- App name + version -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
-                    <TextBlock Text="WhisperHeim"
+                    <TextBlock Text="Whisperheim"
                                FontSize="40" FontWeight="ExtraBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                     <TextBlock Text="v1.0"
@@ -292,7 +292,7 @@
                             <!-- Footer note -->
                             <Border Margin="0,12,0,0" Padding="0,16,0,0"
                                     BorderBrush="{DynamicResource DividerStrokeColorDefaultBrush}" BorderThickness="0,1,0,0">
-                                <TextBlock Text="Global hotkeys work even when WhisperHeim is minimized to the system tray."
+                                <TextBlock Text="Global hotkeys work even when Whisperheim is minimized to the system tray."
                                            FontSize="10" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                            TextWrapping="Wrap" LineHeight="16" />
                             </Border>

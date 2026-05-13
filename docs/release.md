@@ -1,6 +1,6 @@
-# Releasing WhisperHeim
+# Releasing Whisperheim
 
-WhisperHeim ships via [Velopack](https://docs.velopack.io) and GitHub Releases.
+Whisperheim ships via [Velopack](https://docs.velopack.io) and GitHub Releases.
 A push of a `v*` tag triggers `.github/workflows/release.yml`, which publishes
 the app, packs it with `vpk`, and uploads everything to a GitHub Release named
 after the tag.
@@ -37,7 +37,7 @@ vpk pack `
   --packVersion 0.0.1-local `
   --packDir publish `
   --mainExe WhisperHeim.exe `
-  --packTitle "WhisperHeim" `
+  --packTitle "Whisperheim" `
   --packAuthors "Marco Heimeshoff"
 
 # 4. Manually run the installer to verify it boots into the tray
@@ -155,7 +155,7 @@ spot):
       --packVersion ${{ steps.ver.outputs.version }} `
       --packDir publish `
       --mainExe WhisperHeim.exe `
-      --packTitle "WhisperHeim" `
+      --packTitle "Whisperheim" `
       --packAuthors "Marco Heimeshoff" `
       --signParams "/td sha256 /fd sha256 /tr http://timestamp.acs.microsoft.com /f $env:RUNNER_TEMP\cert.pfx /p $env:CERT_PASSWORD"
 ```
@@ -215,7 +215,7 @@ permissions:
       --packVersion ${{ steps.ver.outputs.version }} `
       --packDir publish `
       --mainExe WhisperHeim.exe `
-      --packTitle "WhisperHeim" `
+      --packTitle "Whisperheim" `
       --packAuthors "Marco Heimeshoff" `
       --azureTrustedSignFile signing.json
 ```
@@ -249,7 +249,7 @@ This is intentionally a tiny follow-up task, not part of Task 115:
 3. Apply the diff at the TODO block in `.github/workflows/release.yml`.
 4. Update `README.md` "Installation" section -- drop the unsigned disclaimer.
 5. Update `docs/why-unsigned.md` -- either delete or convert to a historical
-   note ("WhisperHeim was unsigned through `v0.x`; from `v1.0` it ships signed").
+   note ("Whisperheim was unsigned through `v0.x`; from `v1.0` it ships signed").
 6. Tag a fresh release and flag it as the first signed build in the Release
    notes.
 7. If `Setup.exe` is still flagged by Defender after signing, submit it via

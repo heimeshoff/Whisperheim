@@ -263,11 +263,11 @@ public partial class FfmpegMissingDialog : Window
                 "Close any open terminals and try again.",
             // 0x8A15002B — ACCESS DENIED — common when the installer wants elevation.
             unchecked((int)0x8A15002B) =>
-                "Install was denied. Try running WhisperHeim as administrator, " +
+                "Install was denied. Try running Whisperheim as administrator, " +
                 "or install FFmpeg manually via the download page.",
             _ =>
                 $"winget exited with code 0x{code:X8}. See the log above for details. " +
-                "If the message mentions \"Access denied\", try running WhisperHeim as administrator."
+                "If the message mentions \"Access denied\", try running Whisperheim as administrator."
         };
     }
 

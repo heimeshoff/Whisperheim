@@ -29,7 +29,7 @@
 
                 <!-- App name + version -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
-                    <TextBlock Text="WhisperHeim"
+                    <TextBlock Text="Whisperheim"
                                FontSize="40" FontWeight="ExtraBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                     <TextBlock Text="v1.0"
@@ -85,7 +85,7 @@
                         <TextBlock Text="Launch at startup"
                                    FontSize="15" FontWeight="SemiBold"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
-                        <TextBlock Text="Automatically run WhisperHeim when your operating system starts."
+                        <TextBlock Text="Automatically run Whisperheim when your operating system starts."
                                    FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    Margin="0,4,0,0"
                                    TextWrapping="Wrap" />
@@ -128,7 +128,7 @@
                                    TextTrimming="CharacterEllipsis"
                                    Visibility="Collapsed" />
                         <TextBlock FontSize="11" Foreground="{DynamicResource TextFillColorTertiaryBrush}" Margin="0,8,0,0" TextWrapping="Wrap"
-                                   Text="Required for YouTube / Stream transcription. WhisperHeim does not bundle FFmpeg — install it once and the app finds it automatically." />
+                                   Text="Required for YouTube / Stream transcription. Whisperheim does not bundle FFmpeg — install it once and the app finds it automatically." />
                     </StackPanel>
                     <ui:Button x:Name="InstallFfmpegButton"
                                Content="Install now"

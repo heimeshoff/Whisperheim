@@ -29,7 +29,7 @@
 
                 <!-- App name + version -->
                 <StackPanel Orientation="Horizontal" HorizontalAlignment="Center" Margin="0,0,0,8">
-                    <TextBlock Text="WhisperHeim"
+                    <TextBlock Text="Whisperheim"
                                FontSize="40" FontWeight="ExtraBold"
                                Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
                     <TextBlock Text="v1.0"
@@ -87,7 +87,7 @@
                             <TextBlock FontSize="13" TextWrapping="Wrap" LineHeight="20"
                                        Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                        Margin="0,0,0,8">
-                                <Run Text="DDD is all about creating a " /><Run Text="ubiquitous language" FontStyle="Italic" /><Run Text=" within " /><Run Text="bounded contexts" FontStyle="Italic" /><Run Text=" &#x2014; and with " /><Run Text="WhisperHeim" FontStyle="Italic" /><Run Text=", I figured it's time to let your own language flow directly into words on screen." />
+                                <Run Text="DDD is all about creating a " /><Run Text="ubiquitous language" FontStyle="Italic" /><Run Text=" within " /><Run Text="bounded contexts" FontStyle="Italic" /><Run Text=" &#x2014; and with " /><Run Text="Whisperheim" FontStyle="Italic" /><Run Text=", I figured it's time to let your own language flow directly into words on screen." />
                             </TextBlock>
 
                             <TextBlock Text="When I'm not helping teams design meaningful software, I enjoy building open-source tools like this one to make life a little smoother."
@@ -165,7 +165,7 @@
             <Border Background="{DynamicResource CardBackgroundFillColorSecondaryBrush}"
                     CornerRadius="12" Padding="28" Margin="0,0,0,32">
                 <StackPanel HorizontalAlignment="Center">
-                    <TextBlock Text="If you enjoy WhisperHeim and want to support my open-source work, you can buy me a coffee!"
+                    <TextBlock Text="If you enjoy Whisperheim and want to support my open-source work, you can buy me a coffee!"
                                FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,0,0,16" />
@@ -211,7 +211,7 @@
                     <TextBlock FontSize="13" TextWrapping="Wrap" TextAlignment="Center"
                                Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                Margin="0,0,0,16">
-                        <Run Text="Otherwise, just " /><Run Text="enjoy using WhisperHeim for free" FontWeight="Bold" /><Run Text=" &#x2014; and thanks for giving it a try!" />
+                        <Run Text="Otherwise, just " /><Run Text="enjoy using Whisperheim for free" FontWeight="Bold" /><Run Text=" &#x2014; and thanks for giving it a try!" />
                     </TextBlock>
 
                     <!-- GitHub Link -->
@@ -248,7 +248,7 @@
                                    FontSize="20" FontWeight="Bold"
                                    Foreground="{DynamicResource TextFillColorPrimaryBrush}"
                                    Margin="0,0,0,12" />
-                        <TextBlock Text="WhisperHeim was designed to bridge the gap between technical utility and digital sanctuary. No data leaves your machine, ensuring absolute privacy without sacrificing performance."
+                        <TextBlock Text="Whisperheim was designed to bridge the gap between technical utility and digital sanctuary. No data leaves your machine, ensuring absolute privacy without sacrificing performance."
                                    FontSize="12" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
                                    TextWrapping="Wrap"
                                    LineHeight="19"

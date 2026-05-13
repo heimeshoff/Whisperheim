@@ -1,8 +1,8 @@
-# WhisperHeim -- UI Design Brief
+# Whisperheim -- UI Design Brief
 
-## What is WhisperHeim?
+## What is Whisperheim?
 
-WhisperHeim is a local-first Windows 11 tray application that unifies voice-to-text and text-to-voice workflows. No cloud, no subscriptions, no internet required. Think of it as the **audio Swiss army knife for Windows 11**.
+Whisperheim is a local-first Windows 11 tray application that unifies voice-to-text and text-to-voice workflows. No cloud, no subscriptions, no internet required. Think of it as the **audio Swiss army knife for Windows 11**.
 
 Target users are power users and knowledge workers who dictate frequently, attend video calls, receive voice messages, and value privacy. The app lives in the system tray and is always one hotkey away.
 
@@ -185,7 +185,7 @@ Below (or collapsible/expandable beneath) the Speak section. This is where the u
 **Purpose:** Display app info, version, and AI model status.
 
 **What's on it:**
-- **App logo and title** ("WhisperHeim").
+- **App logo and title** ("Whisperheim").
 - **Tagline:** "Live dictation powered by Whisper"
 - **Version number** (currently 0.1.0).
 - **AI Models list** -- one row per model showing:
