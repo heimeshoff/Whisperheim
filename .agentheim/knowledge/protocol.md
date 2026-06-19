@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-19 13:19 -- Modeling / Refined: main-q4m8t - whisperheim-transcribe CLI wrapper over POST /transcribe
+
+**Type:** Modeling / Refine
+**BC:** main
+**Status after:** todo
+**Summary:** Sharpened the CLI-wrapper task against the now-live `/transcribe` contract (dependency main-h7k2p shipped). Made explicit that the endpoint takes raw audio bytes (not a JSON envelope) and returns JSON `{text, ...}` — the wrapper POSTs raw bytes with `?filename=` and prints **only `result.text`** to stdout (user decision; plain text, no metadata). Pinned the exit-code scheme to the `Utterheim.Cli` reference (`0`/`1`/`2`/`3`), flagged the 5 s reference timeout as too short (use multi-minute / infinite), and named the two deliberate deltas from the speak CLI (raw bytes vs `PostAsJsonAsync`; print `.text` vs `.requestId`). Added main-h7k2p as prior_art. Promoted backlog → todo since the only blocker (the live endpoint) is now done and tested.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-06-19 12:13 -- Work session ended
 
 **Type:** Work / Session end

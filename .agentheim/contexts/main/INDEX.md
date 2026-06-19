@@ -10,15 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 118
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **main-q4m8t** -- whisperheim-transcribe CLI wrapper over POST /transcribe -- `todo/main-q4m8t-whisperheim-transcribe-cli.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -150,7 +150,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **main-q4m8t** -- whisperheim-transcribe CLI wrapper over POST /transcribe -- `backlog/main-q4m8t-whisperheim-transcribe-cli.md`
+<!-- no tasks in backlog -->
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
