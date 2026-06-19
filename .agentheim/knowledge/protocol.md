@@ -5,6 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-19 11:25 -- Modeling / Captured: main-h7k2p + main-q4m8t — STT API (transcribe endpoint)
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo (main-h7k2p), backlog (main-q4m8t)
+**Summary:** Captured the "expose STT to Claude as a local API" feature, scoped to batch-only v1 (file in → full transcript out), first-party Claude consumer (no auth, no OpenAI-compat). The architect made the transport + shape decision, ratified by the user, written as ADR-0001: HttpListener loopback `127.0.0.1:7777`, synchronous `POST /transcribe` blocking through the existing single-engine `TranscriptionQueueService`, plus `GET /health`. main-h7k2p (server + queue integration) is ready in todo; main-q4m8t (`whisperheim-transcribe` CLI wrapper) waits on it in backlog. Named pipe was the runner-up; rejected on the inspectability / house-shape tie-break.
+**ADRs written:** 0001
+
+---
+
+## 2026-06-19 10:55 -- Research: Exposing WhisperHeim STT as an API
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/whisperheim-stt-api-exposure-2026-06-19.md
+**Review:** PASS (iteration 1); revised 11:10 after scope clarification (consumer is Claude, local/first-party — not cloud) + read of Utterheim's source (§7: Kestrel Minimal API, loopback 127.0.0.1:7223, no auth, IHostedService on Generic Host, CLI wrapper). Named pipes reinstated first-class; OpenAI-compat + DNS-rebinding concerns demoted.
+**Summary:**
+- Batch (send file → full text) fits the actual use cases and the existing engine; real-time streaming partials are a separate, larger commitment likely needing a streaming model.
+- OpenAI `POST /v1/audio/transcriptions` (multipart `file`+`model`, `response_format` json|text|srt|verbose_json|vtt) is the de-facto interop standard — whisper.cpp server, Speaches, LocalAI all adopted it; implementing the subset lets existing client SDKs reach WhisperHeim by changing only the base URL.
+- In-process hosting forks between embedded Kestrel/Minimal API (full features, larger footprint) and `HttpListener` (lighter, batch-HTTP only); the single shared `TranscriptionQueueService` is the real constraint. Loopback bind alone is insufficient (DNS rebinding bypasses CORS) — needs Host-header validation + bearer token.
+
+---
+
 ## 2026-05-13 -- Migration: `.workflow/` → `.agentheim/`
 
 **Type:** Repo Migration

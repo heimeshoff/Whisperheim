@@ -18,7 +18,7 @@ For BC-scoped artifacts, see each BC's `INDEX.md`.
 ## Global ADRs (scope: global)
 
 <!-- adr-global:start -->
-<!-- no global ADRs yet -->
+- **ADR-0001** -- Expose WhisperHeim's transcribe endpoint over loopback HTTP (HttpListener, synchronous) -- `knowledge/decisions/0001-transcribe-endpoint-loopback-http.md`
 <!-- adr-global:end -->
 
 ## Cross-BC research
@@ -27,7 +27,7 @@ Research reports relevant to more than one BC (or to the project as a whole). BC
 reports are listed in each BC's `INDEX.md`.
 
 <!-- research-global:start -->
-<!-- no cross-BC research yet -->
+- **STT API exposure** (2026-06-19) — ways to expose WhisperHeim's speech-to-text to other apps (REST / WebSocket / gRPC / OpenAI-compatible) and their trade-offs, plus in-process .NET hosting and localhost security. — `knowledge/research/whisperheim-stt-api-exposure-2026-06-19.md`
 <!-- research-global:end -->
 
 ## Pointers

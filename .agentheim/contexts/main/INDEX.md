@@ -10,15 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
-- **Todo:** 0
+- **Backlog:** 1
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 117
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **main-h7k2p** -- STT API — POST /transcribe HttpListener server + queue integration -- `todo/main-h7k2p-transcribe-http-endpoint.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -149,7 +149,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-<!-- no tasks in backlog -->
+- **main-q4m8t** -- whisperheim-transcribe CLI wrapper over POST /transcribe -- `backlog/main-q4m8t-whisperheim-transcribe-cli.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
@@ -161,7 +161,7 @@ research touching this BC, and concept synthesis pages.
 ## Research touching this BC
 
 <!-- research-local:start -->
-<!-- no research touching this BC -->
+- **STT API exposure** (2026-06-19) — transports, in-process hosting, security, and the resolved Utterheim house pattern for exposing STT to other apps. — `knowledge/research/whisperheim-stt-api-exposure-2026-06-19.md`
 <!-- research-local:end -->
 
 ## Concepts (opt-in synthesis pages)
