@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-19 14:05 -- Modeling / Captured: main-r7n2k - Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus)
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Captured the "don't reject formats the native engine can't read — convert them with FFmpeg first" feature, motivated by `.opus` files being refused. The orchestrator found the rejection lives at three gates (`FileTranscriptionService` allowlist — which the UI drag/browse filter hits first and silently drops `.opus` today; `AudioFileDecoder`'s `_ =>` throw; and the HTTP `ClassifyError`), all of which must change. Design: generalize the existing `DecodeOggWithFfmpeg` routine into an open last-resort fallback (try ffmpeg on any non-native extension to 16kHz mono PCM), make `IsSupported` permissive, keep the decode path non-blocking (main-110 contract), and surface a distinct ffmpeg-missing error (mapped to a non-500 HTTP status for the CLI / Claude Code plugin). No ADR — implements existing direction (main-110, ADR-0001) with no new dependency or transport. Filed straight to todo: design fully resolved, nothing blocking.
+
+---
+
 ## 2026-06-19 13:36 -- Work session ended
 
 **Type:** Work / Session end

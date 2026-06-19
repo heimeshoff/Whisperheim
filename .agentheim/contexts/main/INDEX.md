@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 119
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **main-r7n2k** -- Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus) -- 2026-06-19 -- `todo/main-r7n2k-ffmpeg-transcode-fallback.md`
 <!-- todo-list:end -->
 
 ### Doing
