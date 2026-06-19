@@ -8,7 +8,10 @@
          can overwrite it).
       2. Publish src\WhisperHeim\WhisperHeim.csproj in Release / win-x64,
          self-contained, to .\publish.
-      3. Launch the freshly published WhisperHeim.exe (detached).
+      3. Publish src\WhisperHeim.Cli\WhisperHeim.Cli.csproj (the
+         whisperheim-transcribe CLI wrapper, single-file self-contained) into the
+         same .\publish folder so it ships alongside the tray exe.
+      4. Launch the freshly published WhisperHeim.exe (detached).
 
 .PARAMETER Configuration
     MSBuild configuration. Defaults to Release.
@@ -30,8 +33,10 @@ $ErrorActionPreference = 'Stop'
 
 $repoRoot   = Split-Path -Parent $PSScriptRoot
 $project    = Join-Path $repoRoot 'src\WhisperHeim\WhisperHeim.csproj'
+$cliProject = Join-Path $repoRoot 'src\WhisperHeim.Cli\WhisperHeim.Cli.csproj'
 $publishDir = Join-Path $repoRoot 'publish'
 $exePath    = Join-Path $publishDir 'WhisperHeim.exe'
+$cliExePath = Join-Path $publishDir 'whisperheim-transcribe.exe'
 
 # 1. Stop running instance(s) so the exe isn't locked.
 $running = Get-Process -Name 'WhisperHeim' -ErrorAction SilentlyContinue
@@ -56,11 +61,25 @@ $publishArgs = @(
 & dotnet @publishArgs
 if ($LASTEXITCODE -ne 0) { throw "publish failed (exit $LASTEXITCODE)" }
 
+# 3. Publish the CLI wrapper into the same folder so whisperheim-transcribe.exe
+#    ships next to WhisperHeim.exe (mirrors how Utterheim ships utterheim-speak).
+#    The csproj already pins PublishSingleFile + SelfContained.
+$cliArgs = @(
+    'publish', $cliProject,
+    '-c', $Configuration,
+    '-r', 'win-x64',
+    '-o', $publishDir,
+    '-v', 'q'
+)
+& dotnet @cliArgs
+if ($LASTEXITCODE -ne 0) { throw "cli publish failed (exit $LASTEXITCODE)" }
+
 Write-Host ""
 Write-Host "Published." -ForegroundColor Green
-Write-Host "  Exe: $exePath"
+Write-Host "  Tray: $exePath"
+Write-Host "  CLI : $cliExePath"
 
-# 3. Launch detached so this script returns immediately.
+# 4. Launch detached so this script returns immediately.
 if (-not $NoLaunch) {
     Write-Host ""
     Write-Host "Launching $exePath ..." -ForegroundColor Cyan

@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-19 13:35 -- Task verified and completed: main-q4m8t - whisperheim-transcribe CLI wrapper over POST /transcribe
+
+**Type:** Work / Task completion
+**Task:** main-q4m8t - whisperheim-transcribe CLI wrapper over POST /transcribe
+**Summary:** Added whisperheim-transcribe, a thin CLI wrapper over POST /transcribe that POSTs an audio file's raw bytes (with a ?filename= / X-Filename hint) and prints only the transcript text to stdout, honoring WHISPERHEIM_ENDPOINT and the 0/1/2/3 exit-code scheme; ships alongside the tray exe via publish.ps1.
+**Verification:** PASS (iteration 1) — full solution builds clean, CLI test project green (14/14), all acceptance criteria covered by tests or inspectable wiring.
+**Files changed:** 7
+**Tests added:** 1 test file (CliCoreTests, 14 tests)
+**ADRs written:** none (implements ADR-0001)
+
+---
+
+## 2026-06-19 13:30 -- Batch started: [main-q4m8t]
+
+**Type:** Work / Batch start
+**Tasks:** main-q4m8t - whisperheim-transcribe CLI wrapper over POST /transcribe
+**Parallel:** no (1 worker)
+
+---
+
 ## 2026-06-19 13:19 -- Modeling / Refined: main-q4m8t - whisperheim-transcribe CLI wrapper over POST /transcribe
 
 **Type:** Modeling / Refine

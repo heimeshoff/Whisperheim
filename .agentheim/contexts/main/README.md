@@ -19,6 +19,7 @@ This BC *is* the product. There are no supporting or generic domains carved out 
 - **Pill / Overlay** — the on-screen indicator that shows mic state and a live waveform while dictation is active.
 - **Origin machine** — the host that captured a recording; owns transcription so multi-device sync doesn't double-process.
 - **STT API** — a loopback-only HTTP endpoint (`POST /transcribe`, default `127.0.0.1:7777`) that exposes the shared transcription engine to first-party local tooling (e.g. Claude). Synchronous: audio file in → full transcript JSON out, funnelled through the same transcription queue as the UI. No auth, batch-only in v1 (ADR-0001).
+- **whisperheim-transcribe** — the thin CLI wrapper (`WhisperHeim.Cli` project, `whisperheim-transcribe.exe`) over `POST /transcribe`. `whisperheim-transcribe <file>` POSTs the file's raw bytes and prints only the transcript `text` to stdout. Honors `WHISPERHEIM_ENDPOINT`; exit codes 0 success / 1 usage-or-file-error / 2 HTTP error / 3 endpoint unreachable. Ships alongside the tray exe (mirrors Utterheim's `utterheim-speak`).
 
 ## Aggregates
 - **Recording session** — protects per-session folder integrity (mic.wav, system.wav, transcript.json kept together; deletion removes the whole folder).

@@ -1,11 +1,11 @@
 ---
 id: main-q4m8t
 title: whisperheim-transcribe CLI wrapper over POST /transcribe
-status: todo
+status: done
 type: feature
 context: main
 created: 2026-06-19
-completed:
+completed: 2026-06-19
 depends_on: [main-h7k2p]
 blocks: []
 tags: [api, transcription, cli, claude]
@@ -76,3 +76,38 @@ v1 prints `text` only — the metadata fields are ignored (user decision, 2026-0
 - Contract: ADR-0001 (`.agentheim/knowledge/decisions/0001-transcribe-endpoint-loopback-http.md`).
 - The wrapper can be built and unit-tested against the documented ADR-0001 contract,
   then smoke-tested against the running tray app.
+
+## Outcome
+Added `whisperheim-transcribe`, a thin CLI over `POST /transcribe` (ADR-0001),
+mirroring `utterheim-speak`. `whisperheim-transcribe <file>` reads the file's raw
+bytes, POSTs them as the request body to
+`<endpoint>/transcribe?filename=<name>` (also sends `X-Filename`), parses the JSON
+response, and prints only `result.text` to stdout. Empty/no-speech audio prints a
+blank line and exits 0. Base URL is `WHISPERHEIM_ENDPOINT` (default
+`http://127.0.0.1:7777`). Exit codes mirror the speak reference: 0 success / 1
+usage or file error (no path, `--help`/`-h`/`/?`, missing or unreadable file —
+caught before any network call) / 2 HTTP non-success (error body echoed to stderr)
+/ 3 endpoint unreachable or timeout ("is WhisperHeim running?"). The HttpClient
+uses `Timeout.InfiniteTimeSpan` since the call blocks until transcription
+completes.
+
+Logic that's testable without a live server (arg parsing, endpoint resolution,
+filename-hint URL building with URL-encoding, response `text` extraction) lives in
+`CliCore` and is covered by 14 unit tests against the ADR-0001 contract; `Program`
+keeps only file IO + network + exit-code wiring. Exit-code paths (help, no-args,
+missing file) smoke-tested via the built exe.
+
+The CLI is a single-file self-contained `WhisperHeim.Cli` project
+(assembly/exe `whisperheim-transcribe`), added to `WhisperHeim.sln`. `scripts/publish.ps1`
+now publishes it into the same `publish/` folder as the tray exe, so it ships
+alongside `WhisperHeim.exe` (mirroring Utterheim's `utterheim-speak`).
+
+Key files:
+- `src/WhisperHeim.Cli/Program.cs` — file IO, network call, exit-code wiring
+- `src/WhisperHeim.Cli/CliCore.cs` — testable pure logic
+- `src/WhisperHeim.Cli/WhisperHeim.Cli.csproj` — single-file self-contained CLI
+- `tests/WhisperHeim.Cli.Tests/CliCoreTests.cs` — 14 contract tests
+- `scripts/publish.ps1` — ships the CLI next to the tray exe
+- `WhisperHeim.sln`, BC README STT-API section updated
+
+Full suite green: 14 new CLI tests + 123 existing tests pass.
