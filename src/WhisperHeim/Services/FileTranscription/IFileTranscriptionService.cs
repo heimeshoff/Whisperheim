@@ -1,18 +1,23 @@
 namespace WhisperHeim.Services.FileTranscription;
 
 /// <summary>
-/// Transcribes audio files (OGG, MP3, M4A, WAV) by decoding to PCM
-/// and feeding to the underlying transcription engine.
+/// Transcribes audio files by decoding to PCM and feeding to the underlying
+/// transcription engine. OGG, MP3, M4A and WAV decode natively; any other format
+/// is attempted via FFmpeg as a last resort.
 /// </summary>
 public interface IFileTranscriptionService
 {
     /// <summary>
-    /// Supported audio file extensions (lowercase, with leading dot).
+    /// Natively-known audio extensions (lowercase, with leading dot). This is a
+    /// file-picker DISPLAY HINT only, not an exhaustive truth source — other
+    /// formats may still transcribe via FFmpeg. Use <see cref="IsSupported"/> to
+    /// decide acceptance.
     /// </summary>
     IReadOnlySet<string> SupportedExtensions { get; }
 
     /// <summary>
-    /// Returns true if the given file extension is supported.
+    /// Returns true if the file is worth attempting to transcribe — i.e. it has
+    /// an extension. The decoder is the authority on what can actually be decoded.
     /// </summary>
     bool IsSupported(string filePath);
 
@@ -25,7 +30,6 @@ public interface IFileTranscriptionService
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>Transcription result with text and metadata.</returns>
     /// <exception cref="FileNotFoundException">If the file does not exist.</exception>
-    /// <exception cref="NotSupportedException">If the file format is not supported.</exception>
     /// <exception cref="InvalidOperationException">If the file is corrupt or cannot be decoded.</exception>
     Task<FileTranscriptionResult> TranscribeFileAsync(
         string filePath,

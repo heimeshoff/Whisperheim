@@ -27,6 +27,12 @@
   </ItemGroup>
 
   <ItemGroup>
+    <!-- Lets WhisperHeim.Tests exercise internal decode types (AudioFileDecoder,
+         FfmpegRequiredException) directly — main-r7n2k. -->
+    <InternalsVisibleTo Include="WhisperHeim.Tests" />
+  </ItemGroup>
+
+  <ItemGroup>
     <PackageReference Include="Concentus" Version="2.*" />
     <PackageReference Include="Concentus.Oggfile" Version="1.*" />
     <PackageReference Include="OllamaSharp" Version="5.4.25" />

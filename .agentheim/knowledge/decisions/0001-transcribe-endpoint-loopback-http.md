@@ -6,7 +6,7 @@ status: accepted
 date: 2026-06-19
 supersedes: []
 superseded_by: []
-related_tasks: [main-h7k2p, main-q4m8t]
+related_tasks: [main-h7k2p, main-q4m8t, main-r7n2k]
 related_research: [whisperheim-stt-api-exposure-2026-06-19]
 ---
 

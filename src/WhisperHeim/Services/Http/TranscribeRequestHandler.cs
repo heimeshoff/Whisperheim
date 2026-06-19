@@ -113,14 +113,32 @@ public sealed class TranscribeRequestHandler
     }
 
     /// <summary>
-    /// Maps an engine error message to an HTTP status. Unsupported/corrupt-format
-    /// failures map to 415; everything else is a 500 (ADR-0001).
+    /// Maps an engine error message to an HTTP status (ADR-0001 error table, as
+    /// refined by main-r7n2k):
+    /// <list type="bullet">
+    /// <item>FFmpeg missing/required → 501 Not Implemented. The format is
+    /// transcodable in principle but this server lacks the FFmpeg capability to
+    /// do it; the body names FFmpeg so the caller knows the remedy. NOT a 415
+    /// (the media type is not fundamentally unsupported) and NOT a generic 500.</item>
+    /// <item>Unsupported/corrupt media → 415 Unsupported Media Type.</item>
+    /// <item>Everything else → 500.</item>
+    /// </list>
     /// </summary>
     private static int ClassifyError(string message)
     {
         var m = message.ToLowerInvariant();
+
+        // FFmpeg-required (a transcodable format with no FFmpeg installed). Match
+        // before the 415 bucket: this is a server-capability gap, not a bad format.
+        if (m.Contains("ffmpeg") && (m.Contains("requires") || m.Contains("isn't installed") ||
+            m.Contains("not installed")))
+        {
+            return 501;
+        }
+
         if (m.Contains("not supported") || m.Contains("unsupported") ||
-            m.Contains("not a supported"))
+            m.Contains("not a supported") ||
+            m.Contains("corrupt") || m.Contains("not audio"))
         {
             return 415;
         }

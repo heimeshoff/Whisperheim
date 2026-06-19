@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 119
+- **Done:** 120
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **main-r7n2k** -- Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus) -- 2026-06-19 -- `todo/main-r7n2k-ffmpeg-transcode-fallback.md`
+<!-- no tasks in todo -->
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +28,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **main-r7n2k** -- Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus) -- 2026-06-19 -- `done/main-r7n2k-ffmpeg-transcode-fallback.md`
 - **main-q4m8t** -- whisperheim-transcribe CLI wrapper over POST /transcribe -- 2026-06-19 -- `done/main-q4m8t-whisperheim-transcribe-cli.md`
 - **main-h7k2p** -- STT API — POST /transcribe HttpListener server + queue integration -- 2026-06-19 -- `done/main-h7k2p-transcribe-http-endpoint.md`
 - **main-110** -- FFmpeg Detection + First-Use Install Prompt -- 2026-05-12 -- `done/main-110-ffmpeg-detection-and-install-prompt.md`

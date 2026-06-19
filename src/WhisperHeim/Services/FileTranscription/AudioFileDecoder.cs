@@ -8,10 +8,25 @@ using WhisperHeim.Services.Ffmpeg;
 namespace WhisperHeim.Services.FileTranscription;
 
 /// <summary>
-/// Decodes audio files (WAV, MP3, M4A, OGG) to 16kHz mono float32 PCM samples.
-/// Uses NAudio's MediaFoundationReader for MP3/M4A/WAV (Windows Media Foundation),
-/// and NAudio's built-in WaveFileReader for plain WAV files.
-/// For OGG/Opus files (e.g. WhatsApp voice messages), uses Concentus managed decoder.
+/// Thrown when decoding a file requires FFmpeg (the format has no native reader)
+/// but no usable FFmpeg was found. Distinct from a corrupt/undecodable file so the
+/// HTTP layer can map it to a dedicated status (501) and the UI can offer the
+/// FFmpeg install prompt at a higher layer. Per the main-110 contract the decode
+/// path NEVER blocks on a modal — it only throws this so callers can react.
+/// </summary>
+internal sealed class FfmpegRequiredException : Exception
+{
+    public FfmpegRequiredException(string message) : base(message) { }
+}
+
+/// <summary>
+/// Decodes audio files to 16kHz mono float32 PCM samples. WAV uses NAudio's
+/// WaveFileReader; MP3/M4A use Windows Media Foundation; OGG/Opus uses ffmpeg
+/// (with a Concentus managed fallback). Any other extension is treated as a
+/// last-resort FFmpeg transcode candidate rather than rejected outright — if
+/// FFmpeg is installed and can read it, it transcodes; if FFmpeg is missing it
+/// throws <see cref="FfmpegRequiredException"/>; if FFmpeg is present but the
+/// file is not decodable it throws a corrupt-file error.
 /// </summary>
 internal static class AudioFileDecoder
 {
@@ -37,11 +52,17 @@ internal static class AudioFileDecoder
                 ".mp3" => DecodeWithMediaFoundation(filePath),
                 ".m4a" => DecodeWithMediaFoundation(filePath),
                 ".ogg" => DecodeOgg(filePath, cancellationToken),
-                _ => throw new NotSupportedException(
-                    $"Audio format '{extension}' is not supported. Supported formats: .wav, .mp3, .m4a, .ogg")
+                // Any other extension: last-resort FFmpeg transcode. "Not natively
+                // supported" means "let FFmpeg try", not "reject" (main-r7n2k).
+                _ => DecodeUnknownViaFfmpeg(filePath, cancellationToken)
             };
         }
-        catch (NotSupportedException)
+        catch (FfmpegRequiredException)
+        {
+            // Surface distinct, unwrapped so ClassifyError / the UI can react.
+            throw;
+        }
+        catch (OperationCanceledException)
         {
             throw;
         }
@@ -50,8 +71,44 @@ internal static class AudioFileDecoder
             Trace.TraceError(
                 "[AudioFileDecoder] Failed to decode '{0}': {1}", filePath, ex.Message);
             throw new InvalidOperationException(
-                $"Failed to decode audio file '{Path.GetFileName(filePath)}': {ex.Message}", ex);
+                $"Could not decode '{Path.GetFileName(filePath)}': the file appears corrupt or is not audio.", ex);
         }
+    }
+
+    /// <summary>
+    /// Decodes an arbitrary (non-natively-supported) extension by transcoding
+    /// through FFmpeg. If no FFmpeg is usable, throws
+    /// <see cref="FfmpegRequiredException"/> so callers can distinguish
+    /// "install FFmpeg" from "this file is broken". Never blocks on a modal
+    /// (main-110 contract).
+    /// </summary>
+    private static (float[] Samples, int SampleRate) DecodeUnknownViaFfmpeg(string filePath, CancellationToken cancellationToken)
+    {
+        var ffmpegExe = ResolveFfmpegExe();
+        if (ffmpegExe is null)
+        {
+            throw new FfmpegRequiredException(
+                $"Converting '{Path.GetFileName(filePath)}' requires FFmpeg, which isn't installed. " +
+                "Install FFmpeg (e.g. 'winget install Gyan.FFmpeg') and try again.");
+        }
+
+        return DecodeWithFfmpeg(filePath, ffmpegExe, cancellationToken);
+    }
+
+    /// <summary>
+    /// Resolves the FFmpeg executable to invoke: the detector's cached absolute
+    /// path when one was wired (App startup), else plain "ffmpeg" on PATH when no
+    /// detector is present (test paths). Returns null when a detector is wired but
+    /// reported no FFmpeg — the caller treats that as "FFmpeg required".
+    /// </summary>
+    private static string? ResolveFfmpegExe()
+    {
+        var ffmpegPath = _detector?.CachedInfo?.ExecutablePath;
+        if (ffmpegPath is not null)
+            return ffmpegPath;
+        if (_detector is null)
+            return "ffmpeg"; // no detector wired (tests): trust PATH
+        return null; // detector wired and reported no ffmpeg
     }
 
     private static (float[] Samples, int SampleRate) DecodeWav(string filePath)
@@ -80,14 +137,18 @@ internal static class AudioFileDecoder
         // was injected via SetDetector (App startup wires this up). Otherwise
         // try plain "ffmpeg" on PATH. Either way, any failure short-circuits
         // to Concentus.
-        var ffmpegPath = _detector?.CachedInfo?.ExecutablePath;
-        if (ffmpegPath is not null || _detector is null)
+        var ffmpegExe = ResolveFfmpegExe();
+        if (ffmpegExe is not null)
         {
             try
             {
-                var result = DecodeOggWithFfmpeg(filePath, ffmpegPath ?? "ffmpeg", cancellationToken);
+                var result = DecodeWithFfmpeg(filePath, ffmpegExe, cancellationToken);
                 if (result.Samples.Length > 0)
                     return result;
+            }
+            catch (OperationCanceledException)
+            {
+                throw;
             }
             catch (Exception ex)
             {
@@ -118,7 +179,12 @@ internal static class AudioFileDecoder
 
     public static void SetDetector(FfmpegDetector detector) => _detector = detector;
 
-    private static (float[] Samples, int SampleRate) DecodeOggWithFfmpeg(string filePath, string ffmpegExe, CancellationToken cancellationToken)
+    /// <summary>
+    /// Transcodes any FFmpeg-readable file to 16kHz mono s16le PCM. Shared by the
+    /// OGG path and the general unknown-extension fallback (main-r7n2k): one
+    /// routine, one set of ffmpeg args, one 60s kill timeout + cancellation.
+    /// </summary>
+    private static (float[] Samples, int SampleRate) DecodeWithFfmpeg(string filePath, string ffmpegExe, CancellationToken cancellationToken)
     {
         // Decode to 16kHz mono 16-bit PCM via ffmpeg
         var tempFile = Path.GetTempFileName();
@@ -148,7 +214,7 @@ internal static class AudioFileDecoder
             if (!process.HasExited)
             {
                 process.Kill();
-                throw new TimeoutException("ffmpeg timed out decoding OGG file");
+                throw new TimeoutException("ffmpeg timed out decoding audio file");
             }
 
             if (process.ExitCode != 0)
@@ -168,7 +234,7 @@ internal static class AudioFileDecoder
             }
 
             Trace.TraceInformation(
-                "[AudioFileDecoder] Decoded OGG/Opus via ffmpeg: {0} samples ({1:F2}s) at {2}Hz",
+                "[AudioFileDecoder] Decoded via ffmpeg: {0} samples ({1:F2}s) at {2}Hz",
                 samples.Length, (double)samples.Length / TargetSampleRate, TargetSampleRate);
 
             return (samples, TargetSampleRate);

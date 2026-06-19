@@ -57,7 +57,7 @@ The shim resolves its endpoint as: `-Endpoint` parameter → `$env:WHISPERHEIM_E
 |------|---------|
 | `0` | success — transcript printed to stdout (a blank line for no-speech audio) |
 | `1` | usage / file error — no path, or a missing / unreadable file (before any network call) |
-| `2` | HTTP non-success — WhisperHeim returned an error (e.g. unsupported/corrupt audio); body on stderr |
+| `2` | HTTP non-success — WhisperHeim returned an error; body on stderr. Includes `415` (corrupt / not audio), `501` (the format needs FFmpeg and it isn't installed — the body names FFmpeg and how to install it), and `500` (engine failure) |
 | `3` | cannot reach the endpoint — WhisperHeim not running, port unreachable, or timed out |
 
 ## Platform support

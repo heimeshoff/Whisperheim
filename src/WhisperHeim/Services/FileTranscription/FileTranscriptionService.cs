@@ -8,11 +8,16 @@ namespace WhisperHeim.Services.FileTranscription;
 /// <summary>
 /// Transcribes audio files by decoding them to 16kHz mono PCM and feeding
 /// chunks to the underlying <see cref="ITranscriptionService"/>.
-/// Supports OGG (WhatsApp), M4A (Telegram), MP3, and WAV formats.
-/// Long files are automatically chunked at silence boundaries.
+/// OGG, M4A, MP3, and WAV decode natively; any other format is attempted via
+/// FFmpeg as a last resort. Long files are automatically chunked at silence
+/// boundaries.
 /// </summary>
 public sealed class FileTranscriptionService : IFileTranscriptionService
 {
+    // Natively-known formats. NOT an exhaustive truth source any more: it is a
+    // file-picker DISPLAY HINT only. Any other extension is offered to FFmpeg as a
+    // last-resort transcode (main-r7n2k); the decoder is the authority on what can
+    // actually be decoded.
     private static readonly HashSet<string> SupportedExts = new(StringComparer.OrdinalIgnoreCase)
     {
         ".ogg", ".mp3", ".m4a", ".wav"
@@ -33,8 +38,12 @@ public sealed class FileTranscriptionService : IFileTranscriptionService
     public bool IsSupported(string filePath)
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filePath);
+        // Permissive: accept any file that has an extension. The decoder is the
+        // authority — natively-readable formats decode directly, anything else is
+        // attempted via FFmpeg (main-r7n2k). This stops the UI silently dropping
+        // e.g. .opus before decode is ever tried.
         var ext = Path.GetExtension(filePath);
-        return !string.IsNullOrEmpty(ext) && SupportedExts.Contains(ext);
+        return !string.IsNullOrEmpty(ext);
     }
 
     /// <inheritdoc />
@@ -50,12 +59,9 @@ public sealed class FileTranscriptionService : IFileTranscriptionService
             throw new FileNotFoundException(
                 $"Audio file not found: '{filePath}'", filePath);
 
-        // Validate format
-        var ext = Path.GetExtension(filePath);
-        if (string.IsNullOrEmpty(ext) || !SupportedExts.Contains(ext))
-            throw new NotSupportedException(
-                $"Audio format '{ext}' is not supported. " +
-                $"Supported formats: {string.Join(", ", SupportedExts)}");
+        // No fixed-allowlist rejection here. The decoder decides what it can read:
+        // native formats decode directly, anything else is attempted via FFmpeg,
+        // and a missing FFmpeg surfaces as a distinct error (main-r7n2k).
 
         // Ensure model is loaded
         if (!_transcriptionService.IsLoaded)

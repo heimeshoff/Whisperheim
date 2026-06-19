@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-19 16:31 -- Task verified and completed: main-r7n2k - Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus)
+
+**Type:** Work / Task completion
+**Task:** main-r7n2k - Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus)
+**Summary:** Turned the FFmpeg decode path into an open last-resort fallback so any non-native format (e.g. .opus) transcodes instead of being rejected, across the UI, POST /transcribe, the CLI and the Claude Code plugin. FFmpeg-missing now surfaces as a distinct HTTP 501 (body names FFmpeg) versus 415 for corrupt/not-audio; the decode path still never blocks on the install modal (main-110 contract holds).
+**Verification:** PASS (iteration 1) — full solution builds clean, 135/135 tests pass (12 new). All 10 acceptance criteria covered by tests or inspectable wiring.
+**Files changed:** 10 (8 src/test/doc modified + 2 new test files)
+**Tests added:** 12 (across AudioFileDecoderTests, FileTranscriptionServiceTests, TranscribeRequestHandlerTests)
+**ADRs written:** none (implements ADR-0001; the 415-vs-501 choice was pre-authorized within the task)
+
+---
+
+## 2026-06-19 16:23 -- Batch started: [main-r7n2k]
+
+**Type:** Work / Batch start
+**Tasks:** main-r7n2k - Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus)
+**Parallel:** no (1 worker)
+
+---
+
 ## 2026-06-19 14:05 -- Modeling / Captured: main-r7n2k - Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus)
 
 **Type:** Modeling / Capture

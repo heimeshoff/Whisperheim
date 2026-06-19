@@ -36,7 +36,7 @@ This BC *is* the product. There are no supporting or generic domains carved out 
 ## Key commands
 - `StartDictation` / `StopDictation`
 - `StartRecording` / `StopRecording`
-- `TranscribeAudioFile` (drag-and-drop, or via the STT API's `POST /transcribe`)
+- `TranscribeAudioFile` (drag-and-drop, or via the STT API's `POST /transcribe`). Format policy (main-r7n2k): OGG/MP3/M4A/WAV decode natively; **any other extension is attempted via FFmpeg** rather than rejected. The decoder is the authority — the file-picker's "supported formats" list is only a display hint. A missing FFmpeg for a non-native format surfaces a distinct "requires FFmpeg" error (HTTP **501**, never a generic 500); a present-but-undecodable file is "corrupt or not audio" (HTTP **415**). The decode path never blocks on the FFmpeg install modal (main-110).
 - `RenderTemplate`
 - `DownloadModel`
 

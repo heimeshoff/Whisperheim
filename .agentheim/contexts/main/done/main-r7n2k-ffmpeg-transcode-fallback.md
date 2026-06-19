@@ -1,11 +1,11 @@
 ---
 id: main-r7n2k
 title: Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus)
-status: todo
+status: done
 type: feature
 context: main
 created: 2026-06-19
-completed:
+completed: 2026-06-19
 depends_on: []
 blocks: []
 tags: [file-transcription, ffmpeg, decoding, http-api, claude-code-plugin]
@@ -121,5 +121,54 @@ Specifically:
   `src\WhisperHeim\Services\Http\TranscribeRequestHandler.cs`,
   `src\WhisperHeim\Views\Pages\TranscriptsPage.xaml.cs`,
   `src\WhisperHeim\Services\Ffmpeg\FfmpegDetector.cs`.
+
+## Outcome
+Turned the FFmpeg decode path into an open last-resort fallback. "Not natively
+supported" now means "try FFmpeg", not "reject" — so `.opus` (and any other
+FFmpeg-readable format) transcribes through every consumer (drag/browse UI, the
+queue, `POST /transcribe`, the CLI, and the Claude Code plugin).
+
+What changed:
+- **`AudioFileDecoder`** — the switch's `_ =>` throw became
+  `DecodeUnknownViaFfmpeg`, which transcodes via a shared `DecodeWithFfmpeg`
+  (renamed/generalized from `DecodeOggWithFfmpeg`; OGG and the fallback now share
+  one routine, kill-timeout + cancellation preserved). Added a new internal
+  `FfmpegRequiredException`: when an unknown extension needs FFmpeg and none is
+  usable, it throws this distinct, FFmpeg-naming error; an FFmpeg-present-but-
+  undecodable (or corrupt native) file throws the distinct "appears corrupt or is
+  not audio" error. `ResolveFfmpegExe` centralizes detector-path-vs-PATH-vs-null.
+  The decode path still never touches `IFfmpegPromptService` (main-110 holds).
+- **`FileTranscriptionService`** — `IsSupported` is now permissive (any file with
+  an extension), the early fixed-allowlist `NotSupportedException` is gone, and
+  `SupportedExtensions` is demoted to a file-picker display hint. This alone
+  un-drops `.opus` at every `TranscriptsPage` `IsSupported`/picker call site.
+- **`TranscribeRequestHandler.ClassifyError`** — FFmpeg-missing maps to **HTTP
+  501 Not Implemented** (a server-capability gap, body names FFmpeg), corrupt/not-
+  audio maps to **415**, everything else stays 500. 501 chosen over 415 because
+  the media type is transcodable in principle; the server just lacks FFmpeg.
+- **Docs** — Claude Code plugin `commands/transcribe.md` + `README.md` updated to
+  describe the open format policy and the 415/501 error cases; BC README's
+  `TranscribeAudioFile` command documents the format policy + status mapping.
+
+Tests (12 new, suite 123→135 green):
+- `AudioFileDecoderTests` — unknown-ext + no-FFmpeg → `FfmpegRequiredException`
+  (distinct, names FFmpeg); corrupt native file → distinct "corrupt or not audio".
+- `FileTranscriptionServiceTests` — permissive `IsSupported` (accepts `.opus`,
+  `.flac`, `.aac`, native formats; rejects extensionless), display-hint set intact.
+- `TranscribeRequestHandlerTests` — ffmpeg-required → 501 + FFmpeg-naming body;
+  corrupt → 415; `.opus` filename hint preserved on temp file.
+(Real FFmpeg conversion is not unit-tested per the no-ffmpeg-in-CI constraint;
+routing + error classification + permissive gate are.)
+
+Required adding `<InternalsVisibleTo Include="WhisperHeim.Tests" />` to
+`WhisperHeim.csproj` so the test project can exercise the internal decoder.
+
+Key files: `src\WhisperHeim\Services\FileTranscription\AudioFileDecoder.cs`,
+`src\WhisperHeim\Services\FileTranscription\FileTranscriptionService.cs`,
+`src\WhisperHeim\Services\FileTranscription\IFileTranscriptionService.cs`,
+`src\WhisperHeim\Services\Http\TranscribeRequestHandler.cs`.
+
+No ADR written — this is the permitted refinement of ADR-0001's error table the
+task pre-authorized (split FFmpeg-missing out as a distinct 501).
 </content>
 </invoke>

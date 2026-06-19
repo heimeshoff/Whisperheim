@@ -152,6 +152,52 @@ public class TranscribeRequestHandlerTests
     }
 
     [Fact]
+    public async Task Ffmpeg_required_returns_501_with_ffmpeg_naming_body()
+    {
+        // main-r7n2k: a transcodable format with no FFmpeg installed maps to a
+        // distinct 501 (not a generic 500, not a 415), and the body names FFmpeg.
+        var engine = new FakeEngine(new TranscribeOutcome(
+            false, null,
+            "Converting 'voice.opus' requires FFmpeg, which isn't installed. " +
+            "Install FFmpeg (e.g. 'winget install Gyan.FFmpeg') and try again."));
+        var handler = new TranscribeRequestHandler(engine);
+
+        var resp = await handler.HandleAsync(Post(new byte[] { 1, 2 }, filenameQuery: "voice.opus"));
+
+        Assert.Equal(501, resp.StatusCode);
+        var body = JsonDocument.Parse(resp.Body).RootElement.GetProperty("error").GetString();
+        Assert.Contains("FFmpeg", body!);
+    }
+
+    [Fact]
+    public async Task Corrupt_file_returns_415_distinct_from_ffmpeg_missing()
+    {
+        // main-r7n2k: FFmpeg present but the file is undecodable → 415, distinct
+        // from the FFmpeg-missing 501 case above.
+        var engine = new FakeEngine(new TranscribeOutcome(
+            false, null,
+            "Could not decode 'voice.opus': the file appears corrupt or is not audio."));
+        var handler = new TranscribeRequestHandler(engine);
+
+        var resp = await handler.HandleAsync(Post(new byte[] { 1, 2 }, filenameQuery: "voice.opus"));
+
+        Assert.Equal(415, resp.StatusCode);
+    }
+
+    [Fact]
+    public async Task Opus_filename_hint_preserves_extension_on_temp_file()
+    {
+        // main-r7n2k: a .opus hint must survive to the temp file so the decoder
+        // dispatches it through the FFmpeg fallback (not the default .ogg path).
+        var engine = new FakeEngine(new TranscribeOutcome(true, EmptyResult(), null));
+        var handler = new TranscribeRequestHandler(engine);
+
+        await handler.HandleAsync(Post(new byte[] { 5, 6 }, filenameQuery: "voice.opus"));
+
+        Assert.Equal(".opus", Path.GetExtension(engine.LastEnqueuedPath!));
+    }
+
+    [Fact]
     public async Task Temp_file_is_cleaned_up_after_success()
     {
         var engine = new FakeEngine(new TranscribeOutcome(true, EmptyResult(), null));
