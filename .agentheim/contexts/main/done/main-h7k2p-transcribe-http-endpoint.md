@@ -1,11 +1,11 @@
 ---
 id: main-h7k2p
 title: STT API — POST /transcribe HttpListener server + queue integration
-status: todo
+status: done
 type: feature
 context: main
 created: 2026-06-19
-completed:
+completed: 2026-06-19
 depends_on: []
 blocks: [main-q4m8t]
 tags: [api, transcription, http, claude]
@@ -81,3 +81,40 @@ Integration approach (from the architect's notes):
   live endpoint to test against.
 - Out of scope (deferred by ADR-0001): auth, OpenAI `/v1/audio/transcriptions`
   compatibility, async-accept+poll, live streaming.
+
+## Outcome
+Implemented the loopback STT API exactly per ADR-0001. The engine is exposed over a
+BCL-only `HttpListener` bound to `http://127.0.0.1:7777/` (override via
+`WHISPERHEIM_TRANSCRIBE_PORT`), serving `POST /transcribe` (audio body → full transcript
+JSON) and `GET /health`. Requests funnel through the existing single-engine
+`TranscriptionQueueService.EnqueueFile` (queue-and-block FIFO; never rejects when busy).
+
+Design split for testability:
+- `TranscribeRequestHandler` — transport-agnostic core: routing, temp-file lifecycle,
+  error mapping (400 empty body / 415 unsupported / 500 engine failure / 404 / 405),
+  and response shaping. Fully unit-tested against a fake `ITranscribeEngine`.
+- `TranscribeServer` — thin `HttpListener` adapter: background accept loop, bind-failure
+  is logged via `Trace.TraceError` and non-fatal, clean shutdown via `IDisposable`.
+- `QueueTranscribeEngine` — adapts `TranscriptionQueueService` onto `ITranscribeEngine`,
+  keeping HTTP concerns out of the queue.
+
+Queue changes (additive): `TranscriptionQueueItem.Result` carries the full
+`FileTranscriptionResult` (raw text, not the UI "(No speech detected)" sentinel), and
+`TranscriptionQueueService.WaitForItemAsync(Guid)` bridges completion to a `Task`.
+
+Wired into `App.xaml.cs StartupCore` (constructed next to the queue, started immediately)
+and disposed in `OnAppExit`.
+
+Key files:
+- `src/WhisperHeim/Services/Http/ITranscribeEngine.cs`
+- `src/WhisperHeim/Services/Http/TranscribeHttp.cs`
+- `src/WhisperHeim/Services/Http/TranscribeRequestHandler.cs`
+- `src/WhisperHeim/Services/Http/TranscribeServer.cs`
+- `src/WhisperHeim/Services/Http/QueueTranscribeEngine.cs`
+- `src/WhisperHeim/Services/Transcription/TranscriptionQueueService.cs` (Result field + WaitForItemAsync)
+- `src/WhisperHeim/App.xaml.cs` (composition + shutdown)
+- `tests/WhisperHeim.Tests/TranscribeRequestHandlerTests.cs` (12 tests)
+- `tests/WhisperHeim.Tests/TranscribeServerTests.cs` (13 tests, real HttpListener over loopback)
+
+All 123 tests pass. No ADR written (ADR-0001 already fixes the decisions; the
+testability split is routine implementation). Decisions + wire contract: ADR-0001.

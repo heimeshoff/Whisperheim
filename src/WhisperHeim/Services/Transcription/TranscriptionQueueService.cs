@@ -164,6 +164,16 @@ public sealed class TranscriptionQueueItem : INotifyPropertyChanged
         set { if (_resultText != value) { _resultText = value; OnPropertyChanged(); } }
     }
 
+    /// <summary>
+    /// For file transcriptions: the full engine result (text + duration/RTF/chunkCount
+    /// metadata) once transcription completes. Null until the item finishes, and for
+    /// recording items. Additive (task main-h7k2p) so API surfaces can return the full
+    /// <see cref="FileTranscription.FileTranscriptionResult"/> shape, not just the text.
+    /// Unlike <see cref="ResultText"/>, the <c>Text</c> here is the raw engine text — it
+    /// is NOT replaced with the UI's "(No speech detected)" sentinel for empty audio.
+    /// </summary>
+    public FileTranscription.FileTranscriptionResult? Result { get; set; }
+
     public event PropertyChangedEventHandler? PropertyChanged;
 
     private void OnPropertyChanged([CallerMemberName] string? name = null)
@@ -251,6 +261,69 @@ public sealed class TranscriptionQueueService : INotifyPropertyChanged
     /// Raised after a queue item fails.
     /// </summary>
     public event EventHandler<TranscriptionQueueItem>? ItemFailed;
+
+    /// <summary>
+    /// Awaits the terminal stage (Completed or Failed) of the queue item with the
+    /// given id, returning the item itself. Bridges the event-based queue to a Task
+    /// for request/response API callers (task main-h7k2p) without per-handler event
+    /// juggling. If the item has already reached a terminal stage when this is called,
+    /// it completes immediately. Honours <paramref name="cancellationToken"/>.
+    /// </summary>
+    public Task<TranscriptionQueueItem> WaitForItemAsync(
+        Guid id, CancellationToken cancellationToken = default)
+    {
+        var tcs = new TaskCompletionSource<TranscriptionQueueItem>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+
+        void OnCompleted(object? sender, TranscriptionQueueItem item)
+        {
+            if (item.Id == id) tcs.TrySetResult(item);
+        }
+
+        void OnFailed(object? sender, TranscriptionQueueItem item)
+        {
+            if (item.Id == id) tcs.TrySetResult(item);
+        }
+
+        ItemCompleted += OnCompleted;
+        ItemFailed += OnFailed;
+
+        CancellationTokenRegistration ctr = default;
+        if (cancellationToken.CanBeCanceled)
+            ctr = cancellationToken.Register(() => tcs.TrySetCanceled(cancellationToken));
+
+        // Guard against the race where the item finished between EnqueueFile and the
+        // subscription above: if it's already terminal, resolve now.
+        var existing = FindItem(id);
+        if (existing is not null &&
+            existing.Stage is QueueItemStage.Completed or QueueItemStage.Failed)
+        {
+            tcs.TrySetResult(existing);
+        }
+
+        return tcs.Task.ContinueWith(t =>
+        {
+            ItemCompleted -= OnCompleted;
+            ItemFailed -= OnFailed;
+            ctr.Dispose();
+            return t;
+        }, CancellationToken.None,
+           TaskContinuationOptions.ExecuteSynchronously,
+           TaskScheduler.Default).Unwrap();
+    }
+
+    private TranscriptionQueueItem? FindItem(Guid id)
+    {
+        TranscriptionQueueItem? found = null;
+        DispatcherInvoke(() =>
+        {
+            foreach (var item in Items)
+            {
+                if (item.Id == id) { found = item; break; }
+            }
+        });
+        return found;
+    }
 
     /// <summary>
     /// Backward-compatible acquire for non-queue callers (e.g. file transcription).
@@ -685,6 +758,11 @@ public sealed class TranscriptionQueueService : INotifyPropertyChanged
         {
             item.ResultText = resultText;
         });
+
+        // Carry the full engine result (raw text + metadata) so API surfaces can
+        // return audioDurationSeconds / RTF / chunkCount. Set off the dispatcher:
+        // it's a plain additive field with no UI binding.
+        item.Result = result;
 
         // If this is an imported file with a session directory, save a transcript.json
         if (item.SessionDir is not null)

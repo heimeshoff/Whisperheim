@@ -69,6 +69,7 @@ public partial class App : Application
     private AutoTranscriptionService? _autoTranscriptionService;
     private FfmpegDetector? _ffmpegDetector;
     private FfmpegPromptService? _ffmpegPromptService;
+    private Services.Http.TranscribeServer? _transcribeServer;
 
     /// <summary>
     /// Process-wide FFmpeg detector. Populated in <see cref="StartupCore"/>
@@ -353,6 +354,15 @@ public partial class App : Application
             _transcriptStorageService,
             () => _settingsService!.Current.General.DefaultSpeakerName);
 
+        // STT API (task main-h7k2p, ADR-0001): expose the shared engine to first-party
+        // local tooling (Claude) over loopback HTTP. Funnels through the same
+        // TranscriptionQueueService as the UI. A bind failure is logged inside Start()
+        // and is non-fatal — the tray app must still run if the API port is taken.
+        var transcribeEngine = new Services.Http.QueueTranscribeEngine(_transcriptionQueueService);
+        var transcribeHandler = new Services.Http.TranscribeRequestHandler(transcribeEngine);
+        _transcribeServer = new Services.Http.TranscribeServer(transcribeHandler);
+        _transcribeServer.Start();
+
         _highQualityLoopbackService = new HighQualityLoopbackService();
         _highQualityRecorderService = new HighQualityRecorderService(_dataPathService);
         _ollamaService = new OllamaService(_settingsService);
@@ -560,6 +570,7 @@ public partial class App : Application
         // If the settings window was opened, persist its position/size.
         _settingsWindow?.SaveOnExit();
 
+        _transcribeServer?.Dispose();
         _overlayWindow?.Close();
         _orchestrator?.Dispose();
         _hotkeyService?.Dispose();

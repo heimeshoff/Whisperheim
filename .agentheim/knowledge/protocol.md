@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-19 12:12 -- Task verified and completed: main-h7k2p - STT API — POST /transcribe HttpListener server + queue integration
+
+**Type:** Work / Task completion
+**Task:** main-h7k2p - STT API — POST /transcribe HttpListener server + queue integration
+**Summary:** Exposed the WhisperHeim transcription engine as a loopback-only HTTP STT API (POST /transcribe + GET /health on 127.0.0.1:7777) per ADR-0001, funnelling requests through the existing single-engine TranscriptionQueueService with synchronous block-and-return-JSON.
+**Verification:** PASS (iteration 1) — build green, 123 tests pass, all 8 acceptance criteria covered by tests.
+**Files changed:** 9
+**Tests added:** 2 test files (TranscribeRequestHandlerTests, TranscribeServerTests)
+**ADRs written:** none (implements ADR-0001)
+
+---
+
+## 2026-06-19 12:04 -- Batch started: [main-h7k2p]
+
+**Type:** Work / Batch start
+**Tasks:** main-h7k2p - STT API — POST /transcribe HttpListener server + queue integration
+**Parallel:** no (1 worker)
+
+---
+
 ## 2026-06-19 11:25 -- Modeling / Captured: main-h7k2p + main-q4m8t — STT API (transcribe endpoint)
 
 **Type:** Modeling / Capture

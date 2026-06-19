@@ -18,6 +18,7 @@ This BC *is* the product. There are no supporting or generic domains carved out 
 - **Template** — named text snippet inserted at cursor via a separate hotkey + voice trigger (e.g. "greeting").
 - **Pill / Overlay** — the on-screen indicator that shows mic state and a live waveform while dictation is active.
 - **Origin machine** — the host that captured a recording; owns transcription so multi-device sync doesn't double-process.
+- **STT API** — a loopback-only HTTP endpoint (`POST /transcribe`, default `127.0.0.1:7777`) that exposes the shared transcription engine to first-party local tooling (e.g. Claude). Synchronous: audio file in → full transcript JSON out, funnelled through the same transcription queue as the UI. No auth, batch-only in v1 (ADR-0001).
 
 ## Aggregates
 - **Recording session** — protects per-session folder integrity (mic.wav, system.wav, transcript.json kept together; deletion removes the whole folder).
@@ -34,7 +35,7 @@ This BC *is* the product. There are no supporting or generic domains carved out 
 ## Key commands
 - `StartDictation` / `StopDictation`
 - `StartRecording` / `StopRecording`
-- `TranscribeAudioFile` (drag-and-drop)
+- `TranscribeAudioFile` (drag-and-drop, or via the STT API's `POST /transcribe`)
 - `RenderTemplate`
 - `DownloadModel`
 
