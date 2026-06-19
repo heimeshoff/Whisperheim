@@ -1,0 +1,14 @@
+{
+  "name": "whisperheim-transcribe",
+  "owner": { "name": "Marco Heimeshoff" },
+  "metadata": {
+    "description": "Audio-to-text transcription via WhisperHeim's local STT API"
+  },
+  "plugins": [
+    {
+      "name": "whisperheim-transcribe",
+      "source": "./",
+      "description": "Transcribe audio files to text through WhisperHeim's local STT API (/transcribe command)"
+    }
+  ]
+}

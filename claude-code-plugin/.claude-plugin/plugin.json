@@ -1,0 +1,9 @@
+{
+  "name": "whisperheim-transcribe",
+  "version": "0.1.0",
+  "description": "Transcribe audio files (OGG/MP3/M4A/WAV) to text through WhisperHeim's local speech-to-text API — a /transcribe slash command for Claude Code",
+  "author": {
+    "name": "Marco Heimeshoff"
+  },
+  "keywords": ["claude-code", "stt", "transcription", "speech-to-text", "whisperheim", "audio"]
+}
