@@ -48,6 +48,7 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
 
         <!-- TitleBar -->
@@ -157,5 +158,37 @@
         <controls:TranscriptionBottomBar x:Name="TranscriptionBar"
                                           Grid.Row="2"
                                           Visibility="Collapsed" />
+
+        <!-- STT API status footer (always visible): the loopback endpoint Claude /
+             local tooling calls, plus a health dot (green = listening & idle,
+             amber = busy, grey = offline). See ADR-0001 / task main-q4m8t. -->
+        <Border x:Name="SttStatusFooter"
+                Grid.Row="3"
+                BorderThickness="0,1,0,0"
+                BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
+                Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+                Padding="14,5"
+                ToolTip="WhisperHeim's local speech-to-text API. Point Claude or other local tools at this endpoint (POST /transcribe). Override with the WHISPERHEIM_ENDPOINT env var.">
+            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
+                <Ellipse x:Name="SttHealthDot"
+                         Width="9" Height="9"
+                         Margin="0,0,8,0"
+                         VerticalAlignment="Center" />
+                <TextBlock Text="STT API"
+                           FontSize="12" FontWeight="Medium"
+                           VerticalAlignment="Center"
+                           Opacity="0.85"
+                           Margin="0,0,8,0" />
+                <TextBlock x:Name="SttEndpointText"
+                           FontSize="12" FontFamily="Consolas"
+                           VerticalAlignment="Center"
+                           Opacity="0.85" />
+                <TextBlock x:Name="SttStateText"
+                           FontSize="12"
+                           VerticalAlignment="Center"
+                           Opacity="0.55"
+                           Margin="8,0,0,0" />
+            </StackPanel>
+        </Border>
     </Grid>
 </ui:FluentWindow>

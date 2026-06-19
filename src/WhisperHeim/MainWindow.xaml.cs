@@ -4,6 +4,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Media;
 using System.Windows.Media.Animation;
 using WhisperHeim.Services.Audio;
 using WhisperHeim.Services.CallTranscription;
@@ -59,6 +60,19 @@ public partial class MainWindow : FluentWindow
     private readonly OllamaService _ollamaService;
     private readonly StreamTranscriptionService _streamTranscriptionService;
     private readonly StreamStorageService _streamStorageService;
+    private readonly Services.Http.TranscribeServer? _transcribeServer;
+
+    // STT status footer health-dot brushes (Utterheim palette).
+    private static readonly Brush SttGreenBrush = Freeze(Color.FromRgb(0x10, 0xB9, 0x81));
+    private static readonly Brush SttAmberBrush = Freeze(Color.FromRgb(0xF5, 0x9E, 0x0B));
+    private static readonly Brush SttGreyBrush = Freeze(Color.FromRgb(0x9C, 0xA3, 0xAF));
+
+    private static Brush Freeze(Color c)
+    {
+        var b = new SolidColorBrush(c);
+        b.Freeze();
+        return b;
+    }
 
     // Cache pages so they are not recreated on every navigation
     private readonly Dictionary<string, object> _pageCache = new();
@@ -86,7 +100,8 @@ public partial class MainWindow : FluentWindow
         TranscriptionQueueService transcriptionQueueService,
         OllamaService ollamaService,
         StreamTranscriptionService streamTranscriptionService,
-        StreamStorageService streamStorageService)
+        StreamStorageService streamStorageService,
+        Services.Http.TranscribeServer? transcribeServer = null)
     {
         _settingsService = settingsService;
         _audioCaptureService = audioCaptureService;
@@ -106,6 +121,7 @@ public partial class MainWindow : FluentWindow
         _ollamaService = ollamaService;
         _streamTranscriptionService = streamTranscriptionService;
         _streamStorageService = streamStorageService;
+        _transcribeServer = transcribeServer;
 
         InitializeComponent();
 
@@ -113,6 +129,12 @@ public partial class MainWindow : FluentWindow
         TranscriptionBar.Initialize(_transcriptionQueueService);
         _transcriptionQueueService.ItemCompleted += OnTranscriptionItemCompleted;
         _transcriptionQueueService.ItemFailed += OnTranscriptionItemFailed;
+
+        // STT API status footer: show the loopback endpoint + a live health dot.
+        // The server runs in-process, so "is it listening?" is known directly
+        // (no self-poll); busy/idle rides the queue's existing PropertyChanged.
+        _transcriptionQueueService.PropertyChanged += OnQueueStatusChangedForFooter;
+        UpdateSttStatusFooter();
 
         // Restore saved window position/size or center on screen
         RestoreWindowPosition();
@@ -128,6 +150,41 @@ public partial class MainWindow : FluentWindow
 
         // The window/taskbar icon is the two-tone logo
         Icon = TrayIcons.CreateTwoToneLogoIcon();
+    }
+
+    private void OnQueueStatusChangedForFooter(object? sender, PropertyChangedEventArgs e)
+    {
+        // IsBusy is derived from ActiveItem, which raises these property changes.
+        Dispatcher.BeginInvoke(UpdateSttStatusFooter);
+    }
+
+    /// <summary>
+    /// Reflects the STT API state in the always-visible status footer: green dot +
+    /// endpoint when listening and idle, amber while a transcription is in flight,
+    /// grey "offline" when the server never bound (e.g. port already in use).
+    /// </summary>
+    private void UpdateSttStatusFooter()
+    {
+        if (_transcribeServer is not { IsRunning: true } server)
+        {
+            SttHealthDot.Fill = SttGreyBrush;
+            SttEndpointText.Text = "offline";
+            SttStateText.Text = string.Empty;
+            return;
+        }
+
+        SttEndpointText.Text = $"http://127.0.0.1:{server.Port}";
+
+        if (_transcriptionQueueService.IsBusy)
+        {
+            SttHealthDot.Fill = SttAmberBrush;
+            SttStateText.Text = "· busy";
+        }
+        else
+        {
+            SttHealthDot.Fill = SttGreenBrush;
+            SttStateText.Text = "· idle";
+        }
     }
 
     /// <summary>

@@ -548,7 +548,8 @@ public partial class App : Application
                 _transcriptionQueueService!,
                 _ollamaService!,
                 _streamTranscriptionService!,
-                _streamStorageService!);
+                _streamStorageService!,
+                _transcribeServer);
         }
 
         _settingsWindow.ShowWindow();
