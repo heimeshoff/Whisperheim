@@ -41,3 +41,4 @@ $RECYCLE.BIN/
 ## Models (large binary files downloaded at runtime)
 **/models/*.onnx
 **/models/*.bin
+.agentheim/.dashboard
