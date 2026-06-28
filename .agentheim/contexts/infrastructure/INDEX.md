@@ -10,15 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 2
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 4
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **infrastructure-d2v7n** -- Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle -- `todo/infrastructure-d2v7n-lazy-load-keep-warm-idle-unload.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -36,7 +36,8 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-d2v7n** -- Lazy-load + keep-warm + idle-unload of the Parakeet model (capture-in-parallel) -- `backlog/infrastructure-d2v7n-lazy-load-keep-warm-idle-unload.md`
+- **infrastructure-q4t8m** -- "Warming up" overlay state when an utterance outruns the model load -- `backlog/infrastructure-q4t8m-warming-up-overlay-state.md`
+- **infrastructure-b3n6p** -- Make lazy-load / idle-unload configurable (lazy-vs-eager + idle timeout) -- `backlog/infrastructure-b3n6p-lazy-unload-settings.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 13:30 -- Modeling / Refined: infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Folded the spike's measured numbers (ADR-0005: Dispose returns ~680 MB private bytes; reload a fixed ~4 s, session-init-bound; lazy-load on key-DOWN; 5-min idle fuse reusing the `NotifyActivity()` shape) into the task, sharpening Why/What/AC away from estimates. Confirmed the Nemotron re-validation caveat is moot — that branch name was retired, model stays INT8 Parakeet — clearing the only open risk. Split the feature into core lifecycle (d2v7n) + two dependents, then promoted the core to todo.
+**Split into:** infrastructure-q4t8m ("warming up" overlay state), infrastructure-b3n6p (lazy-vs-eager + idle-timeout settings) — both depend_on d2v7n, left in backlog until the core lands.
+**ADRs written:** none (ADR-0005 already records the decision; added the two child ids to its `related_tasks`).
+
+---
+
 ## 2026-06-28 12:39 -- Concept page created: idle-memory-footprint
 
 **Type:** Concept / Synthesis
