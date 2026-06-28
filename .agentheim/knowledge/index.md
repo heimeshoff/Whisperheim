@@ -19,6 +19,7 @@ For BC-scoped artifacts, see each BC's `INDEX.md`.
 
 <!-- adr-global:start -->
 - **ADR-0001** -- Expose WhisperHeim's transcribe endpoint over loopback HTTP (HttpListener, synchronous) -- `knowledge/decisions/0001-transcribe-endpoint-loopback-http.md`
+- **ADR-0002** -- Use Workstation GC (+ concurrent) instead of Server GC for the tray app -- `knowledge/decisions/0002-workstation-gc-for-idle-tray-app.md`
 <!-- adr-global:end -->
 
 ## Cross-BC research

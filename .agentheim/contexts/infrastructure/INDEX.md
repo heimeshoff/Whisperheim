@@ -11,14 +11,13 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 4
+- **Todo:** 3
 - **Doing:** 0
-- **Done:** 0
+- **Done:** 1
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **infrastructure-h4m2q** -- Switch Server GC → Workstation GC + concurrent -- `todo/infrastructure-h4m2q-workstation-gc.md`
 - **infrastructure-w7k9p** -- Trim Windows working set after model load and on idle -- `todo/infrastructure-w7k9p-trim-working-set.md`
 - **infrastructure-g3n5t** -- Aggressive GC + LOH compaction once after startup -- `todo/infrastructure-g3n5t-startup-gc-loh-compaction.md`
 - **infrastructure-k9m3p** -- Spike — does disposing the Parakeet recognizer return RAM, and how fast does it reload? -- `todo/infrastructure-k9m3p-model-unload-reload-spike.md`
@@ -31,7 +30,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
-<!-- no tasks in done -->
+- **infrastructure-h4m2q** -- Switch Server GC → Workstation GC + concurrent -- `done/infrastructure-h4m2q-workstation-gc.md`
 <!-- done-list:end -->
 
 ### Backlog

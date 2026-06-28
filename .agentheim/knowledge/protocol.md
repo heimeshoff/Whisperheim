@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:24 -- Task verified and completed: infrastructure-h4m2q - Switch Server GC → Workstation GC + concurrent
+
+**Type:** Work / Task completion
+**Task:** infrastructure-h4m2q - Switch Server GC → Workstation GC + concurrent
+**Summary:** Switched the tray app from Server GC (DATAS-disabled) to Workstation GC + concurrent; idle private memory dropped ~47 MB (823 → 776 MB), well below the 200–400 MB estimate because the ~640 MB model + ONNX overhead dominates resident memory and GC mode doesn't touch it. ADR-0002 (global) records the decision and the measurement.
+**Verification:** PASS (iteration 1)
+**Files changed:** 2
+**Tests added:** 0 (runtime-config + measurement task)
+**ADRs written:** 0002-workstation-gc-for-idle-tray-app.md (scope: global)
+
+---
+
+## 2026-06-28 12:21 -- Batch started: [infrastructure-h4m2q]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-h4m2q - Switch Server GC → Workstation GC + concurrent
+**Parallel:** no (1 worker) — RAM-optimization set runs sequentially; all tasks share the single /deploy app instance and require clean before/after measurement attribution.
+
+---
+
 ## 2026-06-28 12:20 -- Modeling / Captured: lazy-load / idle-unload of the Parakeet model (spike + feature)
 
 **Type:** Modeling / Capture
