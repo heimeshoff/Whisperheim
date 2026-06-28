@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:20 -- Modeling / Captured: lazy-load / idle-unload of the Parakeet model (spike + feature)
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo (spike) + backlog (feature)
+**Summary:** Capture the highest-impact RAM lever — free the ~640 MB recognizer while idle and lazily reload on Ctrl+Win, capturing audio in parallel; since dictation is push-to-talk batch (transcribe-on-release), the load hides behind speech for normal-length utterances. infrastructure-k9m3p (spike, todo) measures whether Dispose() actually returns RAM to the OS and cold/warm reload time → go/no-go; it `blocks` infrastructure-d2v7n (feature, backlog) implementing lazy-load + keep-warm + idle-unload + "warming up" overlay. Feature stays in backlog until the spike returns go.
+
+---
+
 ## 2026-06-28 12:05 -- Modeling / Captured: RAM-optimization task set (4 tasks)
 
 **Type:** Modeling / Capture
