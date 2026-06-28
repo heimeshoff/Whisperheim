@@ -106,3 +106,16 @@ Full suite green: 169/169.
 Key files:
 - `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs`
 - `tests/WhisperHeim.Tests/DictationOverlayPositionTests.cs` (new)
+
+## Follow-up fix (2026-06-28) — the first-show bug was still live on a scaled ultrawide
+
+The original fix above did **not** actually resolve the reported symptom on the maintainer's hardware (single 57" Samsung Odyssey G95NC super-ultrawide, 7680×2160 native, **125% scaling**, so a 6144×1728 DIP desktop). The first dictation overlay after launch still rendered top-right; every subsequent one was correct. Root-caused live via a Win32 `GetWindowRect` poller (the app is `SYSTEM_AWARE`, no DPI manifest):
+
+- **The position is governed solely by WPF `Left`/`Top`, not by any post-`Show()` Win32 placement.** A detour that tried to place the pill in physical pixels via `SetWindowPos` was *always overridden* by WPF's `Left`/`Top` reconciliation (the window snapped back to the DIP coordinate on every show) — confirmed and abandoned.
+- **The defect is a first-`Show()` layout/DPI settling glitch.** The poller captured the very first show inflating to a transient `4608×1240 @ (307,307)` then resting at `(4611,13)` — top, right. The *second* and all later shows rest at the correct `(3022,1620)`. So the window only mis-settles the first time its HWND is realized.
+
+**Fix shipped:** `DictationOverlayWindow.PrewarmFirstShow()` runs that throwaway first-`Show()` once at startup, invisibly (Opacity 0, `ShowInTaskbar`/`ShowActivated` false), hiding it after one dispatcher cycle so the settling completes. `App.InitializeOverlay` calls it right after constructing the overlay. The first *real* dictation is then already a "second show" and lands bottom-center. The Win32 `SetWindowPos` detour was reverted — positioning stays the existing DIP `PositionAtBottomCenter`.
+
+**Verified live (2026-06-28):** poller caught the pre-warm absorbing the `(4611,13)` glitch at startup (invisible), then the user's first real dictation at the correct `(3022,1620)`; maintainer confirmed "it works now." Full suite green: 169/169.
+
+**Known residual (not fixed here, separate concern):** because the app is `SYSTEM_AWARE` rather than Per-Monitor-V2, the pill renders at 100×40 *physical* (unscaled) instead of 125×50, and `(3022,1620)` is the DIP-derived center rather than the true physical center (~3778). The maintainer accepted this position. A proper Per-Monitor-V2 DPI manifest would make size + position exact and consistent, but it is an app-wide change (affects every window) and was deliberately not bundled into this targeted fix.

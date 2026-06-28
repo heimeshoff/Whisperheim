@@ -5,6 +5,18 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 16:10 -- Follow-up bug fix (live debug): first dictation overlay top-right on scaled ultrawide [main-p3k9d]
+
+**Type:** Bug fix / Interactive (outside work loop)
+**Task:** main-p3k9d (done) — its original fix did not resolve the symptom on the maintainer's 57" G95NC super-ultrawide at 125% scaling.
+**Root cause (poller-confirmed):** first-`Show()` layout/DPI settling glitch — the very first realization of the overlay HWND rests at (4611,13) top-right; every subsequent show is correct at (3022,1620). WPF `Left`/`Top` governs final position; a `SetWindowPos` physical-pixel detour was always overridden by WPF and was reverted.
+**Fix:** `DictationOverlayWindow.PrewarmFirstShow()` does the throwaway first show invisibly (Opacity 0) at startup via `App.InitializeOverlay`, so the first real dictation is already a clean "second show".
+**Verified:** live Win32 poll caught the pre-warm absorbing the (4611,13) glitch at startup, then the user's first real dictation at (3022,1620); maintainer confirmed. Tests 169/169.
+**Files:** `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs`, `src/WhisperHeim/App.xaml.cs`. Outcome appended to the main-p3k9d task.
+**Residual (accepted, not fixed):** SYSTEM_AWARE (not Per-Monitor-V2) means the pill renders unscaled (100×40 not 125×50) and centers on the DIP-derived point, not true physical center. A PMv2 manifest would fix both but is an app-wide change, deliberately not bundled.
+
+---
+
 ## 2026-06-28 15:30 -- Deploy verification: infrastructure-q4t8m AC6 confirmed live
 
 **Type:** Work / Deploy verification

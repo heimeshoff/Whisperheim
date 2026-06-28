@@ -591,7 +591,12 @@ public partial class App : Application
         _overlayWindow = new DictationOverlayWindow();
         _overlayWindow.ApplySettings(overlaySettings);
 
-        Trace.TraceInformation("[App] Overlay initialized (pill mode, follows last click).");
+        // Run the throwaway first-Show() DPI/layout settling pass now (invisibly), so the first
+        // real dictation overlay is already a "second show" and lands at bottom-center instead of
+        // the first-show top-right glitch on scaled displays.
+        _overlayWindow.PrewarmFirstShow();
+
+        Trace.TraceInformation("[App] Overlay initialized (pill mode, pre-warmed).");
     }
 
     private void OnAudioAmplitudeChanged(double rmsAmplitude)

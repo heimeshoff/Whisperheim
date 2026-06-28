@@ -274,6 +274,32 @@ public partial class DictationOverlayWindow : Window
     }
 
     /// <summary>
+    /// Realizes the window and runs its first-<see cref="Window.Show"/> layout/DPI settling pass
+    /// once at startup — invisibly (Opacity stays 0 from XAML) — then hides it again.
+    /// <para>
+    /// The very first Show() of a WPF window goes through a messy layout/DPI pass: on a scaled
+    /// display (e.g. 125%) the window briefly inflates and resolves at the wrong physical position
+    /// (measured: it rests top-right on the first show, then every show after lands correctly at
+    /// bottom-center). Doing that throwaway first show here means the first *real* dictation overlay
+    /// is already a "second show" and lands correctly. No flash: ShowInTaskbar/ShowActivated are
+    /// false and Opacity is 0 throughout. Call once after construction.
+    /// </para>
+    /// </summary>
+    public void PrewarmFirstShow()
+    {
+        if (_isVisible) return; // never warm over a real dictation
+        Show();
+        // Keep the window realized for one dispatcher cycle so the first-show layout/DPI pass
+        // actually completes before we hide it — a synchronous Show()+Hide() can hide before the
+        // settling finishes, leaving the next show still "first-show"-like.
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            if (!_isVisible) Hide();
+        }));
+        Trace.TraceInformation("[DictationOverlay] Pre-warmed first show (settling DPI/layout).");
+    }
+
+    /// <summary>
     /// Hides the overlay with a fade-out animation.
     /// </summary>
     public void HideOverlay()
