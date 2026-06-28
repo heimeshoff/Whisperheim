@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 14:10 -- Modeling / Refined: infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Pinned every implementation hook against the now-shipped d2v7n core: signal is `ModelLifecycleManager.State` (`ModelResidencyState.Loading` vs `Loaded`) checked at the `EnsureLoadedAsync` await in `DictationOrchestrator.TranscribeFinalAsync`; render a new `OverlayMicState.WarmingUp` in `DictationOverlayWindow.SetMicState`/`OnBarAnimationTick`; plumb via a new orchestrator event mirroring `AudioAmplitudeChanged`/`PipelineError`. Surfaced the key wrinkle: the overlay is told to `HideOverlay()` at release *before* the load-wait runs, so warming-up must defer that hide (else `SetMicState` no-ops on `!_isVisible`). User chose the visual treatment — pulsing amber bars, in sync, distinct from Speaking-orange and Idle-grey. Tightened AC (deferred-hide, Error precedence, no-flash for normal utterances) and promoted to todo (hook is no longer a TODO).
+**Split into:** none.
+**ADRs written:** none (added ADR-0006 to `related_adrs` — it records the lifecycle/state shape this binds to).
+
+---
+
 ## 2026-06-28 13:56 -- Work session ended
 
 **Type:** Work / Session end

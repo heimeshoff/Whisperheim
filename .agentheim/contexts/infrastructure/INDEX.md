@@ -10,15 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
-- **Todo:** 0
+- **Backlog:** 1
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 5
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **infrastructure-q4t8m** -- "Warming up" overlay state when an utterance outruns the model load -- `todo/infrastructure-q4t8m-warming-up-overlay-state.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -37,7 +37,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-q4t8m** -- "Warming up" overlay state when an utterance outruns the model load -- `backlog/infrastructure-q4t8m-warming-up-overlay-state.md`
 - **infrastructure-b3n6p** -- Make lazy-load / idle-unload configurable (lazy-vs-eager + idle timeout) -- `backlog/infrastructure-b3n6p-lazy-unload-settings.md`
 <!-- backlog-list:end -->
 
