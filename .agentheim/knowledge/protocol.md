@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:31 -- Task verified and completed: infrastructure-w7k9p - Trim Windows working set after model load and on idle
+
+**Type:** Work / Task completion
+**Task:** infrastructure-w7k9p - Trim Windows working set after model load and on idle
+**Summary:** Added `WorkingSetTrimmer` (Windows `EmptyWorkingSet` P/Invoke, guarded + non-fatal) fired after model load via the post-startup hook's new `postCompactionStep` callback ("compact, then trim"), plus `IdleWorkingSetTrimmer` (3-min idle, 30s poll, re-armed by dictation activity, disposed on exit). Direct measurement of the trim: WorkingSet64 489→10 MB, PrivateMemorySize64 flat (trim moves cold pages to standby, doesn't free committed memory — the resident Parakeet recognizer is never unloaded). ADR-0004 (BC-local).
+**Verification:** PASS (iteration 1) — 147/147 tests green incl. 9 new.
+**Files changed:** 8
+**Tests added:** 9
+**ADRs written:** 0004-working-set-trim-after-load-and-on-idle.md (scope: infrastructure)
+
+---
+
+## 2026-06-28 12:28 -- Batch started: [infrastructure-w7k9p]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-w7k9p - Trim Windows working set after model load and on idle
+**Parallel:** no (1 worker) — appends the working-set trim onto the post-startup housekeeping hook landed by infrastructure-g3n5t ("compact, then trim"); measured on top of Workstation GC + startup compaction.
+
+---
+
 ## 2026-06-28 12:27 -- Task verified and completed: infrastructure-g3n5t - Aggressive GC + LOH compaction once after startup
 
 **Type:** Work / Task completion

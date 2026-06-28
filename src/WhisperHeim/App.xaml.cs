@@ -33,6 +33,8 @@ public partial class App : Application
     private readonly AudioCaptureService _audioCaptureService = new();
     private readonly ModelManagerService _modelManager = new();
     private readonly Services.Startup.StartupMemoryCompactor _startupMemoryCompactor = new();
+    private readonly Services.Startup.WorkingSetTrimmer _workingSetTrimmer = new();
+    private Services.Startup.IdleWorkingSetTrimmer? _idleWorkingSetTrimmer;
     private bool _isShowingError;
 
     // ── Long-lived services that used to live on MainWindow ────────────
@@ -427,17 +429,31 @@ public partial class App : Application
             ShowSettingsWindow();
         }
 
-        // Post-startup memory housekeeping (infrastructure-g3n5t). Model load +
-        // WPF init leave Large Object Heap slack that the default (non-compacting)
-        // LOH never reclaims. Run a single compacting gen-2 collection on a
-        // thread-pool thread after a short delay so it doesn't compete with
-        // first-frame rendering or the user's first Ctrl+Win dictation.
-        // Fire-and-forget; the call never faults. The working-set trim
-        // (infrastructure-w7k9p) will append onto this same delayed hook.
+        // Post-startup memory housekeeping (infrastructure-g3n5t + w7k9p). Model
+        // load + WPF init leave Large Object Heap slack that the default
+        // (non-compacting) LOH never reclaims, plus a large committed-but-cold
+        // working set. Run a single compacting gen-2 collection then a working-set
+        // trim ("compact, then trim") on a thread-pool thread after a short delay
+        // so neither competes with first-frame rendering or the user's first
+        // Ctrl+Win dictation. Fire-and-forget; the call never faults. The trim
+        // moves cold pages to standby (lower reported RSS) without unloading the
+        // resident Parakeet recognizer.
         if (Environment.GetEnvironmentVariable("WHISPERHEIM_DISABLE_STARTUP_GC") != "1")
         {
-            _ = _startupMemoryCompactor.ScheduleAsync(TimeSpan.FromSeconds(5));
+            _ = _startupMemoryCompactor.ScheduleAsync(
+                TimeSpan.FromSeconds(5),
+                postCompactionStep: () => _workingSetTrimmer.Trim());
         }
+
+        // Idle working-set trim (infrastructure-w7k9p): after ~3 min with no
+        // dictation/transcription activity, release the working set again so cold
+        // decode pages move to standby during long idle stretches. Re-armed on the
+        // next dictation via OnDictationStateChanged → NotifyActivity. Independent
+        // of the disable-startup-GC switch (this is a runtime, not startup, lever).
+        _idleWorkingSetTrimmer = new Services.Startup.IdleWorkingSetTrimmer(
+            idleThreshold: TimeSpan.FromMinutes(3),
+            trim: () => _workingSetTrimmer.Trim());
+        _idleWorkingSetTrimmer.Start(pollInterval: TimeSpan.FromSeconds(30));
     }
 
     private void SetupHotkeysAndOrchestration()
@@ -492,6 +508,10 @@ public partial class App : Application
     /// </summary>
     private void OnDictationStateChanged(bool isActive)
     {
+        // Any dictation start/stop is activity: reset the idle-trim clock so a
+        // trim never fires mid-use and the working set stays warm while dictating.
+        _idleWorkingSetTrimmer?.NotifyActivity();
+
         _trayIconHost?.OnDictationStateChanged(isActive);
 
         if (isActive)
@@ -584,6 +604,7 @@ public partial class App : Application
         // If the settings window was opened, persist its position/size.
         _settingsWindow?.SaveOnExit();
 
+        _idleWorkingSetTrimmer?.Dispose();
         _transcribeServer?.Dispose();
         _overlayWindow?.Close();
         _orchestrator?.Dispose();

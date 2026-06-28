@@ -52,4 +52,27 @@ public class StartupMemoryCompactorTests
         // ...and it ran on a thread-pool thread, never the UI/caller thread.
         Assert.True(compactor.LastRunOnThreadPoolThread);
     }
+
+    [Fact]
+    public async Task ScheduleAsync_RunsPostCompactionStep_AfterCompacting()
+    {
+        // "compact, then trim" (infrastructure-w7k9p): the follow-on step must run,
+        // and must run after the LOH compaction (observed via CompactOnce reverting
+        // to Default by the time the step executes).
+        var compactor = new StartupMemoryCompactor();
+        GCSettings.LargeObjectHeapCompactionMode = GCLargeObjectHeapCompactionMode.CompactOnce;
+        GCLargeObjectHeapCompactionMode observedAtStep = GCLargeObjectHeapCompactionMode.CompactOnce;
+        bool stepRan = false;
+
+        await compactor.ScheduleAsync(
+            TimeSpan.FromMilliseconds(10),
+            postCompactionStep: () =>
+            {
+                stepRan = true;
+                observedAtStep = GCSettings.LargeObjectHeapCompactionMode;
+            });
+
+        Assert.True(stepRan);
+        Assert.Equal(GCLargeObjectHeapCompactionMode.Default, observedAtStep);
+    }
 }

@@ -1,15 +1,15 @@
 ---
 id: infrastructure-w7k9p
 title: Trim Windows working set after model load and on idle
-status: todo
+status: done
 type: feature
 context: infrastructure
 created: 2026-06-28
-completed:
+completed: 2026-06-28
 depends_on: []
 blocks: []
 tags: [memory, runtime, win32, performance]
-related_adrs: []
+related_adrs: [0004]
 related_research: [parakeet-quantization-and-nemotron-2026-06-28]
 prior_art: []
 ---
@@ -38,3 +38,46 @@ Add a small Win32 interop helper and call it at the right moments:
 - Recommended to land **after** the GC switch (`infrastructure-h4m2q`) so the measurements don't confound each other.
 - Sibling tasks: `infrastructure-h4m2q`, `infrastructure-g3n5t`, `main-t6r2k`.
 - Context: `.agentheim/knowledge/research/parakeet-quantization-and-nemotron-2026-06-28.md`.
+
+## Outcome
+Added the "trim" half of "compact, then trim". Two failure-isolated services
+under `src/WhisperHeim/Services/Startup/`:
+- `WorkingSetTrimmer` — Windows-only P/Invoke of `EmptyWorkingSet` (psapi),
+  guarded and non-fatal (logs + returns `bool`, never throws).
+- `IdleWorkingSetTrimmer` — clock-injectable idle policy: trims once per idle
+  period after 3 min of no dictation (30 s poll), re-armed by activity.
+
+Wiring (`App.xaml.cs`): post-load trim appended onto the existing g3n5t
+housekeeping task via a new `postCompactionStep` parameter on
+`StartupMemoryCompactor.ScheduleAsync` (guarantees compact→trim ordering on one
+delayed off-UI task, honoring `WHISPERHEIM_DISABLE_STARTUP_GC`). Idle trim
+constructed + started in `StartupCore`, fed activity from
+`OnDictationStateChanged`, disposed in `OnAppExit`. The idle trim is a runtime
+lever and is intentionally NOT gated by the startup-GC switch.
+
+Decision recorded in ADR-0004 (choice of `EmptyWorkingSet` over
+`SetProcessWorkingSetSize`, the 3 min / 30 s timing, the once-per-idle latch, and
+the env-gating boundary).
+
+### Measured
+The trim lever, against the exact `EmptyWorkingSet` call on a process holding
+~480 MB committed-then-cold pages: `WorkingSet64` 489 MB → 10 MB (**−479 MB**)
+while `PrivateMemorySize64` held flat at 481 MB — pages moved to standby,
+committed memory untouched, exactly as designed. In the live app the realized
+drop is bounded by how much of the ~640 MB Parakeet floor is cold at trim time;
+the model is never unloaded.
+
+Honesty note: the full real-app idle A/B via `/deploy` was not hand-run — a user
+instance was already running with no single-instance guard, so launching a
+competing instance risked a second low-level keyboard hook double-triggering live
+dictation. First-press-after-idle perceived latency was therefore not
+hand-measured; the model staying resident means the next press is a cold-cache
+re-fault, not a reload. Mechanism proven by the harness above plus unit tests.
+
+### Tests
+9 new tests (all green; full suite 147/147): `WorkingSetTrimmerTests`,
+`IdleWorkingSetTrimmerTests`, plus a `ScheduleAsync` post-compaction-step test
+added to `StartupMemoryCompactorTests`.
+
+### Notes
+- ADR: `.agentheim/knowledge/decisions/0004-working-set-trim-after-load-and-on-idle.md`

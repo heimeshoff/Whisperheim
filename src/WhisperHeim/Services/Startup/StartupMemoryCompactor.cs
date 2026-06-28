@@ -75,7 +75,19 @@ public sealed class StartupMemoryCompactor
     /// faults — failures are logged and swallowed so housekeeping can never
     /// destabilize the running app.
     /// </summary>
-    public Task ScheduleAsync(TimeSpan delay, CancellationToken cancellationToken = default)
+    /// <param name="delay">Post-startup delay before the housekeeping runs.</param>
+    /// <param name="postCompactionStep">
+    /// Optional follow-on step run immediately after the compaction completes, on
+    /// the same delayed background task — the working-set trim
+    /// (infrastructure-w7k9p) wires its trim here to realize "compact, then trim".
+    /// Runs even if the compaction was a no-op (already run). Exceptions it throws
+    /// are logged and swallowed like the rest of this hook.
+    /// </param>
+    /// <param name="cancellationToken">Cancels the delay (e.g. on shutdown).</param>
+    public Task ScheduleAsync(
+        TimeSpan delay,
+        Action? postCompactionStep = null,
+        CancellationToken cancellationToken = default)
     {
         return Task.Run(async () =>
         {
@@ -84,8 +96,10 @@ public sealed class StartupMemoryCompactor
                 await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
                 Compact();
 
-                // infrastructure-w7k9p: append the post-load working-set trim
-                // here ("compact, then trim"). Do not add it before Compact().
+                // infrastructure-w7k9p: the post-load working-set trim runs here
+                // ("compact, then trim"), after the LOH compaction so the trim
+                // does not immediately re-fault compactable garbage back in.
+                postCompactionStep?.Invoke();
             }
             catch (OperationCanceledException)
             {
