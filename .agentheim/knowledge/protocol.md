@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:37 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 5 (first-try PASS: 5, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 6 (5 task commits + this session-end line)
+**Scope:** the full RAM-optimization task set (h4m2q, g3n5t, w7k9p, main-t6r2k) + the idle-unload spike (k9m3p). Run sequentially by design — all tasks share the single /deploy app instance and needed clean before/after measurement attribution.
+**ADRs written:** 0002 (global), 0003, 0004, 0005 (all scope: infrastructure).
+**Concept convergence:** 3 workers independently flagged the same memory-housekeeping cluster (idle-memory-footprint-optimization / post-startup-memory-housekeeping / parakeet-recognizer-memory-lifecycle) across ADRs 0002–0005 + the 4 RAM tasks — strong signal for a single concept page (user decides).
+**Follow-up:** k9m3p returned GO, clearing the blocker on backlog feature infrastructure-d2v7n (lazy-load + keep-warm + idle-unload). It stays in backlog until promoted to todo via modeling.
+
+---
+
 ## 2026-06-28 12:36 -- Task verified and completed: infrastructure-k9m3p - Spike: does disposing the Parakeet recognizer return RAM, and how fast does it reload?
 
 **Type:** Work / Task completion
