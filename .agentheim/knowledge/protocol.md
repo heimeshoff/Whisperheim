@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 15:10 -- Modeling / Captured: main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** First dictation overlay after app start renders top / two-thirds-from-left instead of bottom-center; later shows are fine. Root cause grounded: `PositionAtBottomCenter()` uses the `Width`/`Height` properties (`NaN` pre-measure) and the first show skips the post-`Show()` reposition (`_hasBeenLoaded` guard). Filed straight to todo — clear repro, scope, and AC.
+
+---
+
 ## 2026-06-28 14:36 -- Work session ended
 
 **Type:** Work / Session end

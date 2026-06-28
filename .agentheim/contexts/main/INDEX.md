@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 121
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **main-p3k9d** -- First dictation overlay renders at wrong position (not bottom-center) -- `todo/main-p3k9d-first-overlay-mispositioned.md`
 <!-- todo-list:end -->
 
 ### Doing
