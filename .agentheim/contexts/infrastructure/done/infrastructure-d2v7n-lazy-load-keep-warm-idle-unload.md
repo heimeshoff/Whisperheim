@@ -7,7 +7,7 @@ context: infrastructure
 created: 2026-06-28
 completed: 2026-06-28
 depends_on: [infrastructure-k9m3p]
-blocks: [infrastructure-q4t8m, infrastructure-b3n6p]
+blocks: [infrastructure-q4t8m]
 tags: [memory, asr, parakeet, lifecycle, dictation]
 related_adrs: [0005, 0006]
 related_research: [parakeet-quantization-and-nemotron-2026-06-28]

@@ -6,7 +6,7 @@ status: accepted
 date: 2026-06-28
 supersedes: []
 superseded_by: []
-related_tasks: [infrastructure-d2v7n, infrastructure-k9m3p, infrastructure-q4t8m, infrastructure-b3n6p]
+related_tasks: [infrastructure-d2v7n, infrastructure-k9m3p, infrastructure-q4t8m]
 related_research: [parakeet-quantization-and-nemotron-2026-06-28]
 ---
 

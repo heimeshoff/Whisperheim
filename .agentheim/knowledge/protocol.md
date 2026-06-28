@@ -5,6 +5,13 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 14:15 -- Modeling / Dismissed: infrastructure-b3n6p
+
+**Type:** Modeling / Dismiss
+**Dismissed:** infrastructure-b3n6p - Make lazy-load / idle-unload configurable (lazy-vs-eager + idle timeout) (infrastructure)
+
+---
+
 ## 2026-06-28 14:10 -- Modeling / Refined: infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
 
 **Type:** Modeling / Refine

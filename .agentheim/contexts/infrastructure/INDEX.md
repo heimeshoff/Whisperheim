@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 0
 - **Todo:** 1
 - **Doing:** 0
 - **Done:** 5
@@ -37,7 +37,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-b3n6p** -- Make lazy-load / idle-unload configurable (lazy-vs-eager + idle timeout) -- `backlog/infrastructure-b3n6p-lazy-unload-settings.md`
+<!-- no tasks in backlog -->
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
