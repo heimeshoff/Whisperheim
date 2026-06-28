@@ -5,6 +5,41 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:05 -- Modeling / Captured: RAM-optimization task set (4 tasks)
+
+**Type:** Modeling / Capture
+**BC:** infrastructure (3) + main (1)
+**Filed to:** todo
+**Summary:** Captured four tasks to cut WhisperHeim's ~1.3–1.4 GB steady-state footprint without breaking instant Ctrl+Win dictation (Parakeet ~640 MB stays resident), from the codebase investigation behind the Parakeet-quantization research report. infrastructure-h4m2q (Server GC → Workstation GC + concurrent, biggest win), infrastructure-w7k9p (Windows working-set trim after load / on idle), infrastructure-g3n5t (one-shot startup GC + LOH compaction), main-t6r2k (ASR intra-op threads 4→2 in TranscriptionService.cs:47). Each carries a before/after RAM measurement via /deploy.
+
+---
+
+## 2026-06-28 11:40 -- Research: Parakeet quantization & Nemotron comparison
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/parakeet-quantization-and-nemotron-2026-06-28.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- Quantization's real win is BF16/FP16 (halves VRAM, ~10x NeMo speedup from half-precision + label-looping + CUDA Graphs + batching, no accuracy loss); INT8 only exists as community ONNX builds with no published German WER (A/B test required); CTranslate2 doesn't support Parakeet/TDT.
+- "Nemotron" is now overloaded: NVIDIA shipped a real Nemotron Speech streaming ASR (`nemotron-3.5-asr-streaming-0.6b`, 2026-06-04, German-capable, OpenMDW-1.1) — it's a streaming sibling of Parakeet, not an LLM.
+- Parakeet (batch, RTFx ~3,300) vs Nemotron Speech (streaming, ~17x more concurrent streams) is a batch-vs-streaming choice, not better-vs-worse; Canary-1B-v2 still leads NeMo German accuracy.
+
+---
+
+## 2026-06-28 11:24 -- Research: Best STT models for German & English
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/best-stt-models-german-english-2026-06-28.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- Check Parakeet version first: v2 is English-only; v3 (`parakeet-tdt-0.6b-v3`, Aug 2025) adds German + 24 EU langs at extreme speed — likely the highest-value, lowest-effort change.
+- Best open German accuracy: Voxtral Small 24B (~3.01% German WER, Apache 2.0) or lighter Canary-1B-v2 (~4.10%, CC-BY-4.0); accuracy↔speed split is TDT decoder (fast) vs transformer/LLM decoder (accurate).
+- Whisper large-v3 + WhisperX remains the safe default for coverage/tooling but no longer the accuracy leader; cloud APIs beat all open weights but break local-first.
+
+---
+
 ## 2026-06-19 16:33 -- Work session ended
 
 **Type:** Work / Session end

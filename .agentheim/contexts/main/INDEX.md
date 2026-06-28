@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 120
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **main-t6r2k** -- Reduce ASR intra-op threads 4 → 2 -- `todo/main-t6r2k-reduce-asr-threads.md`
 <!-- todo-list:end -->
 
 ### Doing

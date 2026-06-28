@@ -11,14 +11,16 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 3
 - **Doing:** 0
 - **Done:** 0
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **infrastructure-h4m2q** -- Switch Server GC → Workstation GC + concurrent -- `todo/infrastructure-h4m2q-workstation-gc.md`
+- **infrastructure-w7k9p** -- Trim Windows working set after model load and on idle -- `todo/infrastructure-w7k9p-trim-working-set.md`
+- **infrastructure-g3n5t** -- Aggressive GC + LOH compaction once after startup -- `todo/infrastructure-g3n5t-startup-gc-loh-compaction.md`
 <!-- todo-list:end -->
 
 ### Doing
