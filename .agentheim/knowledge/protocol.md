@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:36 -- Task verified and completed: infrastructure-k9m3p - Spike: does disposing the Parakeet recognizer return RAM, and how fast does it reload?
+
+**Type:** Work / Task completion
+**Task:** infrastructure-k9m3p - Spike: does disposing the Parakeet recognizer return RAM, and how fast does it reload?
+**Summary:** GO for infrastructure-d2v7n. Throwaway harness (kept in scratchpad, outside the repo — app + `dotnet test` untouched) measured: Dispose() returns ~679 MB private bytes (707 → 28 MB, ~20 MB over the 8 MB baseline — ONNX arena retention did NOT bite), reload is a deterministic ~4 s independent of file-cache state (session-init-bound, not I/O-bound), transcripts identical across reloads. Recommend lazy-load on Ctrl+Win key-down + ~5-min idle-unload threshold. ADR-0005 (BC-local) records the GO + caveats. The blocker on backlog feature infrastructure-d2v7n is now cleared.
+**Verification:** PASS (iteration 1) — RAM table + load-times present in both task Outcome and ADR-0005; private-byte deltas reconcile exactly; GO follows from the data; no production runtime change shipped.
+**Files changed:** 1 (ADR-0005; throwaway harness kept out of the repo)
+**Tests added:** 0 (measurement spike)
+**ADRs written:** 0005-idle-unload-of-parakeet-recognizer-go.md (scope: infrastructure)
+
+---
+
+## 2026-06-28 12:35 -- Batch started: [infrastructure-k9m3p]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-k9m3p - Spike: does disposing the Parakeet recognizer return RAM, and how fast does it reload?
+**Parallel:** no (1 worker) — final task of the RAM-optimization run; throwaway measurement spike gating the backlog feature infrastructure-d2v7n.
+
+---
+
 ## 2026-06-28 12:34 -- Task verified and completed: main-t6r2k - Reduce ASR intra-op threads 4 → 2
 
 **Type:** Work / Task completion
