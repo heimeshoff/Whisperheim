@@ -5,6 +5,20 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 14:36 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-q4t8m ("warming up" overlay state). Single ready task; its dependency infrastructure-d2v7n was done. Board now fully empty (0 todo / 0 doing / 0 backlog across all BCs).
+**ADRs written:** 0 (the visual treatment was already decided during refinement; no new architectural decision arose).
+**Follow-up:** AC6 is deploy-gated — run `/deploy`, force a ≥5 min idle unload, fire a short (<~4 s) utterance, and confirm the pulsing-amber warming-up state persists before the transcription lands.
+
+---
+
 ## 2026-06-28 14:35 -- Task verified and completed: infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
 
 **Type:** Work / Task completion
