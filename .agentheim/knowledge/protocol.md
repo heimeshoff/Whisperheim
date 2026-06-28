@@ -5,6 +5,20 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 13:56 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-d2v7n (lazy-load + keep-warm + idle-unload core lifecycle). Single ready task; its two dependents (q4t8m "warming up" overlay, b3n6p settings) remain in backlog — now unblocked but need `modeling` to promote to todo.
+**ADRs written:** 0006 (scope: infrastructure).
+**Follow-up:** 3 acceptance criteria are deploy-gated (idle private-bytes drop ~680 MB; short/long-utterance latency) — code-complete + unit-tested but await a live `/deploy` measurement to confirm the numbers.
+
+---
+
 ## 2026-06-28 13:55 -- Task verified and completed: infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
 
 **Type:** Work / Task completion
