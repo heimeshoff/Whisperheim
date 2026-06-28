@@ -62,6 +62,16 @@ public sealed class DictationOrchestrator : IDisposable
     /// </summary>
     public event Action<string>? TemplateNoMatch;
 
+    /// <summary>
+    /// Raised around the transcribe-on-release model-load wait (task infrastructure-q4t8m,
+    /// ADR-0005/0006). <c>true</c> fires at release when the recognizer is not yet
+    /// resident, so the held utterance outran the key-down load; <c>false</c> fires the
+    /// moment <see cref="ModelLifecycleManager.EnsureLoadedAsync"/> returns and decode
+    /// begins. The overlay uses this to show — and keep alive — the "warming up" state.
+    /// Raised on a background thread; subscribers must marshal to the UI thread.
+    /// </summary>
+    public event Action<bool>? WarmingUpChanged;
+
     public DictationOrchestrator(
         GlobalHotkeyService hotkeyService,
         IAudioCaptureService audioCapture,
@@ -174,27 +184,49 @@ public sealed class DictationOrchestrator : IDisposable
         try { _audioCapture.StopCapture(); }
         catch (Exception ex) { Trace.TraceWarning("[DictationOrchestrator] Error stopping capture: {0}", ex.Message); }
 
-        NotifyStateChanged(false);
-
+        float[] samples = Array.Empty<float>();
         if (transcribe)
         {
-            float[] samples;
             lock (_lock)
             {
                 samples = _recordedSamples.ToArray();
                 _recordedSamples.Clear();
             }
+        }
 
-            if (samples.Length > MinSamples)
-            {
-                _ = TranscribeFinalAsync(samples, templateMode);
-            }
-            else
-            {
-                Trace.TraceInformation("[DictationOrchestrator] Recording too short ({0} samples), skipping.", samples.Length);
-            }
+        bool willTranscribe = transcribe && samples.Length > MinSamples;
+
+        // Decide the warming-up state *before* the hide is dispatched: if the held
+        // utterance outran the key-down load, transcribe-on-release must await the
+        // remaining load. We raise WarmingUpChanged(true) ahead of NotifyStateChanged
+        // so the overlay's deferred-hide flag is set before the fade-out is queued —
+        // otherwise the hide would win the race and the warming state would no-op.
+        bool warming = willTranscribe && ShouldWarmUpOnRelease(_modelLifecycle?.State);
+        if (warming)
+            WarmingUpChanged?.Invoke(true);
+
+        NotifyStateChanged(false);
+
+        if (willTranscribe)
+        {
+            _ = TranscribeFinalAsync(samples, templateMode, warming);
+        }
+        else if (transcribe)
+        {
+            Trace.TraceInformation("[DictationOrchestrator] Recording too short ({0} samples), skipping.", samples.Length);
         }
     }
+
+    /// <summary>
+    /// Decides whether the "warming up" overlay state should be shown when a held
+    /// dictation is released (task infrastructure-q4t8m, ADR-0005/0006): <c>true</c>
+    /// exactly when the recognizer is not yet <see cref="ModelResidencyState.Loaded"/>,
+    /// so transcribe-on-release must await the in-flight load. Returns <c>false</c>
+    /// when no lifecycle manager is wired (eager-load builds) or the model is already
+    /// resident — the common case, which must never flash the warming state.
+    /// </summary>
+    internal static bool ShouldWarmUpOnRelease(ModelResidencyState? state)
+        => state is { } s && s != ModelResidencyState.Loaded;
 
     private void OnAudioData(object? sender, AudioDataEventArgs e)
     {
@@ -243,7 +275,7 @@ public sealed class DictationOrchestrator : IDisposable
         return Math.Sqrt(sumSquares / samples.Length);
     }
 
-    private async Task TranscribeFinalAsync(float[] samples, bool templateMode)
+    private async Task TranscribeFinalAsync(float[] samples, bool templateMode, bool warming)
     {
         _modelLifecycle?.EnterDictation();
         try
@@ -252,6 +284,13 @@ public sealed class DictationOrchestrator : IDisposable
             // model must be resident by release. Never starts a second load.
             if (_modelLifecycle is not null)
                 await _modelLifecycle.EnsureLoadedAsync();
+
+            // Load complete — the warming window is over. Clear it here (and only on
+            // success) so the overlay fades out before decode, exactly as the normal
+            // release path does. On a load failure we fall through to the catch, which
+            // raises PipelineError → the overlay shows Error instead (Error precedence).
+            if (warming)
+                WarmingUpChanged?.Invoke(false);
 
             var result = await _transcription.TranscribeAsync(samples, SampleRate);
             var rawText = result.Text.Trim();

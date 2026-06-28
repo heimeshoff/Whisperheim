@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 14:35 -- Task verified and completed: infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+
+**Type:** Work / Task completion
+**Task:** infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+**Summary:** Added a pulsing-amber `OverlayMicState.WarmingUp` shown when a held utterance is released while the recognizer is not yet `Loaded` — transcribe-on-release awaits the in-flight load and the overlay stays alive (deferred hide) through the bounded ~4 s wait instead of fading to a frozen-looking blank. Plumbed via a new `WarmingUpChanged(bool)` orchestrator event mirroring `AudioAmplitudeChanged`/`PipelineError`; Error precedence preserved.
+**Verification:** PASS (iteration 1) — build clean, full suite green (166 passed, 4 new release-time decision tests). Deferred-hide race traced closed (WarmingUpChanged(true) raised before NotifyStateChanged(false), same-priority FIFO dispatcher).
+**Files changed:** 6
+**Tests added:** 4
+**ADRs written:** none
+**Deferred:** AC6 (live `/deploy` visual confirmation — force ≥5 min idle unload, fire a short <~4 s utterance, observe pulsing amber then transcription) is deploy-gated; code-complete and unit-tested, awaits a user `/deploy`.
+
+---
+
+## 2026-06-28 14:25 -- Batch started: [infrastructure-q4t8m]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+**Parallel:** no (1 worker) — only ready task; dependency infrastructure-d2v7n (lazy-load core lifecycle) is done. Touches the dictation overlay + orchestrator event plumbing in main/ (Views/, App.xaml.cs, Services/Orchestration/).
+
+---
+
 ## 2026-06-28 14:15 -- Modeling / Dismissed: infrastructure-b3n6p
 
 **Type:** Modeling / Dismiss

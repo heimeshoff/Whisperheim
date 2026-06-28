@@ -1,11 +1,11 @@
 ---
 id: infrastructure-q4t8m
 title: "Warming up" overlay state when an utterance outruns the model load
-status: todo
+status: done
 type: feature
 context: infrastructure
 created: 2026-06-28
-completed:
+completed: 2026-06-28
 depends_on: [infrastructure-d2v7n]
 blocks: []
 tags: [overlay, ui, asr, parakeet, lifecycle, dictation]
@@ -46,3 +46,20 @@ Add a "warming up" visual state to the existing dictation overlay (`main-012` / 
 - Prior art: `main-012` (dictation overlay), `main-025` (overlay mic-state visualization), `main-011` (dictation wiring).
 - No `design-system/` BC exists, so the styleguide gate does not apply; this reuses the already-shipped overlay and its existing brand colors (amber ≈ the existing `#FFff8b00` family — pick a clearly distinct warm tone if reusing it alongside Speaking-orange would be ambiguous).
 - Brand colors already in the overlay (`DictationOverlayWindow.xaml.cs:44-48`): blue `#FF25abfe`, orange `#FFff8b00`, grey, red. Choose the warming amber to stay distinct from Speaking-orange.
+
+## Outcome
+Shipped the `WarmingUp` overlay state and kept the overlay alive through the transcribe-on-release model-load wait.
+
+**What was built**
+- `OverlayMicState.WarmingUp` added (`Views/OverlayMicState.cs`).
+- `DictationOverlayWindow` (`Views/DictationOverlayWindow.xaml.cs`): new amber bar/border colour `#FFFFC107` (deliberately yellower than Speaking-orange `#FFff8b00`), a `WarmingUp` branch in `SetMicState`, and a `WarmingUp` branch in `OnBarAnimationTick` that drives all 12 bars with one synchronized ~1 s cosine breathing pulse (RMS ignored).
+- `DictationOrchestrator` (`Services/Orchestration/DictationOrchestrator.cs`): new `WarmingUpChanged(bool)` event plus the pure, unit-tested decision `internal static bool ShouldWarmUpOnRelease(ModelResidencyState?)` (= `state is not null && != Loaded`). `StopRecording` now decides warming *before* `NotifyStateChanged(false)` and raises `WarmingUpChanged(true)` ahead of the fade-out so the deferred-hide flag is set before the hide is queued (closes the race the refinement flagged). `TranscribeFinalAsync` raises `WarmingUpChanged(false)` only on the success path right after `EnsureLoadedAsync` returns; on a load failure it falls through to `PipelineError` so Error precedence holds.
+- `App.xaml.cs`: subscribes to `WarmingUpChanged`; `OnDictationStateChanged(false)` defers the overlay hide while `_isWarmingUp`; `OnWarmingUpChanged` shows WarmingUp / hides on completion; `OnPipelineError` clears `_isWarmingUp` so an error wins; the `isActive==true` path clears the flag to prevent leakage across sessions.
+
+**Tests** — 4 new xUnit tests in `tests/WhisperHeim.Tests/DictationOverlayWarmUpTests.cs` cover the release-time decision (Loading→warm, Unloaded→warm, Loaded→no flash, no-lifecycle→no warm), i.e. AC1/AC4. Full suite green: 166 passed (was 162). The pulsing-amber rendering, the deferred-hide plumbing, and the Error-precedence path are WPF/integration behaviour exercised by the code but not unit-testable here.
+
+**Deferred to user (`/deploy`-gated, AC6):** live visual confirmation — force an idle unload (≥5 min), fire a short (<~4 s) utterance, observe the pulsing-amber WarmingUp state persist, then the transcription appear. Cannot be run from here; deferred exactly as d2v7n deferred its RAM measurements.
+
+**Key files:** `src/WhisperHeim/Views/OverlayMicState.cs`, `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs`, `src/WhisperHeim/Services/Orchestration/DictationOrchestrator.cs`, `src/WhisperHeim/App.xaml.cs`, `tests/WhisperHeim.Tests/DictationOverlayWarmUpTests.cs`.
+
+No new ADR: visual treatment and hooks were already decided in refinement; no new architectural decision was made.

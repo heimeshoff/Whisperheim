@@ -93,6 +93,11 @@ public partial class App : Application
     private GlobalHotkeyService? _hotkeyService;
     private DictationOrchestrator? _orchestrator;
     private DictationOverlayWindow? _overlayWindow;
+
+    // True while transcribe-on-release is awaiting an in-flight model load: the
+    // overlay shows WarmingUp and its hide is deferred until the load completes
+    // (task infrastructure-q4t8m). UI-thread only.
+    private bool _isWarmingUp;
     private TrayIconHost? _trayIconHost;
 
     // Lazy-constructed settings window. Created on first open (tray click,
@@ -495,6 +500,7 @@ public partial class App : Application
 
         _orchestrator.AudioAmplitudeChanged += OnAudioAmplitudeChanged;
         _orchestrator.PipelineError += OnPipelineError;
+        _orchestrator.WarmingUpChanged += OnWarmingUpChanged;
         _orchestrator.TemplateNoMatch += spokenText =>
             ToastWindow.Show($"No template match for: \"{spokenText}\"");
 
@@ -531,9 +537,46 @@ public partial class App : Application
         _trayIconHost?.OnDictationStateChanged(isActive);
 
         if (isActive)
+        {
+            // Fresh dictation — clear any stale warming flag so a previous warm-up
+            // can never suppress this session's hide.
+            _isWarmingUp = false;
             _overlayWindow?.ShowOverlay();
+        }
+        else if (_isWarmingUp)
+        {
+            // The held utterance outran the model load: keep the overlay alive and
+            // showing WarmingUp. The hide is deferred to OnWarmingUpChanged(false),
+            // which fires once EnsureLoadedAsync returns and decode begins.
+            Trace.TraceInformation("[App] Dictation released while warming up — deferring overlay hide.");
+        }
         else
+        {
             _overlayWindow?.HideOverlay();
+        }
+    }
+
+    /// <summary>
+    /// Reflects the transcribe-on-release "warming up" window (task infrastructure-q4t8m,
+    /// ADR-0005/0006) on the overlay. <c>true</c>: the model was still loading at
+    /// release, so show the pulsing-amber WarmingUp state and defer the fade-out.
+    /// <c>false</c>: the load finished and decode is starting, so fade out as usual.
+    /// </summary>
+    private void OnWarmingUpChanged(bool warming)
+    {
+        Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            if (warming)
+            {
+                _isWarmingUp = true;
+                _overlayWindow?.SetMicState(OverlayMicState.WarmingUp);
+            }
+            else
+            {
+                _isWarmingUp = false;
+                _overlayWindow?.HideOverlay();
+            }
+        });
     }
 
     private void InitializeOverlay()
@@ -565,6 +608,10 @@ public partial class App : Application
     {
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
+            // Error precedence: a pipeline error (including a load failure during
+            // warm-up) wins. Clear the warming flag so the deferred hide is released
+            // and the Error state is what the user sees.
+            _isWarmingUp = false;
             _overlayWindow?.SetMicState(OverlayMicState.Error);
             Trace.TraceError("[App] Pipeline error reflected in overlay: {0}", ex.Message);
         });

@@ -17,11 +17,12 @@ namespace WhisperHeim.Views;
 /// mouse position. Uses WS_EX_TRANSPARENT and WS_EX_NOACTIVATE to avoid stealing
 /// focus or blocking mouse clicks.
 ///
-/// Supports four visual states (see <see cref="OverlayMicState"/>):
-///   Idle     -> grey border, grey bars with gentle movement
-///   Speaking -> blue border, orange bars driven by RMS amplitude
-///   NoMic    -> grey border, grey static bars
-///   Error    -> solid red fill
+/// Supports five visual states (see <see cref="OverlayMicState"/>):
+///   Idle      -> grey border, grey bars with gentle movement
+///   Speaking  -> blue border, orange bars driven by RMS amplitude
+///   NoMic     -> grey border, grey static bars
+///   WarmingUp -> amber border, amber bars breathing in sync (~1 s), RMS ignored
+///   Error     -> solid red fill
 /// </summary>
 public partial class DictationOverlayWindow : Window
 {
@@ -44,6 +45,9 @@ public partial class DictationOverlayWindow : Window
     // ── Brand colors ─────────────────────────────────────────────────────
     private static readonly Color BlueBorderColor = (Color)ColorConverter.ConvertFromString("#FF25abfe");
     private static readonly Color OrangeBarColor = (Color)ColorConverter.ConvertFromString("#FFff8b00");
+    // Warming-up amber: a yellower warm tone, deliberately distinct from the
+    // Speaking-orange (#FFff8b00) so the two busy states never read alike.
+    private static readonly Color AmberBarColor = (Color)ColorConverter.ConvertFromString("#FFFFC107");
     private static readonly Color GreyColor = Color.FromRgb(0x99, 0x99, 0x99);
     private static readonly Color RedColor = Color.FromRgb(0xEE, 0x33, 0x33);
 
@@ -53,6 +57,9 @@ public partial class DictationOverlayWindow : Window
     private const int BarCount = 12;
     private const double BarGap = 2.0;
     private const double MinBarHeightFraction = 0.05; // minimum bar height as fraction of canvas height
+
+    // Warming-up pulse: all bars breathe in sync on this period, ignoring RMS.
+    private const double WarmingPulsePeriodMs = 1000.0;
 
     private readonly Rectangle[] _bars = new Rectangle[BarCount];
     private readonly Random _random = new();
@@ -184,7 +191,16 @@ public partial class DictationOverlayWindow : Window
         {
             double targetHeight;
 
-            if (_currentState == OverlayMicState.Speaking || _currentState == OverlayMicState.Idle)
+            if (_currentState == OverlayMicState.WarmingUp)
+            {
+                // Synchronized breathing pulse on a ~1 s cosine cycle, identical for
+                // every bar and independent of RMS — unmistakably "busy", not frozen.
+                double phase = (Environment.TickCount64 % (long)WarmingPulsePeriodMs) / WarmingPulsePeriodMs;
+                double pulse = 0.5 - 0.5 * Math.Cos(2.0 * Math.PI * phase); // 0..1
+                double heightFraction = MinBarHeightFraction + (1.0 - MinBarHeightFraction) * pulse;
+                targetHeight = canvasHeight * heightFraction;
+            }
+            else if (_currentState == OverlayMicState.Speaking || _currentState == OverlayMicState.Idle)
             {
                 double amplitude = Math.Max(_smoothedRms, 0.0001);
 
@@ -314,6 +330,13 @@ public partial class DictationOverlayWindow : Window
             case OverlayMicState.NoMic:
                 AnimateBorderColor(GreyColor);
                 SetBarColor(GreyColor);
+                PillBorder.Background = new SolidColorBrush(Color.FromArgb(0xCC, 0x2D, 0x2D, 0x2D));
+                _smoothedRms = 0;
+                break;
+
+            case OverlayMicState.WarmingUp:
+                AnimateBorderColor(AmberBarColor);
+                SetBarColor(AmberBarColor);
                 PillBorder.Background = new SolidColorBrush(Color.FromArgb(0xCC, 0x2D, 0x2D, 0x2D));
                 _smoothedRms = 0;
                 break;
