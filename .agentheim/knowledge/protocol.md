@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 15:30 -- Deploy verification: infrastructure-q4t8m AC6 confirmed live
+
+**Type:** Work / Deploy verification
+**Task:** infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+**Result:** The user ran `/deploy` and confirmed the deploy-gated AC6 live — a short utterance after an idle unload shows the pulsing-amber warming-up state, then the transcription lands. All 6 acceptance criteria now satisfied (ACs 1–5 by the verifier's trace + 4 unit tests at completion; AC6 now confirmed on the running app). Task fully done. (Logged after the 15:26 session because the live test happened post-session.)
+
+---
+
 ## 2026-06-28 15:26 -- Work session ended
 
 **Type:** Work / Session end

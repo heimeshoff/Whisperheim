@@ -33,12 +33,12 @@ Add a "warming up" visual state to the existing dictation overlay (`main-012` / 
 - **Hide suppression seam:** `App.OnDictationStateChanged` (`App.xaml.cs:533-536`) — the `isActive == false` branch that calls `HideOverlay()` is what must be deferred while warming. Simplest correct shape: when warming, do not hide on the state-change; hide when `WarmingUpChanged(false)` fires (after decode). Keep `Error` precedence intact — a pipeline error during warm-up still wins (`OnPipelineError`).
 
 ## Acceptance criteria
-- [ ] When release occurs while `ModelLifecycleManager.State != Loaded`, the overlay shows the `WarmingUp` state — **pulsing amber bars** — and stays visible (does not fade out) until the load completes.
-- [ ] The `WarmingUp` state is visually distinct from `Idle` (flat grey), `Speaking` (orange RMS-driven), `NoMic`, and `Error` — it reads as "working", not frozen.
-- [ ] The state clears and transcription proceeds normally the moment `EnsureLoadedAsync` returns; the overlay then fades out as it does today.
-- [ ] For a normal-length utterance (load already `Loaded` by release) the overlay behaves exactly as today — immediate fade-out, no warming-up flash.
-- [ ] A pipeline error during warm-up still shows the `Error` state (Error precedence preserved).
-- [ ] Verified via `/deploy`: force an idle unload (≥5 min idle), fire a short (<~4 s) utterance, observe the pulsing-amber warming-up state persist, then the transcription appear.
+- [x] When release occurs while `ModelLifecycleManager.State != Loaded`, the overlay shows the `WarmingUp` state — **pulsing amber bars** — and stays visible (does not fade out) until the load completes.
+- [x] The `WarmingUp` state is visually distinct from `Idle` (flat grey), `Speaking` (orange RMS-driven), `NoMic`, and `Error` — it reads as "working", not frozen.
+- [x] The state clears and transcription proceeds normally the moment `EnsureLoadedAsync` returns; the overlay then fades out as it does today.
+- [x] For a normal-length utterance (load already `Loaded` by release) the overlay behaves exactly as today — immediate fade-out, no warming-up flash.
+- [x] A pipeline error during warm-up still shows the `Error` state (Error precedence preserved).
+- [x] Verified via `/deploy`: force an idle unload (≥5 min idle), fire a short (<~4 s) utterance, observe the pulsing-amber warming-up state persist, then the transcription appear. **Confirmed live by the user on 2026-06-28** — the amber warming state shows on a short post-idle utterance, then the transcription lands.
 
 ## Notes
 - **Depends on [[infrastructure-d2v7n]] (done).** The `Loading`/await signal it had to expose is `ModelLifecycleManager.State` + `EnsureLoadedAsync` — both shipped and pinned above. Hook is no longer a TODO; task is ready to work.
