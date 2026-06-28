@@ -5,6 +5,20 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 15:26 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** main-p3k9d (first dictation overlay mispositioned). Single ready task, no dependencies. Board now fully empty (0 todo / 0 doing / 0 backlog across all BCs).
+**ADRs written:** 0.
+**Follow-up:** The Show()/DPI/first-show lifecycle is verified only by unit-pinned geometry + reasoning; a live `/deploy` (fresh app launch → first Ctrl+Win dictation) is the honest confirmation that the very first pill now lands bottom-center.
+
+---
+
 ## 2026-06-28 15:25 -- Task verified and completed: main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
 
 **Type:** Work / Task completion
