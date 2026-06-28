@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 2
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 4
+- **Done:** 5
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **infrastructure-d2v7n** -- Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle -- `todo/infrastructure-d2v7n-lazy-load-keep-warm-idle-unload.md`
+<!-- no tasks in todo -->
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +28,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-d2v7n** -- Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle -- `done/infrastructure-d2v7n-lazy-load-keep-warm-idle-unload.md`
 - **infrastructure-k9m3p** -- Spike — does disposing the Parakeet recognizer return RAM, and how fast does it reload? (GO for d2v7n) -- `done/infrastructure-k9m3p-model-unload-reload-spike.md`
 - **infrastructure-w7k9p** -- Trim Windows working set after model load and on idle -- `done/infrastructure-w7k9p-trim-working-set.md`
 - **infrastructure-g3n5t** -- Aggressive GC + LOH compaction once after startup -- `done/infrastructure-g3n5t-startup-gc-loh-compaction.md`
@@ -43,6 +44,7 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0006** -- Recognizer lifecycle ships lazy-on, and decode self-heals so every consumer survives an idle-unload -- `../../knowledge/decisions/0006-lazy-on-recognizer-lifecycle-and-self-healing-decode.md`
 - **ADR-0005** -- GO on idle-unload of the Parakeet recognizer — Dispose returns ~680 MB, reload is a fixed ~4 s -- `../../knowledge/decisions/0005-idle-unload-of-parakeet-recognizer-go.md`
 - **ADR-0004** -- Working-set trim after model load and on idle (the "trim" half of compact-then-trim) -- `../../knowledge/decisions/0004-working-set-trim-after-load-and-on-idle.md`
 - **ADR-0003** -- One-shot LOH-compacting GC after startup (precursor to the working-set trim) -- `../../knowledge/decisions/0003-one-shot-startup-loh-compaction.md`

@@ -1,15 +1,15 @@
 ---
 id: infrastructure-d2v7n
 title: Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
-status: todo
+status: done
 type: feature
 context: infrastructure
 created: 2026-06-28
-completed:
+completed: 2026-06-28
 depends_on: [infrastructure-k9m3p]
 blocks: [infrastructure-q4t8m, infrastructure-b3n6p]
 tags: [memory, asr, parakeet, lifecycle, dictation]
-related_adrs: [0005]
+related_adrs: [0005, 0006]
 related_research: [parakeet-quantization-and-nemotron-2026-06-28]
 prior_art: []
 ---
@@ -51,3 +51,50 @@ Implement the **lazy-load + keep-warm + idle-unload** state machine for the tran
 - Interacts with `infrastructure-w7k9p` (working-set trim): unloading *frees* the model outright (committed memory), which supersedes the trim during deep idle; the 3-min trim stays as the cheap first stage and the ~5-min unload as the second. The trim still helps the non-model .NET/WPF/ONNX overhead.
 - Prior art (main BC, for reuse): `main-008` (Parakeet ASR integration — LoadModel/Dispose surface), `main-011` (end-to-end dictation wiring), `main-004` (global hotkey).
 - Context: ADR-0005 (`.agentheim/knowledge/decisions/0005-idle-unload-of-parakeet-recognizer-go.md`), research `.agentheim/knowledge/research/parakeet-quantization-and-nemotron-2026-06-28.md`. Hot-path mechanics: `TranscriptionService.cs` (LoadModel/Dispose), `DictationOrchestrator.cs` (push-to-talk batch transcribe-on-release).
+- Implementation decision recorded in **ADR-0006** (`0006-lazy-on-recognizer-lifecycle-and-self-healing-decode.md`): ship lazy-on (no eager startup load) + self-healing decode so all shared consumers survive an unload.
+
+## Outcome
+Implemented the lazy-load + keep-warm + idle-unload lifecycle for the ~640 MB INT8
+Parakeet recognizer. The model is no longer loaded eagerly at startup; it loads on
+Ctrl+Win key-DOWN, stays warm through dictation, and idle-unloads after 5 min,
+reclaiming ~680 MB of committed memory (per ADR-0005).
+
+**Design.** A new `ModelLifecycleManager` (`src/WhisperHeim/Services/Transcription/ModelLifecycleManager.cs`)
+owns the Unloaded → Loading → Loaded → idle → Unloaded state machine over injected
+load/unload delegates, reusing the `IdleWorkingSetTrimmer` `NotifyActivity`+poll
+shape (ADR-0004). The heavyweight recognizer is isolated behind the delegate seam so
+the lifecycle is unit-tested without the real model. `TranscriptionService` gained
+`EnsureLoadedAsync` (background, idempotent, shared load), non-terminal `Unload()`
+(Dispose + return memory, distinct from terminal `Dispose()`), thread-safe
+`LoadModel`, and **self-healing decode** (`TranscribeAsync` reloads under the decode
+lock) so the loopback HTTP API, file/stream/call transcription all survive an unload.
+The shared decode/load/unload lock is the unload-safety invariant. Wiring in
+`App.xaml.cs`: lazy-on, 5-min idle poll (30 s cadence), unload = Unload+GC+trim,
+`NotifyActivity` on dictation state changes. `DictationOrchestrator` calls
+`BeginLoad()` on key-DOWN and `EnsureLoadedAsync()` before transcribe-on-release,
+with `EnterDictation`/`ExitDictation` bracketing the in-flight guard.
+
+**Acceptance criteria status:**
+- ✅ Lazy-load on key-DOWN; transcribe-on-release awaits the in-flight load, never
+  starts a second — *code-complete + unit-tested* (`RepeatPressesDuringLoading_ShareASingleLoadTask`,
+  `EnsureLoadedAsync_AwaitsInFlightLoad_StartedByKeyDown`).
+- ✅ Concurrency edges — release-before-loaded (await), repeat presses (single shared
+  load), load failure / missing model (graceful + retry, no crash), cancellation —
+  *code-complete + unit-tested* (15 tests in `ModelLifecycleManagerTests`).
+- ✅ State machine + idle-unload does Dispose + `GC.Collect()` + `WorkingSetTrimmer.Trim()`
+  and reuses the `NotifyActivity` shape — *code-complete + unit-tested*
+  (`PollOnce_UnloadsAfterIdle_*`, `AfterIdleUnload_NextLoadReloads`).
+- ✅ Rapid consecutive dictations stay warm; each resets the idle timer; never unload
+  while a dictation is in flight — *code-complete + unit-tested*
+  (`PollOnce_DoesNotUnload_WhileDictationInFlight`, `NotifyActivity_PreventsUnload_ByResettingIdleClock`).
+- ⏳ **Needs live `/deploy` measurement (not runnable in this environment):**
+  - Idle RAM drop ~680 MB after ~5 min: launch `/deploy`, idle 5+ min with no
+    dictation, confirm **`PrivateMemorySize64`** (not just `WorkingSet64` — ADR-0005
+    caveat) falls by ~680 MB (expect ~700 MB → ~30 MB for the recognizer portion).
+  - Short/long-utterance latency: a ≥~4 s utterance after an idle unload should feel
+    instant vs. the always-resident baseline (load hidden behind speaking); a <4 s
+    utterance right after a deep idle pays up to the remaining ~4 s load (expected
+    worst case, perceived-loading overlay is `infrastructure-q4t8m`).
+
+The full test suite is green (162 passed, incl. 15 new lifecycle tests) and the WPF
+app builds clean.

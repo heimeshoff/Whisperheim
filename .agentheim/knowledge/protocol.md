@@ -5,6 +5,27 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 13:55 -- Task verified and completed: infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
+
+**Type:** Work / Task completion
+**Task:** infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
+**Summary:** Implemented the `ModelLifecycleManager` state machine (Unloaded → Loading → Loaded → idle → Unloaded) — loads the ~640 MB Parakeet recognizer on Ctrl+Win key-DOWN, awaits that load on release, keeps warm through dictation, unloads after 5 min idle (Dispose+GC+trim, ~680 MB committed reclaimed), with self-healing decode so every consumer (HTTP API, file/stream) survives an unload under the shared decode lock.
+**Verification:** PASS (iteration 1) — full suite green (162 tests, 15 new lifecycle tests covering all concurrency edges: await-before-loaded, single shared load on repeat presses, load-failure graceful, cancellation, idle-unload gating, NotifyActivity reset). Unload-safety invariant (no dispose mid-decode via shared lock) confirmed.
+**Files changed:** 7
+**Tests added:** 15
+**ADRs written:** 0006 (scope: infrastructure)
+**Deferred:** 3 acceptance criteria require a live `/deploy` RAM/latency measurement (idle private-bytes drop; short/long utterance latency) — code-complete and unit-tested; measurement steps recorded in the task Outcome. **User should run `/deploy` to capture the before/after numbers.**
+
+---
+
+## 2026-06-28 13:45 -- Batch started: [infrastructure-d2v7n]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
+**Parallel:** no (1 worker) — only ready task; dependency infrastructure-k9m3p (ADR-0005 GO) satisfied. Touches the model lifecycle hot path (TranscriptionService / DictationOrchestrator); its two dependents (q4t8m, b3n6p) stay in backlog until this lands.
+
+---
+
 ## 2026-06-28 13:30 -- Modeling / Refined: infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model
 
 **Type:** Modeling / Refine

@@ -33,6 +33,7 @@ public sealed class DictationOrchestrator : IDisposable
     private readonly ITemplateService? _templateService;
     private readonly SettingsService? _settingsService;
     private readonly Action<bool> _onDictationStateChanged;
+    private readonly ModelLifecycleManager? _modelLifecycle;
 
     private readonly object _lock = new();
     private readonly List<float> _recordedSamples = new();
@@ -68,7 +69,8 @@ public sealed class DictationOrchestrator : IDisposable
         IInputSimulator inputSimulator,
         Action<bool> onDictationStateChanged,
         ITemplateService? templateService = null,
-        SettingsService? settingsService = null)
+        SettingsService? settingsService = null,
+        ModelLifecycleManager? modelLifecycle = null)
     {
         _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
         _audioCapture = audioCapture ?? throw new ArgumentNullException(nameof(audioCapture));
@@ -77,6 +79,7 @@ public sealed class DictationOrchestrator : IDisposable
         _onDictationStateChanged = onDictationStateChanged ?? throw new ArgumentNullException(nameof(onDictationStateChanged));
         _templateService = templateService;
         _settingsService = settingsService;
+        _modelLifecycle = modelLifecycle;
     }
 
     public void Start()
@@ -118,6 +121,12 @@ public sealed class DictationOrchestrator : IDisposable
         }
 
         Trace.TraceInformation("[DictationOrchestrator] Hotkey pressed -- starting recording.");
+
+        // Lazy-load the recognizer on key-DOWN (ADR-0005): kick off the ~4 s
+        // session build in the background so it overlaps the time the user spends
+        // speaking. Transcribe-on-release awaits this same load rather than starting
+        // a second one. Fire-and-forget and idempotent.
+        _modelLifecycle?.BeginLoad();
 
         _audioCapture.AudioDataAvailable += OnAudioData;
 
@@ -236,8 +245,14 @@ public sealed class DictationOrchestrator : IDisposable
 
     private async Task TranscribeFinalAsync(float[] samples, bool templateMode)
     {
+        _modelLifecycle?.EnterDictation();
         try
         {
+            // Await the key-DOWN load (if still in flight) before transcribing — the
+            // model must be resident by release. Never starts a second load.
+            if (_modelLifecycle is not null)
+                await _modelLifecycle.EnsureLoadedAsync();
+
             var result = await _transcription.TranscribeAsync(samples, SampleRate);
             var rawText = result.Text.Trim();
             if (string.IsNullOrEmpty(rawText)) return;
@@ -293,6 +308,12 @@ public sealed class DictationOrchestrator : IDisposable
         {
             Trace.TraceError("[DictationOrchestrator] Final transcription error: {0}", ex.Message);
             PipelineError?.Invoke(ex);
+        }
+        finally
+        {
+            // Balance EnterDictation: clears the in-flight flag and re-arms the idle
+            // clock so the model can be unloaded once the user truly goes idle.
+            _modelLifecycle?.ExitDictation();
         }
     }
 

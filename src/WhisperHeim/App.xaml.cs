@@ -35,6 +35,7 @@ public partial class App : Application
     private readonly Services.Startup.StartupMemoryCompactor _startupMemoryCompactor = new();
     private readonly Services.Startup.WorkingSetTrimmer _workingSetTrimmer = new();
     private Services.Startup.IdleWorkingSetTrimmer? _idleWorkingSetTrimmer;
+    private Services.Transcription.ModelLifecycleManager? _modelLifecycle;
     private bool _isShowingError;
 
     // ── Long-lived services that used to live on MainWindow ────────────
@@ -325,21 +326,26 @@ public partial class App : Application
 
         // ── Services (all lifecycle-independent of MainWindow) ─────────
         _transcriptionService = new TranscriptionService();
-        // If the user skipped first-run setup, the Parakeet model may be
-        // absent. Load lazily/best-effort so the rest of the app (tray icon,
-        // settings UI, transcripts viewer) still boots; the lazy-download
-        // fallback (ModelDownloadDialog) will fire when dictation is
-        // attempted and the model is still missing.
-        try
-        {
-            _transcriptionService.LoadModel();
-        }
-        catch (Exception ex)
-        {
-            Trace.TraceWarning(
-                "[App] TranscriptionService.LoadModel failed (likely missing model after Skip): {0}",
-                ex.Message);
-        }
+        // Lazy-load + keep-warm + idle-unload (infrastructure-d2v7n, ADR-0005):
+        // the ~640 MB Parakeet recognizer is NOT loaded eagerly at startup any more.
+        // It is loaded on Ctrl+Win key-DOWN (the ~4 s session build overlaps the
+        // user's speaking time), kept warm through active dictation, and unloaded
+        // after 5 min idle — reclaiming ~680 MB of committed memory. Any direct
+        // consumer (HTTP API, file/stream transcription) self-heals: TranscribeAsync
+        // reloads the model on demand under the decode lock. The lifecycle manager
+        // owns the state machine; the working-set trim (idle, 3-min) stays as the
+        // cheaper first idle stage and this unload as the deeper second stage.
+        _modelLifecycle = new Services.Transcription.ModelLifecycleManager(
+            loadAsync: ct => _transcriptionService.EnsureLoadedAsync(ct),
+            unload: () =>
+            {
+                _transcriptionService.Unload();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                _workingSetTrimmer.Trim();
+            },
+            idleThreshold: TimeSpan.FromMinutes(5));
         _inputSimulator = new InputSimulator();
         _fileTranscriptionService = new FileTranscriptionService(_transcriptionService);
         _templateService = new TemplateService(_settingsService);
@@ -454,6 +460,13 @@ public partial class App : Application
             idleThreshold: TimeSpan.FromMinutes(3),
             trim: () => _workingSetTrimmer.Trim());
         _idleWorkingSetTrimmer.Start(pollInterval: TimeSpan.FromSeconds(30));
+
+        // Idle-unload of the recognizer (infrastructure-d2v7n, ADR-0005): after
+        // ~5 min with no dictation, free the model itself (~680 MB committed). The
+        // fuse is deliberately longer than the 3-min working-set-trim fuse above —
+        // a ~4 s session rebuild costs far more to recover from than a cold-page
+        // re-fault, so unload is the deeper second stage. Same 30 s poll cadence.
+        _modelLifecycle?.Start(pollInterval: TimeSpan.FromSeconds(30));
     }
 
     private void SetupHotkeysAndOrchestration()
@@ -477,7 +490,8 @@ public partial class App : Application
             _inputSimulator!,
             OnDictationStateChanged,
             _templateService!,
-            _settingsService!);
+            _settingsService!,
+            _modelLifecycle);
 
         _orchestrator.AudioAmplitudeChanged += OnAudioAmplitudeChanged;
         _orchestrator.PipelineError += OnPipelineError;
@@ -508,9 +522,11 @@ public partial class App : Application
     /// </summary>
     private void OnDictationStateChanged(bool isActive)
     {
-        // Any dictation start/stop is activity: reset the idle-trim clock so a
-        // trim never fires mid-use and the working set stays warm while dictating.
+        // Any dictation start/stop is activity: reset the idle clocks so neither a
+        // working-set trim nor a model unload fires mid-use and the model stays warm
+        // while dictating.
         _idleWorkingSetTrimmer?.NotifyActivity();
+        _modelLifecycle?.NotifyActivity();
 
         _trayIconHost?.OnDictationStateChanged(isActive);
 
@@ -605,6 +621,7 @@ public partial class App : Application
         _settingsWindow?.SaveOnExit();
 
         _idleWorkingSetTrimmer?.Dispose();
+        _modelLifecycle?.Dispose();
         _transcribeServer?.Dispose();
         _overlayWindow?.Close();
         _orchestrator?.Dispose();
