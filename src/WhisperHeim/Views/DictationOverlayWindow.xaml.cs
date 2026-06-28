@@ -13,8 +13,8 @@ namespace WhisperHeim.Views;
 
 /// <summary>
 /// A pill-shaped, always-on-top, click-through overlay window that shows animated
-/// frequency bars during active dictation. Appears at the last globally-clicked
-/// mouse position. Uses WS_EX_TRANSPARENT and WS_EX_NOACTIVATE to avoid stealing
+/// frequency bars during active dictation. Appears at the bottom-center of the
+/// primary screen. Uses WS_EX_TRANSPARENT and WS_EX_NOACTIVATE to avoid stealing
 /// focus or blocking mouse clicks.
 ///
 /// Supports five visual states (see <see cref="OverlayMicState"/>):
@@ -70,7 +70,6 @@ public partial class DictationOverlayWindow : Window
     private DispatcherTimer? _barAnimationTimer;
 
     private bool _isVisible;
-    private bool _hasBeenLoaded;
     private OverlayMicState _currentState = OverlayMicState.Idle;
 
     // Smoothed RMS value for amplitude-driven animation
@@ -100,7 +99,6 @@ public partial class DictationOverlayWindow : Window
         // Reposition after SetClickThrough() — adding WS_EX_TOOLWINDOW can
         // cause Windows to move the window on first show.
         PositionAtBottomCenter();
-        _hasBeenLoaded = true;
         InitializeBars();
 
         _fadeIn = (Storyboard)FindResource("FadeIn");
@@ -235,7 +233,7 @@ public partial class DictationOverlayWindow : Window
 
     /// <summary>
     /// Applies the overlay settings (opacity).
-    /// Position is determined by global mouse hook, size is fixed for the pill.
+    /// Position is fixed bottom-center, size is fixed for the pill.
     /// </summary>
     public void ApplySettings(OverlaySettings settings)
     {
@@ -243,19 +241,21 @@ public partial class DictationOverlayWindow : Window
     }
 
     /// <summary>
-    /// Shows the overlay with a fade-in animation at the last clicked position.
+    /// Shows the overlay at the bottom-center of the primary screen with a fade-in animation.
     /// </summary>
     public void ShowOverlay()
     {
         if (_isVisible) return;
         _isVisible = true;
 
-        PositionAtBottomCenter();
+        // Show() first so the window has an HWND (DPI-resolved against its monitor) and a
+        // completed layout pass before we place it — only then is bottom-center positioning
+        // accurate. Positioning *before* Show() was the first-show bug: coordinates were set
+        // without a DPI context and the post-Show reposition was gated behind a flag that was
+        // still false on the first show. The window's Opacity starts at 0 (see XAML) and the
+        // fade-in begins after positioning, so it is never visible at the wrong spot — no flash.
         Show();
-        // On subsequent shows (HWND already exists, Loaded won't fire again),
-        // re-position in case work area changed.
-        if (_hasBeenLoaded)
-            PositionAtBottomCenter();
+        PositionAtBottomCenter();
 
         if (_fadeIn != null)
         {
@@ -404,14 +404,40 @@ public partial class DictationOverlayWindow : Window
 
     // ── Positioning ──────────────────────────────────────────────────────
 
+    // Gap between the pill's bottom edge and the work-area bottom.
+    private const double BottomMargin = 20.0;
+
     /// <summary>
     /// Positions the pill overlay at the bottom-center of the primary screen.
+    /// Prefers the realized layout size (<see cref="FrameworkElement.ActualWidth"/>/
+    /// <see cref="FrameworkElement.ActualHeight"/>), which is only valid once the window
+    /// has been shown and laid out; falls back to the declared <see cref="FrameworkElement.Width"/>/
+    /// <see cref="FrameworkElement.Height"/> before that first layout pass.
     /// </summary>
     private void PositionAtBottomCenter()
     {
-        var workArea = SystemParameters.WorkArea;
-        Left = workArea.Left + (workArea.Width - Width) / 2;
-        Top = workArea.Bottom - Height - 20;
+        double width = ActualWidth > 0 ? ActualWidth : Width;
+        double height = ActualHeight > 0 ? ActualHeight : Height;
+
+        var (left, top) = ComputeBottomCenter(SystemParameters.WorkArea, width, height, BottomMargin);
+        Left = left;
+        Top = top;
+    }
+
+    /// <summary>
+    /// Pure geometry: the top-left point that horizontally centers a
+    /// <paramref name="width"/>×<paramref name="height"/> overlay within
+    /// <paramref name="workArea"/> and rests it <paramref name="bottomMargin"/> px above
+    /// the work-area bottom. Extracted from <see cref="PositionAtBottomCenter"/> so the
+    /// placement math is unit-testable without a live WPF window — the Show()/DPI/lifecycle
+    /// plumbing that makes the *first* show land correctly is verified manually via /deploy.
+    /// </summary>
+    internal static (double Left, double Top) ComputeBottomCenter(
+        Rect workArea, double width, double height, double bottomMargin)
+    {
+        double left = workArea.Left + (workArea.Width - width) / 2.0;
+        double top = workArea.Bottom - height - bottomMargin;
+        return (left, top);
     }
 
     // ── Color helpers ────────────────────────────────────────────────────

@@ -1,11 +1,11 @@
 ---
 id: main-p3k9d
 title: First dictation overlay renders at wrong position (not bottom-center)
-status: todo
+status: done
 type: bug
 context: main
 created: 2026-06-28
-completed:
+completed: 2026-06-28
 depends_on: []
 blocks: []
 tags: [ui, overlay, dictation, bug]
@@ -71,3 +71,38 @@ Relevant code: `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs`
 - The recent `infrastructure-q4t8m` "warming-up" work also touches overlay show/hide timing
   (deferred-hide). This bug is orthogonal (positioning, not state), but the worker should be
   aware of the show/hide lifecycle when testing.
+
+## Outcome
+Root cause corrected during work: the window is **not** auto-sized — the XAML has carried
+explicit `Width="100" Height="40"` since March, so `Width`/`Height` were never `NaN`. The real
+defect was *ordering + DPI context*: `PositionAtBottomCenter()` ran **before** `Show()`, so the
+coordinates were set without an HWND (no monitor/DPI resolution), and the only post-`Show()`
+reposition was gated behind `_hasBeenLoaded`, which is still `false` on the first show. First
+show therefore kept the pre-`Show()` (DPI-unaware) placement; later shows hit the
+`_hasBeenLoaded` branch and looked correct.
+
+Fix in `Views/DictationOverlayWindow.xaml.cs`:
+- `ShowOverlay()` now calls `Show()` **first**, then `PositionAtBottomCenter()` unconditionally.
+  The window's `Opacity` starts at 0 (XAML) and the fade-in begins only after positioning, so
+  it is never visible at the wrong spot — no flash/jump (AC3).
+- `PositionAtBottomCenter()` now prefers `ActualWidth`/`ActualHeight` (valid post-`Show()`),
+  falling back to `Width`/`Height`.
+- Removed the now-dead `_hasBeenLoaded` field and its first-show guard; kept the `OnLoaded`
+  reposition that compensates for `SetClickThrough()` adding `WS_EX_TOOLWINDOW`.
+- Extracted the placement geometry into pure `internal static ComputeBottomCenter(Rect, w, h, margin)`
+  and pinned it with 3 xUnit tests (`tests/WhisperHeim.Tests/DictationOverlayPositionTests.cs`):
+  primary, offset, and DPI-scaled work areas. The `Show()`/DPI lifecycle itself is a WPF
+  integration concern verified manually via `/deploy`, mirroring the `DictationOverlayWarmUpTests`
+  seam convention.
+- Corrected three stale "last clicked position" / "global mouse hook" doc comments to say
+  bottom-center.
+
+AC2 (no regression on subsequent shows / work-area change) and AC4 (multi-monitor unchanged):
+the post-`Show()` reposition runs on every show and reads the current `SystemParameters.WorkArea`;
+multi-monitor follow-cursor logic was neither present nor added.
+
+Full suite green: 169/169.
+
+Key files:
+- `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs`
+- `tests/WhisperHeim.Tests/DictationOverlayPositionTests.cs` (new)

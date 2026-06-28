@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 121
+- **Done:** 122
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **main-p3k9d** -- First dictation overlay renders at wrong position (not bottom-center) -- `todo/main-p3k9d-first-overlay-mispositioned.md`
+<!-- no tasks in todo -->
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +28,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **main-p3k9d** -- First dictation overlay renders at wrong position (not bottom-center) -- 2026-06-28 -- `done/main-p3k9d-first-overlay-mispositioned.md`
 - **main-t6r2k** -- Reduce ASR intra-op threads 4 → 2 -- 2026-06-28 -- `done/main-t6r2k-reduce-asr-threads.md`
 - **main-r7n2k** -- Transcode any unsupported audio format via FFmpeg fallback (e.g. .opus) -- 2026-06-19 -- `done/main-r7n2k-ffmpeg-transcode-fallback.md`
 - **main-q4m8t** -- whisperheim-transcribe CLI wrapper over POST /transcribe -- 2026-06-19 -- `done/main-q4m8t-whisperheim-transcribe-cli.md`

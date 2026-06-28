@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 15:25 -- Task verified and completed: main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+
+**Type:** Work / Task completion
+**Task:** main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+**Summary:** First dictation pill now lands at bottom-center on the very first show after launch, not just on subsequent ones — positioning moved to *after* `Show()` (window then has an HWND/DPI context + completed layout) and the dead `_hasBeenLoaded` first-show guard removed; `PositionAtBottomCenter()` now prefers `ActualWidth`/`ActualHeight`, with the centering math extracted into a pure, unit-tested `ComputeBottomCenter`.
+**Verification:** PASS (iteration 1) — build clean, full suite green 169/169 (3 new geometry tests). No flash confirmed (XAML `Opacity="0"`, fade-in after positioning); no remaining `_hasBeenLoaded` readers; multi-monitor behavior unchanged.
+**Files changed:** 2
+**Tests added:** 3
+**ADRs written:** none
+
+---
+
+## 2026-06-28 15:20 -- Batch started: [main-p3k9d]
+
+**Type:** Work / Batch start
+**Tasks:** main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+**Parallel:** no (1 worker) — only ready task, no dependencies. Touches the dictation overlay positioning in `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs` (PositionAtBottomCenter / ShowOverlay / OnLoaded).
+
+---
+
 ## 2026-06-28 15:10 -- Modeling / Captured: main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
 
 **Type:** Modeling / Capture
