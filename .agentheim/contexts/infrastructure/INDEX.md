@@ -56,7 +56,7 @@ research touching this BC, and concept synthesis pages.
 ## Concepts (opt-in synthesis pages)
 
 <!-- concepts:start -->
-<!-- no concept pages yet -->
+- **idle-memory-footprint** -- How WhisperHeim keeps its resident RAM low while idle without breaking instant Ctrl+Win dictation (synthesizes ADRs 0002–0005 + the RAM-optimization task set) -- `concepts/idle-memory-footprint.md`
 <!-- concepts:end -->
 
 ## Pointers

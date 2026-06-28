@@ -5,6 +5,16 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:39 -- Concept page created: idle-memory-footprint
+
+**Type:** Concept / Synthesis
+**BC:** infrastructure
+**Page:** contexts/infrastructure/concepts/idle-memory-footprint.md
+**Derived from:** ADRs 0002–0005, the Parakeet quantization research report, and done tasks infrastructure-h4m2q / g3n5t / w7k9p / k9m3p + main-t6r2k.
+**Why:** 3 workers independently flagged this convergence during the RAM-optimization run. Synthesizes the two lever families (GC/runtime tuning vs. post-startup housekeeping) and the recognizer lifecycle into one readable page so the next task touching footprint doesn't re-grep nine artifacts. Registered under the concepts marker in the infrastructure INDEX.
+
+---
+
 ## 2026-06-28 12:37 -- Work session ended
 
 **Type:** Work / Session end
