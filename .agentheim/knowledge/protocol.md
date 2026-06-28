@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:27 -- Task verified and completed: infrastructure-g3n5t - Aggressive GC + LOH compaction once after startup
+
+**Type:** Work / Task completion
+**Task:** infrastructure-g3n5t - Aggressive GC + LOH compaction once after startup
+**Summary:** Added `StartupMemoryCompactor` — a one-shot LOH-compacting gen-2 collection on a thread-pool thread ~5s after boot, wired into a shared post-startup housekeeping hook in `App.StartupCore` (with a `WHISPERHEIM_DISABLE_STARTUP_GC` kill switch) so the working-set trim (w7k9p) can append after it. Standalone RAM effect within measurement noise (836/777 → 840/782 MB) — kept as the "compact, then trim" precursor. ADR-0003 (BC-local) records it.
+**Verification:** PASS (iteration 1) — 138/138 tests green incl. 3 new.
+**Files changed:** 5
+**Tests added:** 3
+**ADRs written:** 0003-one-shot-startup-loh-compaction.md (scope: infrastructure)
+
+---
+
+## 2026-06-28 12:25 -- Batch started: [infrastructure-g3n5t]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-g3n5t - Aggressive GC + LOH compaction once after startup
+**Parallel:** no (1 worker) — sequential RAM-optimization run; measured on top of the now-landed Workstation GC (infrastructure-h4m2q).
+
+---
+
 ## 2026-06-28 12:24 -- Task verified and completed: infrastructure-h4m2q - Switch Server GC → Workstation GC + concurrent
 
 **Type:** Work / Task completion

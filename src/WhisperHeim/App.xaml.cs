@@ -32,6 +32,7 @@ public partial class App : Application
     private SettingsService? _settingsService;
     private readonly AudioCaptureService _audioCaptureService = new();
     private readonly ModelManagerService _modelManager = new();
+    private readonly Services.Startup.StartupMemoryCompactor _startupMemoryCompactor = new();
     private bool _isShowingError;
 
     // ── Long-lived services that used to live on MainWindow ────────────
@@ -424,6 +425,18 @@ public partial class App : Application
         else
         {
             ShowSettingsWindow();
+        }
+
+        // Post-startup memory housekeeping (infrastructure-g3n5t). Model load +
+        // WPF init leave Large Object Heap slack that the default (non-compacting)
+        // LOH never reclaims. Run a single compacting gen-2 collection on a
+        // thread-pool thread after a short delay so it doesn't compete with
+        // first-frame rendering or the user's first Ctrl+Win dictation.
+        // Fire-and-forget; the call never faults. The working-set trim
+        // (infrastructure-w7k9p) will append onto this same delayed hook.
+        if (Environment.GetEnvironmentVariable("WHISPERHEIM_DISABLE_STARTUP_GC") != "1")
+        {
+            _ = _startupMemoryCompactor.ScheduleAsync(TimeSpan.FromSeconds(5));
         }
     }
 
