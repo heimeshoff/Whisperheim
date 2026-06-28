@@ -5,6 +5,337 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 16:10 -- Follow-up bug fix (live debug): first dictation overlay top-right on scaled ultrawide [main-p3k9d]
+
+**Type:** Bug fix / Interactive (outside work loop)
+**Task:** main-p3k9d (done) — its original fix did not resolve the symptom on the maintainer's 57" G95NC super-ultrawide at 125% scaling.
+**Root cause (poller-confirmed):** first-`Show()` layout/DPI settling glitch — the very first realization of the overlay HWND rests at (4611,13) top-right; every subsequent show is correct at (3022,1620). WPF `Left`/`Top` governs final position; a `SetWindowPos` physical-pixel detour was always overridden by WPF and was reverted.
+**Fix:** `DictationOverlayWindow.PrewarmFirstShow()` does the throwaway first show invisibly (Opacity 0) at startup via `App.InitializeOverlay`, so the first real dictation is already a clean "second show".
+**Verified:** live Win32 poll caught the pre-warm absorbing the (4611,13) glitch at startup, then the user's first real dictation at (3022,1620); maintainer confirmed. Tests 169/169.
+**Files:** `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs`, `src/WhisperHeim/App.xaml.cs`. Outcome appended to the main-p3k9d task.
+**Residual (accepted, not fixed):** SYSTEM_AWARE (not Per-Monitor-V2) means the pill renders unscaled (100×40 not 125×50) and centers on the DIP-derived point, not true physical center. A PMv2 manifest would fix both but is an app-wide change, deliberately not bundled.
+
+---
+
+## 2026-06-28 15:30 -- Deploy verification: infrastructure-q4t8m AC6 confirmed live
+
+**Type:** Work / Deploy verification
+**Task:** infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+**Result:** The user ran `/deploy` and confirmed the deploy-gated AC6 live — a short utterance after an idle unload shows the pulsing-amber warming-up state, then the transcription lands. All 6 acceptance criteria now satisfied (ACs 1–5 by the verifier's trace + 4 unit tests at completion; AC6 now confirmed on the running app). Task fully done. (Logged after the 15:26 session because the live test happened post-session.)
+
+---
+
+## 2026-06-28 15:26 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** main-p3k9d (first dictation overlay mispositioned). Single ready task, no dependencies. Board now fully empty (0 todo / 0 doing / 0 backlog across all BCs).
+**ADRs written:** 0.
+**Follow-up:** The Show()/DPI/first-show lifecycle is verified only by unit-pinned geometry + reasoning; a live `/deploy` (fresh app launch → first Ctrl+Win dictation) is the honest confirmation that the very first pill now lands bottom-center.
+
+---
+
+## 2026-06-28 15:25 -- Task verified and completed: main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+
+**Type:** Work / Task completion
+**Task:** main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+**Summary:** First dictation pill now lands at bottom-center on the very first show after launch, not just on subsequent ones — positioning moved to *after* `Show()` (window then has an HWND/DPI context + completed layout) and the dead `_hasBeenLoaded` first-show guard removed; `PositionAtBottomCenter()` now prefers `ActualWidth`/`ActualHeight`, with the centering math extracted into a pure, unit-tested `ComputeBottomCenter`.
+**Verification:** PASS (iteration 1) — build clean, full suite green 169/169 (3 new geometry tests). No flash confirmed (XAML `Opacity="0"`, fade-in after positioning); no remaining `_hasBeenLoaded` readers; multi-monitor behavior unchanged.
+**Files changed:** 2
+**Tests added:** 3
+**ADRs written:** none
+
+---
+
+## 2026-06-28 15:20 -- Batch started: [main-p3k9d]
+
+**Type:** Work / Batch start
+**Tasks:** main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+**Parallel:** no (1 worker) — only ready task, no dependencies. Touches the dictation overlay positioning in `src/WhisperHeim/Views/DictationOverlayWindow.xaml.cs` (PositionAtBottomCenter / ShowOverlay / OnLoaded).
+
+---
+
+## 2026-06-28 15:10 -- Modeling / Captured: main-p3k9d - First dictation overlay renders at wrong position (not bottom-center)
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** First dictation overlay after app start renders top / two-thirds-from-left instead of bottom-center; later shows are fine. Root cause grounded: `PositionAtBottomCenter()` uses the `Width`/`Height` properties (`NaN` pre-measure) and the first show skips the post-`Show()` reposition (`_hasBeenLoaded` guard). Filed straight to todo — clear repro, scope, and AC.
+
+---
+
+## 2026-06-28 14:36 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-q4t8m ("warming up" overlay state). Single ready task; its dependency infrastructure-d2v7n was done. Board now fully empty (0 todo / 0 doing / 0 backlog across all BCs).
+**ADRs written:** 0 (the visual treatment was already decided during refinement; no new architectural decision arose).
+**Follow-up:** AC6 is deploy-gated — run `/deploy`, force a ≥5 min idle unload, fire a short (<~4 s) utterance, and confirm the pulsing-amber warming-up state persists before the transcription lands.
+
+---
+
+## 2026-06-28 14:35 -- Task verified and completed: infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+
+**Type:** Work / Task completion
+**Task:** infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+**Summary:** Added a pulsing-amber `OverlayMicState.WarmingUp` shown when a held utterance is released while the recognizer is not yet `Loaded` — transcribe-on-release awaits the in-flight load and the overlay stays alive (deferred hide) through the bounded ~4 s wait instead of fading to a frozen-looking blank. Plumbed via a new `WarmingUpChanged(bool)` orchestrator event mirroring `AudioAmplitudeChanged`/`PipelineError`; Error precedence preserved.
+**Verification:** PASS (iteration 1) — build clean, full suite green (166 passed, 4 new release-time decision tests). Deferred-hide race traced closed (WarmingUpChanged(true) raised before NotifyStateChanged(false), same-priority FIFO dispatcher).
+**Files changed:** 6
+**Tests added:** 4
+**ADRs written:** none
+**Deferred:** AC6 (live `/deploy` visual confirmation — force ≥5 min idle unload, fire a short <~4 s utterance, observe pulsing amber then transcription) is deploy-gated; code-complete and unit-tested, awaits a user `/deploy`.
+
+---
+
+## 2026-06-28 14:25 -- Batch started: [infrastructure-q4t8m]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+**Parallel:** no (1 worker) — only ready task; dependency infrastructure-d2v7n (lazy-load core lifecycle) is done. Touches the dictation overlay + orchestrator event plumbing in main/ (Views/, App.xaml.cs, Services/Orchestration/).
+
+---
+
+## 2026-06-28 14:15 -- Modeling / Dismissed: infrastructure-b3n6p
+
+**Type:** Modeling / Dismiss
+**Dismissed:** infrastructure-b3n6p - Make lazy-load / idle-unload configurable (lazy-vs-eager + idle timeout) (infrastructure)
+
+---
+
+## 2026-06-28 14:10 -- Modeling / Refined: infrastructure-q4t8m - "Warming up" overlay state when an utterance outruns the model load
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Pinned every implementation hook against the now-shipped d2v7n core: signal is `ModelLifecycleManager.State` (`ModelResidencyState.Loading` vs `Loaded`) checked at the `EnsureLoadedAsync` await in `DictationOrchestrator.TranscribeFinalAsync`; render a new `OverlayMicState.WarmingUp` in `DictationOverlayWindow.SetMicState`/`OnBarAnimationTick`; plumb via a new orchestrator event mirroring `AudioAmplitudeChanged`/`PipelineError`. Surfaced the key wrinkle: the overlay is told to `HideOverlay()` at release *before* the load-wait runs, so warming-up must defer that hide (else `SetMicState` no-ops on `!_isVisible`). User chose the visual treatment — pulsing amber bars, in sync, distinct from Speaking-orange and Idle-grey. Tightened AC (deferred-hide, Error precedence, no-flash for normal utterances) and promoted to todo (hook is no longer a TODO).
+**Split into:** none.
+**ADRs written:** none (added ADR-0006 to `related_adrs` — it records the lifecycle/state shape this binds to).
+
+---
+
+## 2026-06-28 13:56 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-d2v7n (lazy-load + keep-warm + idle-unload core lifecycle). Single ready task; its two dependents (q4t8m "warming up" overlay, b3n6p settings) remain in backlog — now unblocked but need `modeling` to promote to todo.
+**ADRs written:** 0006 (scope: infrastructure).
+**Follow-up:** 3 acceptance criteria are deploy-gated (idle private-bytes drop ~680 MB; short/long-utterance latency) — code-complete + unit-tested but await a live `/deploy` measurement to confirm the numbers.
+
+---
+
+## 2026-06-28 13:55 -- Task verified and completed: infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
+
+**Type:** Work / Task completion
+**Task:** infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
+**Summary:** Implemented the `ModelLifecycleManager` state machine (Unloaded → Loading → Loaded → idle → Unloaded) — loads the ~640 MB Parakeet recognizer on Ctrl+Win key-DOWN, awaits that load on release, keeps warm through dictation, unloads after 5 min idle (Dispose+GC+trim, ~680 MB committed reclaimed), with self-healing decode so every consumer (HTTP API, file/stream) survives an unload under the shared decode lock.
+**Verification:** PASS (iteration 1) — full suite green (162 tests, 15 new lifecycle tests covering all concurrency edges: await-before-loaded, single shared load on repeat presses, load-failure graceful, cancellation, idle-unload gating, NotifyActivity reset). Unload-safety invariant (no dispose mid-decode via shared lock) confirmed.
+**Files changed:** 7
+**Tests added:** 15
+**ADRs written:** 0006 (scope: infrastructure)
+**Deferred:** 3 acceptance criteria require a live `/deploy` RAM/latency measurement (idle private-bytes drop; short/long utterance latency) — code-complete and unit-tested; measurement steps recorded in the task Outcome. **User should run `/deploy` to capture the before/after numbers.**
+
+---
+
+## 2026-06-28 13:45 -- Batch started: [infrastructure-d2v7n]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle
+**Parallel:** no (1 worker) — only ready task; dependency infrastructure-k9m3p (ADR-0005 GO) satisfied. Touches the model lifecycle hot path (TranscriptionService / DictationOrchestrator); its two dependents (q4t8m, b3n6p) stay in backlog until this lands.
+
+---
+
+## 2026-06-28 13:30 -- Modeling / Refined: infrastructure-d2v7n - Lazy-load + keep-warm + idle-unload of the Parakeet model
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Folded the spike's measured numbers (ADR-0005: Dispose returns ~680 MB private bytes; reload a fixed ~4 s, session-init-bound; lazy-load on key-DOWN; 5-min idle fuse reusing the `NotifyActivity()` shape) into the task, sharpening Why/What/AC away from estimates. Confirmed the Nemotron re-validation caveat is moot — that branch name was retired, model stays INT8 Parakeet — clearing the only open risk. Split the feature into core lifecycle (d2v7n) + two dependents, then promoted the core to todo.
+**Split into:** infrastructure-q4t8m ("warming up" overlay state), infrastructure-b3n6p (lazy-vs-eager + idle-timeout settings) — both depend_on d2v7n, left in backlog until the core lands.
+**ADRs written:** none (ADR-0005 already records the decision; added the two child ids to its `related_tasks`).
+
+---
+
+## 2026-06-28 12:39 -- Concept page created: idle-memory-footprint
+
+**Type:** Concept / Synthesis
+**BC:** infrastructure
+**Page:** contexts/infrastructure/concepts/idle-memory-footprint.md
+**Derived from:** ADRs 0002–0005, the Parakeet quantization research report, and done tasks infrastructure-h4m2q / g3n5t / w7k9p / k9m3p + main-t6r2k.
+**Why:** 3 workers independently flagged this convergence during the RAM-optimization run. Synthesizes the two lever families (GC/runtime tuning vs. post-startup housekeeping) and the recognizer lifecycle into one readable page so the next task touching footprint doesn't re-grep nine artifacts. Registered under the concepts marker in the infrastructure INDEX.
+
+---
+
+## 2026-06-28 12:37 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 5 (first-try PASS: 5, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 6 (5 task commits + this session-end line)
+**Scope:** the full RAM-optimization task set (h4m2q, g3n5t, w7k9p, main-t6r2k) + the idle-unload spike (k9m3p). Run sequentially by design — all tasks share the single /deploy app instance and needed clean before/after measurement attribution.
+**ADRs written:** 0002 (global), 0003, 0004, 0005 (all scope: infrastructure).
+**Concept convergence:** 3 workers independently flagged the same memory-housekeeping cluster (idle-memory-footprint-optimization / post-startup-memory-housekeeping / parakeet-recognizer-memory-lifecycle) across ADRs 0002–0005 + the 4 RAM tasks — strong signal for a single concept page (user decides).
+**Follow-up:** k9m3p returned GO, clearing the blocker on backlog feature infrastructure-d2v7n (lazy-load + keep-warm + idle-unload). It stays in backlog until promoted to todo via modeling.
+
+---
+
+## 2026-06-28 12:36 -- Task verified and completed: infrastructure-k9m3p - Spike: does disposing the Parakeet recognizer return RAM, and how fast does it reload?
+
+**Type:** Work / Task completion
+**Task:** infrastructure-k9m3p - Spike: does disposing the Parakeet recognizer return RAM, and how fast does it reload?
+**Summary:** GO for infrastructure-d2v7n. Throwaway harness (kept in scratchpad, outside the repo — app + `dotnet test` untouched) measured: Dispose() returns ~679 MB private bytes (707 → 28 MB, ~20 MB over the 8 MB baseline — ONNX arena retention did NOT bite), reload is a deterministic ~4 s independent of file-cache state (session-init-bound, not I/O-bound), transcripts identical across reloads. Recommend lazy-load on Ctrl+Win key-down + ~5-min idle-unload threshold. ADR-0005 (BC-local) records the GO + caveats. The blocker on backlog feature infrastructure-d2v7n is now cleared.
+**Verification:** PASS (iteration 1) — RAM table + load-times present in both task Outcome and ADR-0005; private-byte deltas reconcile exactly; GO follows from the data; no production runtime change shipped.
+**Files changed:** 1 (ADR-0005; throwaway harness kept out of the repo)
+**Tests added:** 0 (measurement spike)
+**ADRs written:** 0005-idle-unload-of-parakeet-recognizer-go.md (scope: infrastructure)
+
+---
+
+## 2026-06-28 12:35 -- Batch started: [infrastructure-k9m3p]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-k9m3p - Spike: does disposing the Parakeet recognizer return RAM, and how fast does it reload?
+**Parallel:** no (1 worker) — final task of the RAM-optimization run; throwaway measurement spike gating the backlog feature infrastructure-d2v7n.
+
+---
+
+## 2026-06-28 12:34 -- Task verified and completed: main-t6r2k - Reduce ASR intra-op threads 4 → 2
+
+**Type:** Work / Task completion
+**Task:** main-t6r2k - Reduce ASR intra-op threads 4 → 2
+**Summary:** Lowered the Parakeet ASR intra-op thread cap from 4 to 2 (`Math.Min(Environment.ProcessorCount, 2)`) in `TranscriptionService.LoadModel()`. Machine-measured: decode +~60 ms on a 3 s clip (~160→220 ms, still ~13x real-time, instant-feel preserved), transcript text identical; per-thread RAM saving small (within noise) — the memory-mapped INT8 encoder masks it.
+**Verification:** PASS (iteration 1) — build green, 147/147 tests pass; measurement figures internally consistent.
+**Files changed:** 1
+**Tests added:** 0 (config-tuning, no exposed seam)
+**ADRs written:** none
+
+---
+
+## 2026-06-28 12:32 -- Batch started: [main-t6r2k]
+
+**Type:** Work / Batch start
+**Tasks:** main-t6r2k - Reduce ASR intra-op threads 4 → 2
+**Parallel:** no (1 worker) — sequential RAM-optimization run; touches TranscriptionService.cs (the spike infrastructure-k9m3p touches the same file and runs after this).
+
+---
+
+## 2026-06-28 12:31 -- Task verified and completed: infrastructure-w7k9p - Trim Windows working set after model load and on idle
+
+**Type:** Work / Task completion
+**Task:** infrastructure-w7k9p - Trim Windows working set after model load and on idle
+**Summary:** Added `WorkingSetTrimmer` (Windows `EmptyWorkingSet` P/Invoke, guarded + non-fatal) fired after model load via the post-startup hook's new `postCompactionStep` callback ("compact, then trim"), plus `IdleWorkingSetTrimmer` (3-min idle, 30s poll, re-armed by dictation activity, disposed on exit). Direct measurement of the trim: WorkingSet64 489→10 MB, PrivateMemorySize64 flat (trim moves cold pages to standby, doesn't free committed memory — the resident Parakeet recognizer is never unloaded). ADR-0004 (BC-local).
+**Verification:** PASS (iteration 1) — 147/147 tests green incl. 9 new.
+**Files changed:** 8
+**Tests added:** 9
+**ADRs written:** 0004-working-set-trim-after-load-and-on-idle.md (scope: infrastructure)
+
+---
+
+## 2026-06-28 12:28 -- Batch started: [infrastructure-w7k9p]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-w7k9p - Trim Windows working set after model load and on idle
+**Parallel:** no (1 worker) — appends the working-set trim onto the post-startup housekeeping hook landed by infrastructure-g3n5t ("compact, then trim"); measured on top of Workstation GC + startup compaction.
+
+---
+
+## 2026-06-28 12:27 -- Task verified and completed: infrastructure-g3n5t - Aggressive GC + LOH compaction once after startup
+
+**Type:** Work / Task completion
+**Task:** infrastructure-g3n5t - Aggressive GC + LOH compaction once after startup
+**Summary:** Added `StartupMemoryCompactor` — a one-shot LOH-compacting gen-2 collection on a thread-pool thread ~5s after boot, wired into a shared post-startup housekeeping hook in `App.StartupCore` (with a `WHISPERHEIM_DISABLE_STARTUP_GC` kill switch) so the working-set trim (w7k9p) can append after it. Standalone RAM effect within measurement noise (836/777 → 840/782 MB) — kept as the "compact, then trim" precursor. ADR-0003 (BC-local) records it.
+**Verification:** PASS (iteration 1) — 138/138 tests green incl. 3 new.
+**Files changed:** 5
+**Tests added:** 3
+**ADRs written:** 0003-one-shot-startup-loh-compaction.md (scope: infrastructure)
+
+---
+
+## 2026-06-28 12:25 -- Batch started: [infrastructure-g3n5t]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-g3n5t - Aggressive GC + LOH compaction once after startup
+**Parallel:** no (1 worker) — sequential RAM-optimization run; measured on top of the now-landed Workstation GC (infrastructure-h4m2q).
+
+---
+
+## 2026-06-28 12:24 -- Task verified and completed: infrastructure-h4m2q - Switch Server GC → Workstation GC + concurrent
+
+**Type:** Work / Task completion
+**Task:** infrastructure-h4m2q - Switch Server GC → Workstation GC + concurrent
+**Summary:** Switched the tray app from Server GC (DATAS-disabled) to Workstation GC + concurrent; idle private memory dropped ~47 MB (823 → 776 MB), well below the 200–400 MB estimate because the ~640 MB model + ONNX overhead dominates resident memory and GC mode doesn't touch it. ADR-0002 (global) records the decision and the measurement.
+**Verification:** PASS (iteration 1)
+**Files changed:** 2
+**Tests added:** 0 (runtime-config + measurement task)
+**ADRs written:** 0002-workstation-gc-for-idle-tray-app.md (scope: global)
+
+---
+
+## 2026-06-28 12:21 -- Batch started: [infrastructure-h4m2q]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-h4m2q - Switch Server GC → Workstation GC + concurrent
+**Parallel:** no (1 worker) — RAM-optimization set runs sequentially; all tasks share the single /deploy app instance and require clean before/after measurement attribution.
+
+---
+
+## 2026-06-28 12:20 -- Modeling / Captured: lazy-load / idle-unload of the Parakeet model (spike + feature)
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo (spike) + backlog (feature)
+**Summary:** Capture the highest-impact RAM lever — free the ~640 MB recognizer while idle and lazily reload on Ctrl+Win, capturing audio in parallel; since dictation is push-to-talk batch (transcribe-on-release), the load hides behind speech for normal-length utterances. infrastructure-k9m3p (spike, todo) measures whether Dispose() actually returns RAM to the OS and cold/warm reload time → go/no-go; it `blocks` infrastructure-d2v7n (feature, backlog) implementing lazy-load + keep-warm + idle-unload + "warming up" overlay. Feature stays in backlog until the spike returns go.
+
+---
+
+## 2026-06-28 12:05 -- Modeling / Captured: RAM-optimization task set (4 tasks)
+
+**Type:** Modeling / Capture
+**BC:** infrastructure (3) + main (1)
+**Filed to:** todo
+**Summary:** Captured four tasks to cut WhisperHeim's ~1.3–1.4 GB steady-state footprint without breaking instant Ctrl+Win dictation (Parakeet ~640 MB stays resident), from the codebase investigation behind the Parakeet-quantization research report. infrastructure-h4m2q (Server GC → Workstation GC + concurrent, biggest win), infrastructure-w7k9p (Windows working-set trim after load / on idle), infrastructure-g3n5t (one-shot startup GC + LOH compaction), main-t6r2k (ASR intra-op threads 4→2 in TranscriptionService.cs:47). Each carries a before/after RAM measurement via /deploy.
+
+---
+
+## 2026-06-28 11:40 -- Research: Parakeet quantization & Nemotron comparison
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/parakeet-quantization-and-nemotron-2026-06-28.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- Quantization's real win is BF16/FP16 (halves VRAM, ~10x NeMo speedup from half-precision + label-looping + CUDA Graphs + batching, no accuracy loss); INT8 only exists as community ONNX builds with no published German WER (A/B test required); CTranslate2 doesn't support Parakeet/TDT.
+- "Nemotron" is now overloaded: NVIDIA shipped a real Nemotron Speech streaming ASR (`nemotron-3.5-asr-streaming-0.6b`, 2026-06-04, German-capable, OpenMDW-1.1) — it's a streaming sibling of Parakeet, not an LLM.
+- Parakeet (batch, RTFx ~3,300) vs Nemotron Speech (streaming, ~17x more concurrent streams) is a batch-vs-streaming choice, not better-vs-worse; Canary-1B-v2 still leads NeMo German accuracy.
+
+---
+
+## 2026-06-28 11:24 -- Research: Best STT models for German & English
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/best-stt-models-german-english-2026-06-28.md
+**Review:** PASS (iteration 1)
+**Summary:**
+- Check Parakeet version first: v2 is English-only; v3 (`parakeet-tdt-0.6b-v3`, Aug 2025) adds German + 24 EU langs at extreme speed — likely the highest-value, lowest-effort change.
+- Best open German accuracy: Voxtral Small 24B (~3.01% German WER, Apache 2.0) or lighter Canary-1B-v2 (~4.10%, CC-BY-4.0); accuracy↔speed split is TDT decoder (fast) vs transformer/LLM decoder (accurate).
+- Whisper large-v3 + WhisperX remains the safe default for coverage/tooling but no longer the accuracy leader; cloud APIs beat all open weights but break local-first.
+
+---
+
 ## 2026-06-19 16:33 -- Work session ended
 
 **Type:** Work / Session end

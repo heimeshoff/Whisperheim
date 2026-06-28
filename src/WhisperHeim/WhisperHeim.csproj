@@ -9,8 +9,12 @@
     <Platforms>x64</Platforms>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <RuntimeIdentifier>win-x64</RuntimeIdentifier>
-    <ServerGarbageCollection>true</ServerGarbageCollection>
-    <GarbageCollectionAdaptationMode>0</GarbageCollectionAdaptationMode>
+    <!-- Workstation GC + concurrent: this is a mostly-idle desktop tray app, so
+         Server GC's per-core heaps and aggressive retention are the wrong trade.
+         DATAS (GarbageCollectionAdaptationMode) is a Server-GC concern and is moot
+         here, so the line is removed. See infrastructure-h4m2q. -->
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>true</ConcurrentGarbageCollection>
     <!-- Custom Main in Program.cs hosts VelopackApp.Run() ahead of WPF startup. -->
     <StartupObject>WhisperHeim.Program</StartupObject>
   </PropertyGroup>

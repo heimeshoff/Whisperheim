@@ -32,6 +32,10 @@ public partial class App : Application
     private SettingsService? _settingsService;
     private readonly AudioCaptureService _audioCaptureService = new();
     private readonly ModelManagerService _modelManager = new();
+    private readonly Services.Startup.StartupMemoryCompactor _startupMemoryCompactor = new();
+    private readonly Services.Startup.WorkingSetTrimmer _workingSetTrimmer = new();
+    private Services.Startup.IdleWorkingSetTrimmer? _idleWorkingSetTrimmer;
+    private Services.Transcription.ModelLifecycleManager? _modelLifecycle;
     private bool _isShowingError;
 
     // ── Long-lived services that used to live on MainWindow ────────────
@@ -89,6 +93,11 @@ public partial class App : Application
     private GlobalHotkeyService? _hotkeyService;
     private DictationOrchestrator? _orchestrator;
     private DictationOverlayWindow? _overlayWindow;
+
+    // True while transcribe-on-release is awaiting an in-flight model load: the
+    // overlay shows WarmingUp and its hide is deferred until the load completes
+    // (task infrastructure-q4t8m). UI-thread only.
+    private bool _isWarmingUp;
     private TrayIconHost? _trayIconHost;
 
     // Lazy-constructed settings window. Created on first open (tray click,
@@ -322,21 +331,26 @@ public partial class App : Application
 
         // ── Services (all lifecycle-independent of MainWindow) ─────────
         _transcriptionService = new TranscriptionService();
-        // If the user skipped first-run setup, the Parakeet model may be
-        // absent. Load lazily/best-effort so the rest of the app (tray icon,
-        // settings UI, transcripts viewer) still boots; the lazy-download
-        // fallback (ModelDownloadDialog) will fire when dictation is
-        // attempted and the model is still missing.
-        try
-        {
-            _transcriptionService.LoadModel();
-        }
-        catch (Exception ex)
-        {
-            Trace.TraceWarning(
-                "[App] TranscriptionService.LoadModel failed (likely missing model after Skip): {0}",
-                ex.Message);
-        }
+        // Lazy-load + keep-warm + idle-unload (infrastructure-d2v7n, ADR-0005):
+        // the ~640 MB Parakeet recognizer is NOT loaded eagerly at startup any more.
+        // It is loaded on Ctrl+Win key-DOWN (the ~4 s session build overlaps the
+        // user's speaking time), kept warm through active dictation, and unloaded
+        // after 5 min idle — reclaiming ~680 MB of committed memory. Any direct
+        // consumer (HTTP API, file/stream transcription) self-heals: TranscribeAsync
+        // reloads the model on demand under the decode lock. The lifecycle manager
+        // owns the state machine; the working-set trim (idle, 3-min) stays as the
+        // cheaper first idle stage and this unload as the deeper second stage.
+        _modelLifecycle = new Services.Transcription.ModelLifecycleManager(
+            loadAsync: ct => _transcriptionService.EnsureLoadedAsync(ct),
+            unload: () =>
+            {
+                _transcriptionService.Unload();
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+                GC.Collect();
+                _workingSetTrimmer.Trim();
+            },
+            idleThreshold: TimeSpan.FromMinutes(5));
         _inputSimulator = new InputSimulator();
         _fileTranscriptionService = new FileTranscriptionService(_transcriptionService);
         _templateService = new TemplateService(_settingsService);
@@ -425,6 +439,39 @@ public partial class App : Application
         {
             ShowSettingsWindow();
         }
+
+        // Post-startup memory housekeeping (infrastructure-g3n5t + w7k9p). Model
+        // load + WPF init leave Large Object Heap slack that the default
+        // (non-compacting) LOH never reclaims, plus a large committed-but-cold
+        // working set. Run a single compacting gen-2 collection then a working-set
+        // trim ("compact, then trim") on a thread-pool thread after a short delay
+        // so neither competes with first-frame rendering or the user's first
+        // Ctrl+Win dictation. Fire-and-forget; the call never faults. The trim
+        // moves cold pages to standby (lower reported RSS) without unloading the
+        // resident Parakeet recognizer.
+        if (Environment.GetEnvironmentVariable("WHISPERHEIM_DISABLE_STARTUP_GC") != "1")
+        {
+            _ = _startupMemoryCompactor.ScheduleAsync(
+                TimeSpan.FromSeconds(5),
+                postCompactionStep: () => _workingSetTrimmer.Trim());
+        }
+
+        // Idle working-set trim (infrastructure-w7k9p): after ~3 min with no
+        // dictation/transcription activity, release the working set again so cold
+        // decode pages move to standby during long idle stretches. Re-armed on the
+        // next dictation via OnDictationStateChanged → NotifyActivity. Independent
+        // of the disable-startup-GC switch (this is a runtime, not startup, lever).
+        _idleWorkingSetTrimmer = new Services.Startup.IdleWorkingSetTrimmer(
+            idleThreshold: TimeSpan.FromMinutes(3),
+            trim: () => _workingSetTrimmer.Trim());
+        _idleWorkingSetTrimmer.Start(pollInterval: TimeSpan.FromSeconds(30));
+
+        // Idle-unload of the recognizer (infrastructure-d2v7n, ADR-0005): after
+        // ~5 min with no dictation, free the model itself (~680 MB committed). The
+        // fuse is deliberately longer than the 3-min working-set-trim fuse above —
+        // a ~4 s session rebuild costs far more to recover from than a cold-page
+        // re-fault, so unload is the deeper second stage. Same 30 s poll cadence.
+        _modelLifecycle?.Start(pollInterval: TimeSpan.FromSeconds(30));
     }
 
     private void SetupHotkeysAndOrchestration()
@@ -448,10 +495,12 @@ public partial class App : Application
             _inputSimulator!,
             OnDictationStateChanged,
             _templateService!,
-            _settingsService!);
+            _settingsService!,
+            _modelLifecycle);
 
         _orchestrator.AudioAmplitudeChanged += OnAudioAmplitudeChanged;
         _orchestrator.PipelineError += OnPipelineError;
+        _orchestrator.WarmingUpChanged += OnWarmingUpChanged;
         _orchestrator.TemplateNoMatch += spokenText =>
             ToastWindow.Show($"No template match for: \"{spokenText}\"");
 
@@ -479,12 +528,55 @@ public partial class App : Application
     /// </summary>
     private void OnDictationStateChanged(bool isActive)
     {
+        // Any dictation start/stop is activity: reset the idle clocks so neither a
+        // working-set trim nor a model unload fires mid-use and the model stays warm
+        // while dictating.
+        _idleWorkingSetTrimmer?.NotifyActivity();
+        _modelLifecycle?.NotifyActivity();
+
         _trayIconHost?.OnDictationStateChanged(isActive);
 
         if (isActive)
+        {
+            // Fresh dictation — clear any stale warming flag so a previous warm-up
+            // can never suppress this session's hide.
+            _isWarmingUp = false;
             _overlayWindow?.ShowOverlay();
+        }
+        else if (_isWarmingUp)
+        {
+            // The held utterance outran the model load: keep the overlay alive and
+            // showing WarmingUp. The hide is deferred to OnWarmingUpChanged(false),
+            // which fires once EnsureLoadedAsync returns and decode begins.
+            Trace.TraceInformation("[App] Dictation released while warming up — deferring overlay hide.");
+        }
         else
+        {
             _overlayWindow?.HideOverlay();
+        }
+    }
+
+    /// <summary>
+    /// Reflects the transcribe-on-release "warming up" window (task infrastructure-q4t8m,
+    /// ADR-0005/0006) on the overlay. <c>true</c>: the model was still loading at
+    /// release, so show the pulsing-amber WarmingUp state and defer the fade-out.
+    /// <c>false</c>: the load finished and decode is starting, so fade out as usual.
+    /// </summary>
+    private void OnWarmingUpChanged(bool warming)
+    {
+        Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            if (warming)
+            {
+                _isWarmingUp = true;
+                _overlayWindow?.SetMicState(OverlayMicState.WarmingUp);
+            }
+            else
+            {
+                _isWarmingUp = false;
+                _overlayWindow?.HideOverlay();
+            }
+        });
     }
 
     private void InitializeOverlay()
@@ -499,7 +591,12 @@ public partial class App : Application
         _overlayWindow = new DictationOverlayWindow();
         _overlayWindow.ApplySettings(overlaySettings);
 
-        Trace.TraceInformation("[App] Overlay initialized (pill mode, follows last click).");
+        // Run the throwaway first-Show() DPI/layout settling pass now (invisibly), so the first
+        // real dictation overlay is already a "second show" and lands at bottom-center instead of
+        // the first-show top-right glitch on scaled displays.
+        _overlayWindow.PrewarmFirstShow();
+
+        Trace.TraceInformation("[App] Overlay initialized (pill mode, pre-warmed).");
     }
 
     private void OnAudioAmplitudeChanged(double rmsAmplitude)
@@ -516,6 +613,10 @@ public partial class App : Application
     {
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
+            // Error precedence: a pipeline error (including a load failure during
+            // warm-up) wins. Clear the warming flag so the deferred hide is released
+            // and the Error state is what the user sees.
+            _isWarmingUp = false;
             _overlayWindow?.SetMicState(OverlayMicState.Error);
             Trace.TraceError("[App] Pipeline error reflected in overlay: {0}", ex.Message);
         });
@@ -571,6 +672,8 @@ public partial class App : Application
         // If the settings window was opened, persist its position/size.
         _settingsWindow?.SaveOnExit();
 
+        _idleWorkingSetTrimmer?.Dispose();
+        _modelLifecycle?.Dispose();
         _transcribeServer?.Dispose();
         _overlayWindow?.Close();
         _orchestrator?.Dispose();

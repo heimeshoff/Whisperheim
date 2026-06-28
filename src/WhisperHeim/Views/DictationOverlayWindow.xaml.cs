@@ -13,15 +13,16 @@ namespace WhisperHeim.Views;
 
 /// <summary>
 /// A pill-shaped, always-on-top, click-through overlay window that shows animated
-/// frequency bars during active dictation. Appears at the last globally-clicked
-/// mouse position. Uses WS_EX_TRANSPARENT and WS_EX_NOACTIVATE to avoid stealing
+/// frequency bars during active dictation. Appears at the bottom-center of the
+/// primary screen. Uses WS_EX_TRANSPARENT and WS_EX_NOACTIVATE to avoid stealing
 /// focus or blocking mouse clicks.
 ///
-/// Supports four visual states (see <see cref="OverlayMicState"/>):
-///   Idle     -> grey border, grey bars with gentle movement
-///   Speaking -> blue border, orange bars driven by RMS amplitude
-///   NoMic    -> grey border, grey static bars
-///   Error    -> solid red fill
+/// Supports five visual states (see <see cref="OverlayMicState"/>):
+///   Idle      -> grey border, grey bars with gentle movement
+///   Speaking  -> blue border, orange bars driven by RMS amplitude
+///   NoMic     -> grey border, grey static bars
+///   WarmingUp -> amber border, amber bars breathing in sync (~1 s), RMS ignored
+///   Error     -> solid red fill
 /// </summary>
 public partial class DictationOverlayWindow : Window
 {
@@ -44,6 +45,9 @@ public partial class DictationOverlayWindow : Window
     // ── Brand colors ─────────────────────────────────────────────────────
     private static readonly Color BlueBorderColor = (Color)ColorConverter.ConvertFromString("#FF25abfe");
     private static readonly Color OrangeBarColor = (Color)ColorConverter.ConvertFromString("#FFff8b00");
+    // Warming-up amber: a yellower warm tone, deliberately distinct from the
+    // Speaking-orange (#FFff8b00) so the two busy states never read alike.
+    private static readonly Color AmberBarColor = (Color)ColorConverter.ConvertFromString("#FFFFC107");
     private static readonly Color GreyColor = Color.FromRgb(0x99, 0x99, 0x99);
     private static readonly Color RedColor = Color.FromRgb(0xEE, 0x33, 0x33);
 
@@ -54,6 +58,9 @@ public partial class DictationOverlayWindow : Window
     private const double BarGap = 2.0;
     private const double MinBarHeightFraction = 0.05; // minimum bar height as fraction of canvas height
 
+    // Warming-up pulse: all bars breathe in sync on this period, ignoring RMS.
+    private const double WarmingPulsePeriodMs = 1000.0;
+
     private readonly Rectangle[] _bars = new Rectangle[BarCount];
     private readonly Random _random = new();
 
@@ -63,7 +70,6 @@ public partial class DictationOverlayWindow : Window
     private DispatcherTimer? _barAnimationTimer;
 
     private bool _isVisible;
-    private bool _hasBeenLoaded;
     private OverlayMicState _currentState = OverlayMicState.Idle;
 
     // Smoothed RMS value for amplitude-driven animation
@@ -93,7 +99,6 @@ public partial class DictationOverlayWindow : Window
         // Reposition after SetClickThrough() — adding WS_EX_TOOLWINDOW can
         // cause Windows to move the window on first show.
         PositionAtBottomCenter();
-        _hasBeenLoaded = true;
         InitializeBars();
 
         _fadeIn = (Storyboard)FindResource("FadeIn");
@@ -184,7 +189,16 @@ public partial class DictationOverlayWindow : Window
         {
             double targetHeight;
 
-            if (_currentState == OverlayMicState.Speaking || _currentState == OverlayMicState.Idle)
+            if (_currentState == OverlayMicState.WarmingUp)
+            {
+                // Synchronized breathing pulse on a ~1 s cosine cycle, identical for
+                // every bar and independent of RMS — unmistakably "busy", not frozen.
+                double phase = (Environment.TickCount64 % (long)WarmingPulsePeriodMs) / WarmingPulsePeriodMs;
+                double pulse = 0.5 - 0.5 * Math.Cos(2.0 * Math.PI * phase); // 0..1
+                double heightFraction = MinBarHeightFraction + (1.0 - MinBarHeightFraction) * pulse;
+                targetHeight = canvasHeight * heightFraction;
+            }
+            else if (_currentState == OverlayMicState.Speaking || _currentState == OverlayMicState.Idle)
             {
                 double amplitude = Math.Max(_smoothedRms, 0.0001);
 
@@ -219,7 +233,7 @@ public partial class DictationOverlayWindow : Window
 
     /// <summary>
     /// Applies the overlay settings (opacity).
-    /// Position is determined by global mouse hook, size is fixed for the pill.
+    /// Position is fixed bottom-center, size is fixed for the pill.
     /// </summary>
     public void ApplySettings(OverlaySettings settings)
     {
@@ -227,19 +241,21 @@ public partial class DictationOverlayWindow : Window
     }
 
     /// <summary>
-    /// Shows the overlay with a fade-in animation at the last clicked position.
+    /// Shows the overlay at the bottom-center of the primary screen with a fade-in animation.
     /// </summary>
     public void ShowOverlay()
     {
         if (_isVisible) return;
         _isVisible = true;
 
-        PositionAtBottomCenter();
+        // Show() first so the window has an HWND (DPI-resolved against its monitor) and a
+        // completed layout pass before we place it — only then is bottom-center positioning
+        // accurate. Positioning *before* Show() was the first-show bug: coordinates were set
+        // without a DPI context and the post-Show reposition was gated behind a flag that was
+        // still false on the first show. The window's Opacity starts at 0 (see XAML) and the
+        // fade-in begins after positioning, so it is never visible at the wrong spot — no flash.
         Show();
-        // On subsequent shows (HWND already exists, Loaded won't fire again),
-        // re-position in case work area changed.
-        if (_hasBeenLoaded)
-            PositionAtBottomCenter();
+        PositionAtBottomCenter();
 
         if (_fadeIn != null)
         {
@@ -255,6 +271,32 @@ public partial class DictationOverlayWindow : Window
         SetMicState(OverlayMicState.Speaking);
 
         Trace.TraceInformation("[DictationOverlay] Shown at ({0}, {1}).", Left, Top);
+    }
+
+    /// <summary>
+    /// Realizes the window and runs its first-<see cref="Window.Show"/> layout/DPI settling pass
+    /// once at startup — invisibly (Opacity stays 0 from XAML) — then hides it again.
+    /// <para>
+    /// The very first Show() of a WPF window goes through a messy layout/DPI pass: on a scaled
+    /// display (e.g. 125%) the window briefly inflates and resolves at the wrong physical position
+    /// (measured: it rests top-right on the first show, then every show after lands correctly at
+    /// bottom-center). Doing that throwaway first show here means the first *real* dictation overlay
+    /// is already a "second show" and lands correctly. No flash: ShowInTaskbar/ShowActivated are
+    /// false and Opacity is 0 throughout. Call once after construction.
+    /// </para>
+    /// </summary>
+    public void PrewarmFirstShow()
+    {
+        if (_isVisible) return; // never warm over a real dictation
+        Show();
+        // Keep the window realized for one dispatcher cycle so the first-show layout/DPI pass
+        // actually completes before we hide it — a synchronous Show()+Hide() can hide before the
+        // settling finishes, leaving the next show still "first-show"-like.
+        Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+        {
+            if (!_isVisible) Hide();
+        }));
+        Trace.TraceInformation("[DictationOverlay] Pre-warmed first show (settling DPI/layout).");
     }
 
     /// <summary>
@@ -314,6 +356,13 @@ public partial class DictationOverlayWindow : Window
             case OverlayMicState.NoMic:
                 AnimateBorderColor(GreyColor);
                 SetBarColor(GreyColor);
+                PillBorder.Background = new SolidColorBrush(Color.FromArgb(0xCC, 0x2D, 0x2D, 0x2D));
+                _smoothedRms = 0;
+                break;
+
+            case OverlayMicState.WarmingUp:
+                AnimateBorderColor(AmberBarColor);
+                SetBarColor(AmberBarColor);
                 PillBorder.Background = new SolidColorBrush(Color.FromArgb(0xCC, 0x2D, 0x2D, 0x2D));
                 _smoothedRms = 0;
                 break;
@@ -381,14 +430,40 @@ public partial class DictationOverlayWindow : Window
 
     // ── Positioning ──────────────────────────────────────────────────────
 
+    // Gap between the pill's bottom edge and the work-area bottom.
+    private const double BottomMargin = 20.0;
+
     /// <summary>
     /// Positions the pill overlay at the bottom-center of the primary screen.
+    /// Prefers the realized layout size (<see cref="FrameworkElement.ActualWidth"/>/
+    /// <see cref="FrameworkElement.ActualHeight"/>), which is only valid once the window
+    /// has been shown and laid out; falls back to the declared <see cref="FrameworkElement.Width"/>/
+    /// <see cref="FrameworkElement.Height"/> before that first layout pass.
     /// </summary>
     private void PositionAtBottomCenter()
     {
-        var workArea = SystemParameters.WorkArea;
-        Left = workArea.Left + (workArea.Width - Width) / 2;
-        Top = workArea.Bottom - Height - 20;
+        double width = ActualWidth > 0 ? ActualWidth : Width;
+        double height = ActualHeight > 0 ? ActualHeight : Height;
+
+        var (left, top) = ComputeBottomCenter(SystemParameters.WorkArea, width, height, BottomMargin);
+        Left = left;
+        Top = top;
+    }
+
+    /// <summary>
+    /// Pure geometry: the top-left point that horizontally centers a
+    /// <paramref name="width"/>×<paramref name="height"/> overlay within
+    /// <paramref name="workArea"/> and rests it <paramref name="bottomMargin"/> px above
+    /// the work-area bottom. Extracted from <see cref="PositionAtBottomCenter"/> so the
+    /// placement math is unit-testable without a live WPF window — the Show()/DPI/lifecycle
+    /// plumbing that makes the *first* show land correctly is verified manually via /deploy.
+    /// </summary>
+    internal static (double Left, double Top) ComputeBottomCenter(
+        Rect workArea, double width, double height, double bottomMargin)
+    {
+        double left = workArea.Left + (workArea.Width - width) / 2.0;
+        double top = workArea.Bottom - height - bottomMargin;
+        return (left, top);
     }
 
     // ── Color helpers ────────────────────────────────────────────────────
