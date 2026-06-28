@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-28 12:34 -- Task verified and completed: main-t6r2k - Reduce ASR intra-op threads 4 → 2
+
+**Type:** Work / Task completion
+**Task:** main-t6r2k - Reduce ASR intra-op threads 4 → 2
+**Summary:** Lowered the Parakeet ASR intra-op thread cap from 4 to 2 (`Math.Min(Environment.ProcessorCount, 2)`) in `TranscriptionService.LoadModel()`. Machine-measured: decode +~60 ms on a 3 s clip (~160→220 ms, still ~13x real-time, instant-feel preserved), transcript text identical; per-thread RAM saving small (within noise) — the memory-mapped INT8 encoder masks it.
+**Verification:** PASS (iteration 1) — build green, 147/147 tests pass; measurement figures internally consistent.
+**Files changed:** 1
+**Tests added:** 0 (config-tuning, no exposed seam)
+**ADRs written:** none
+
+---
+
+## 2026-06-28 12:32 -- Batch started: [main-t6r2k]
+
+**Type:** Work / Batch start
+**Tasks:** main-t6r2k - Reduce ASR intra-op threads 4 → 2
+**Parallel:** no (1 worker) — sequential RAM-optimization run; touches TranscriptionService.cs (the spike infrastructure-k9m3p touches the same file and runs after this).
+
+---
+
 ## 2026-06-28 12:31 -- Task verified and completed: infrastructure-w7k9p - Trim Windows working set after model load and on idle
 
 **Type:** Work / Task completion

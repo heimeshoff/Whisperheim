@@ -44,7 +44,7 @@ public sealed class TranscriptionService : ITranscriptionService
         config.ModelConfig.Transducer.Decoder = decoderPath;
         config.ModelConfig.Transducer.Joiner = joinerPath;
         config.ModelConfig.Tokens = tokensPath;
-        config.ModelConfig.NumThreads = Environment.ProcessorCount > 4 ? 4 : Environment.ProcessorCount;
+        config.ModelConfig.NumThreads = Math.Min(Environment.ProcessorCount, 2);
         config.ModelConfig.Provider = "cpu";
         config.ModelConfig.Debug = 0;
 
