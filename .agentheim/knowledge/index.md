@@ -27,6 +27,8 @@ Research reports relevant to more than one BC (or to the project as a whole). BC
 reports are listed in each BC's `INDEX.md`.
 
 <!-- research-global:start -->
+- **Parakeet quantization & Nemotron comparison** (2026-06-28) — quantization paths for Parakeet (BF16/FP16 as the real win; INT8 ONNX community builds; CTranslate2 doesn't support TDT) with gains/risks, and a Parakeet-vs-Nemotron-Speech/Canary comparison (incl. the newly-shipped NVIDIA Nemotron Speech streaming ASR). — `knowledge/research/parakeet-quantization-and-nemotron-2026-06-28.md`
+- **Best STT models for German & English** (2026-06-28) — open-weight vs cloud ASR landscape (Parakeet v2/v3, Canary-1B-v2, Voxtral, Whisper large-v3) with German/English WER from the Open ASR Leaderboard and accuracy↔speed↔VRAM↔licensing trade-offs. — `knowledge/research/best-stt-models-german-english-2026-06-28.md`
 - **STT API exposure** (2026-06-19) — ways to expose WhisperHeim's speech-to-text to other apps (REST / WebSocket / gRPC / OpenAI-compatible) and their trade-offs, plus in-process .NET hosting and localhost security. — `knowledge/research/whisperheim-stt-api-exposure-2026-06-19.md`
 <!-- research-global:end -->
 
