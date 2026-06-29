@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:47 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-p4w7n (displayed app version sourced from Velopack packed release via a single `IAppVersionProvider`). Single ready task, no dependencies. Todo/doing now empty across all BCs; only the unrefined infrastructure backlog item `infrastructure-v8k2m` (in-app auto-update) remains — needs `modeling` refinement before `work` can pick it up.
+**ADRs written:** 0 — small generic-BC refactor; the source-of-truth decision was already resolved and recorded in the task Notes during refinement.
+
+---
+
 ## 2026-06-29 16:45 -- Task verified and completed: infrastructure-p4w7n - Source displayed app version from packed release
 
 **Type:** Work / Task completion
