@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 00:00 -- Modeling / Captured: main-t9w2k - Inline template creation dialog when no template matches
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Replace the bottom-right "no template match" toast with a centered modal dialog that lets the user create the missing template inline — editable trigger term (pre-filled with the transcribed/misheard word) + editable replacement-text body, persisted via the same `TemplateService.AddTemplate` path as the start-page drawer. Save-only (no auto-insert into the focused app), per user decision. Grounded in the existing `TemplateNoMatch` event and `InputDialog` modal pattern; filed straight to todo.
+
+---
+
 ## 2026-06-28 16:10 -- Follow-up bug fix (live debug): first dictation overlay top-right on scaled ultrawide [main-p3k9d]
 
 **Type:** Bug fix / Interactive (outside work loop)
