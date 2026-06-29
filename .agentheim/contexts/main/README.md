@@ -31,6 +31,7 @@ This BC *is* the product. There are no supporting or generic domains carved out 
 - `RecordingStarted` / `RecordingStopped` / `RecordingTranscribed`
 - `TranscriptionQueued` / `TranscriptionCompleted` / `TranscriptionFailed`
 - `TemplateTriggered`
+- `TemplateNoMatch` — template-mode dictation matched no template. Now an invitation to create one (main-t9w2k): a centered modal pre-fills the (possibly misheard, editable) trigger term + a replacement body and persists via `AddTemplate`. **Save-only** — creating does not type the body into the focused app.
 - `ModelDownloadCompleted` (first-run UX)
 
 ## Key commands

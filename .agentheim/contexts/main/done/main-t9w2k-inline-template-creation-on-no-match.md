@@ -1,11 +1,11 @@
 ---
 id: main-t9w2k
 title: Inline template creation dialog when no template matches
-status: todo
+status: done
 type: feature
 context: main
 created: 2026-06-29
-completed:
+completed: 2026-06-29
 depends_on: []
 blocks: []
 tags: [templates, ui, dialog]
@@ -98,3 +98,38 @@ The dialog:
   should be dismissible the same way the dictation overlay is, or behave as a
   standard top-most modal. Default to a standard centered top-most modal
   consistent with `InputDialog`.
+
+## Outcome
+The dead-end "No template match for: …" toast is replaced, for the no-match
+case, by a centered top-most modal that lets the user create the missing
+template inline. Save-only: creating persists via the existing
+`TemplateService.AddTemplate` path and never types the body into the focused
+app.
+
+Resolution of the deferred open question: chose a standard centered top-most
+modal (`WindowStartupLocation="CenterScreen"`, `Topmost="True"`) consistent with
+`InputDialog`/`DeleteConfirmationDialog`, not the overlay's dismiss behavior.
+
+Key files:
+- `src/WhisperHeim/Services/Templates/InlineTemplateCreationModel.cs` — new
+  testable validation + persistence model. Term pre-filled with the transcribed
+  text and editable (mishearing correction → `TemplateItem.Name`); create
+  requires non-empty term **and** non-empty body (mirrors the start-page drawer
+  rule); persists an ungrouped template via `AddTemplate`; no input-simulation
+  dependency, which makes save-only structurally guaranteed.
+- `src/WhisperHeim/Views/InlineTemplateDialog.xaml(.cs)` — the centered modal:
+  editable trigger-term field + multiline replacement-text field, Create /
+  Cancel, Escape cancels, Ctrl+Enter in the body submits. Delegates all rules to
+  the model.
+- `src/WhisperHeim/App.xaml.cs` — `TemplateNoMatch` now dispatches to the UI
+  thread and shows `InlineTemplateDialog` instead of `ToastWindow.Show(...)`.
+  `ToastWindow` remains for other uses.
+- `tests/WhisperHeim.Tests/InlineTemplateCreationModelTests.cs` — 9 unit tests
+  (pre-fill, empty-term/empty-body rejection, trimmed ungrouped persistence,
+  edited-term correction, save-only = single AddTemplate call). Full suite: 178
+  passing.
+
+ACs all satisfied. The WPF modal itself (CenterScreen/Topmost, ShowDialog) is
+exercised manually rather than by an automated UI test, per the repo's lack of
+WPF UI-test infrastructure; the create/persist/validation logic it depends on is
+fully covered by the new unit tests.

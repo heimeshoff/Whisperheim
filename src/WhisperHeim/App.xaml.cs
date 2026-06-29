@@ -501,8 +501,7 @@ public partial class App : Application
         _orchestrator.AudioAmplitudeChanged += OnAudioAmplitudeChanged;
         _orchestrator.PipelineError += OnPipelineError;
         _orchestrator.WarmingUpChanged += OnWarmingUpChanged;
-        _orchestrator.TemplateNoMatch += spokenText =>
-            ToastWindow.Show($"No template match for: \"{spokenText}\"");
+        _orchestrator.TemplateNoMatch += OnTemplateNoMatch;
 
         _orchestrator.Start();
 
@@ -520,6 +519,26 @@ public partial class App : Application
         bool callHkRegistered = _callRecordingHotkeyService!.Register(callHotkey);
         Trace.TraceInformation(
             "[App] Call recording hotkey registered: {0}", callHkRegistered);
+    }
+
+    /// <summary>
+    /// Handles a template-mode dictation that matched no template (task main-t9w2k).
+    /// Instead of the old dead-end bottom-right toast, shows a centered modal that lets
+    /// the user create the missing template inline (editable trigger term pre-filled
+    /// with the transcribed word + replacement body). Save-only: creating the template
+    /// does not type it into the previously-focused app.
+    ///
+    /// Raised on a background thread, so the modal is dispatched to the UI thread.
+    /// </summary>
+    private void OnTemplateNoMatch(string spokenText)
+    {
+        Dispatcher?.BeginInvoke(() =>
+        {
+            if (_templateService is null) return;
+
+            var dialog = new InlineTemplateDialog(_templateService, spokenText);
+            dialog.ShowDialog();
+        });
     }
 
     /// <summary>

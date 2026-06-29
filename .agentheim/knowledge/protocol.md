@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 12:10 -- Task verified and completed: main-t9w2k - Inline template creation dialog when no template matches
+
+**Type:** Work / Task completion
+**Task:** main-t9w2k - Inline template creation dialog when no template matches
+**Summary:** A template-mode dictation that matches no template now opens a centered top-most modal to create the missing template inline (editable, pre-filled trigger term + multiline replacement body), persisted save-only via `TemplateService.AddTemplate`, replacing the old dead-end no-match toast.
+**Verification:** PASS (iteration 1) — build clean, full suite green 178/178 (9 new `InlineTemplateCreationModelTests`). UI-only ACs (centered modal vs toast, prompt copy, Cancel/Escape) wired in the diff and exercised manually per the repo's documented lack of WPF UI-test infra; validation/persistence/save-only logic factored into a UI-free `InlineTemplateCreationModel` and unit-tested.
+**Files changed:** 5
+**Tests added:** 9
+**ADRs written:** none
+
+---
+
+## 2026-06-29 12:00 -- Batch started: [main-t9w2k]
+
+**Type:** Work / Batch start
+**Tasks:** main-t9w2k - Inline template creation dialog when no template matches
+**Parallel:** no (1 worker) — only ready task, no dependencies. Touches the no-match path in `App.xaml.cs` (the `TemplateNoMatch` handler currently calling `ToastWindow.Show`) and adds a new centered modal dialog (`Views/`), reusing the `InputDialog`/`DeleteConfirmationDialog` pattern; persists via `TemplateService.AddTemplate`.
+
+---
+
 ## 2026-06-29 00:00 -- Modeling / Captured: main-t9w2k - Inline template creation dialog when no template matches
 
 **Type:** Modeling / Capture
