@@ -10,15 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
-- **Todo:** 0
+- **Backlog:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 7
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **infrastructure-v8k2m** -- In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases -- `todo/infrastructure-v8k2m-in-app-auto-update-notify.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -39,7 +39,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **infrastructure-v8k2m** -- In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases -- `backlog/infrastructure-v8k2m-in-app-auto-update-notify.md`
+<!-- no tasks in backlog -->
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

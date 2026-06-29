@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:50 -- Modeling / Refined: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Resolved the one open "refine before work" item — the notify UX. Maintainer's call: surface the "Update ready: vX.Y" signal in the **always-visible bottom status footer** (`SttStatusFooter`, `MainWindow.xaml` Grid.Row=3), not a toast/tray balloon — noticeable, never interrupts dictation. Apply mode: keep Velopack's **auto-apply-on-next-launch** default + add an explicit **"Restart & update now"** footer action (`ApplyUpdatesAndRestart`); no consent-gated install-on-quit path. Acceptance criteria rewritten around the footer placement + the two apply paths. Sibling `infrastructure-p4w7n` landed (done) during this session — its `IAppVersionProvider` is now the reuse target for the footer's current-version half. Research + verification gotchas already captured; no new ADR (generic-BC plumbing, decision recorded in task Notes). Ready → promoted to todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-06-29 16:47 -- Work session ended
 
 **Type:** Work / Session end
