@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 18:42 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-v8k2m (notify-only in-app auto-update via Velopack + GitHub Releases). Single ready task, no dependencies. Todo/doing now empty across all BCs — backlog empty too; nothing left to refine or work.
+**ADRs written:** 1 — ADR-0007 (notify-only in-app auto-update via a Velopack gateway seam + status-footer signal).
+
+---
+
 ## 2026-06-29 18:40 -- Task verified and completed: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
 
 **Type:** Work / Task completion
