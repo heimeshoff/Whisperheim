@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 7
+- **Done:** 8
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **infrastructure-v8k2m** -- In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases -- `todo/infrastructure-v8k2m-in-app-auto-update-notify.md`
+<!-- no tasks in todo -->
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +28,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-v8k2m** -- In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases -- `done/infrastructure-v8k2m-in-app-auto-update-notify.md`
 - **infrastructure-p4w7n** -- Source the displayed app version from the packed release version (dictation, settings, about pages) -- `done/infrastructure-p4w7n-version-from-packed-release.md`
 - **infrastructure-q4t8m** -- "Warming up" overlay state when an utterance outruns the model load -- `done/infrastructure-q4t8m-warming-up-overlay-state.md`
 - **infrastructure-d2v7n** -- Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle -- `done/infrastructure-d2v7n-lazy-load-keep-warm-idle-unload.md`
@@ -45,6 +46,7 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0007** -- Notify-only in-app auto-update via a Velopack gateway seam + status-footer signal -- `../../knowledge/decisions/0007-notify-only-in-app-update-via-velopack.md`
 - **ADR-0006** -- Recognizer lifecycle ships lazy-on, and decode self-heals so every consumer survives an idle-unload -- `../../knowledge/decisions/0006-lazy-on-recognizer-lifecycle-and-self-healing-decode.md`
 - **ADR-0005** -- GO on idle-unload of the Parakeet recognizer — Dispose returns ~680 MB, reload is a fixed ~4 s -- `../../knowledge/decisions/0005-idle-unload-of-parakeet-recognizer-go.md`
 - **ADR-0004** -- Working-set trim after model load and on idle (the "trim" half of compact-then-trim) -- `../../knowledge/decisions/0004-working-set-trim-after-load-and-on-idle.md`

@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 18:40 -- Task verified and completed: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
+
+**Type:** Work / Task completion
+**Task:** infrastructure-v8k2m - In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases
+**Summary:** App-owned `UpdateService` over Velopack + the public GitHub Releases feed checks → silently downloads → stages a newer release and surfaces "Update ready: vX.Y" in the always-visible status footer; applies only via Velopack's auto-apply-on-next-launch or an explicit "Restart & update now" click — never force-restarting, and a clean no-op (`IsInstalled` guard) on dev/unpacked runs.
+**Verification:** PASS (iteration 1) — builds clean against pinned Velopack 0.0.1298 (the load-bearing API-surface check); 191/191 tests green incl. 9 new orchestration tests; footer signal lives in `SttStatusFooter` Grid.Row=3 collapsed-by-default; `SetAutoApplyOnStartup` confirmed never called (default left enabled); restart only on explicit click.
+**Files changed:** 10
+**Tests added:** 9
+**ADRs written:** 0007-notify-only-in-app-update-via-velopack.md
+
+---
+
+## 2026-06-29 18:30 -- Batch started: [infrastructure-v8k2m]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-v8k2m - In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases
+**Parallel:** no (1 worker) — only ready task, no dependencies.
+
+---
+
 ## 2026-06-29 16:50 -- Modeling / Refined: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
 
 **Type:** Modeling / Refine

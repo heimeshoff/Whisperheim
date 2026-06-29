@@ -1,15 +1,15 @@
 ---
 id: infrastructure-v8k2m
 title: In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases
-status: todo
+status: done
 type: feature
 context: infrastructure
 created: 2026-06-29
-completed:
+completed: 2026-06-29
 depends_on: []
 blocks: []
 tags: [velopack, auto-update, github-releases, distribution, tray, update-manager]
-related_adrs: []
+related_adrs: [0007]
 related_research: [velopack-in-app-update-github-2026-06-29, auto-update-and-distribution]
 prior_art: []
 ---
@@ -130,3 +130,35 @@ the research report `velopack-in-app-update-github-2026-06-29.md`.
   packed release version) — **done**. Shared the "authoritative current version =
   the Velopack packed version from the tag" concept; its `IAppVersionProvider`
   serves the footer's current-version half here.
+- **Decision recorded:** ADR-0007 (`.agentheim/knowledge/decisions/0007-notify-only-in-app-update-via-velopack.md`).
+
+## Outcome
+
+Implemented a notify-only in-app updater over Velopack `0.0.1298` against the public
+GitHub Releases feed. All acceptance criteria met.
+
+- **Gateway seam** `IUpdateGateway` (`src/WhisperHeim/Services/Update/IUpdateGateway.cs`)
+  isolates all Velopack/network contact; `VelopackUpdateGateway` is the real impl over
+  `UpdateManager` + `GithubSource(repo, null, false)`, holding the pending `UpdateInfo`
+  between check/download/apply.
+- **`UpdateService`** (UI-free, fully unit-tested) drives check → silent
+  `DownloadUpdatesAsync` → stage → raise `UpdateStaged`. Guards on `IsInstalled`
+  (dev/unpacked = clean no-op), swallows transient failures, gentle poll (startup + 6 h
+  timer), idempotent on an already-staged version. **Never** auto-applies/restarts.
+- **Footer signal**: `MainWindow.xaml` footer restructured into a Grid; a collapsed
+  `UpdateReadyPanel` ("Update ready: vX.Y" + "Restart & update now" `ui:Button`) flips
+  visible on staging. App-owned `UpdateService` (constructed + `Start()`ed in
+  `App.StartupCore`) so it polls on start-minimized and a staged update surfaces when the
+  window later opens. The restart button is the only restart path, only on click;
+  un-clicked, Velopack auto-applies on next launch (default, never disabled).
+- **API verified by reflection** against the restored `Velopack.dll` 0.0.1298 (not the
+  1.2.0 docs): apply takes a `VelopackAsset` → pass `UpdateInfo.TargetFullRelease`;
+  `CheckForUpdatesAsync` has no `CancellationToken` overload → cancel at the boundary.
+- **Tests:** 9 new in `tests/WhisperHeim.Tests/UpdateServiceTests.cs` (fake gateway):
+  not-installed no-op, download+stage+notify, no-update, never-restarts, check-failure
+  swallowed, download-failure swallowed, explicit restart applies, restart-when-nothing
+  no-op, idempotent re-check. Full suite 191/191 green; main project builds clean.
+
+Key files: `src/WhisperHeim/Services/Update/{IUpdateGateway,UpdateService,UpdateStagedEventArgs,VelopackUpdateGateway}.cs`,
+`src/WhisperHeim/MainWindow.xaml(.cs)`, `src/WhisperHeim/App.xaml.cs`,
+`tests/WhisperHeim.Tests/UpdateServiceTests.cs`, ADR-0007.
