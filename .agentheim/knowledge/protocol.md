@@ -5,6 +5,20 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 12:12 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** main-t9w2k (inline template-creation modal on no-match). Single ready task, no dependencies. Board now fully empty (0 todo / 0 doing / 0 backlog across all BCs).
+**ADRs written:** 0 — UI built on the existing `InlineDialog` modal pattern and `TemplateService.AddTemplate` path; save-only behavior was decided during refinement, no new architectural decision arose.
+**Follow-up:** UI-only ACs (modal vs toast, prompt copy, Cancel/Escape, multiline body) are verified by code-reading + the test-covered model, not by an automated WPF UI test (none in repo). A `/deploy` and a live template-mode dictation with a nonsense word is the honest confirmation the modal pops centered and persists.
+
+---
+
 ## 2026-06-29 12:10 -- Task verified and completed: main-t9w2k - Inline template creation dialog when no template matches
 
 **Type:** Work / Task completion
