@@ -1,11 +1,11 @@
 ---
 id: main-r8m4q
 title: About-page Parakeet link points to v2, app uses v3
-status: todo
+status: done
 type: bug
 context: main
 created: 2026-06-29
-completed:
+completed: 2026-06-29
 depends_on: []
 blocks: []
 tags: [about-page, parakeet, model-card, link]
@@ -41,3 +41,13 @@ Change:
   `knowledge/research/best-stt-models-german-english-2026-06-28.md` (ref [6]).
 - Prior art `main-056` ("Link AI Model Cards to GitHub Projects") introduced the
   `ProjectUrl` field and the About-page binding.
+
+## Outcome
+Changed `ParakeetTdt06B.ProjectUrl` in
+`src/WhisperHeim/Services/Models/ModelManagerService.cs` (line 61) from the v2 card
+(`.../parakeet-tdt-0.6b-v2`) to the v3 card (`.../parakeet-tdt-0.6b-v3`), matching the
+int8 sherpa-onnx v3 build the app actually runs. No other model's `ProjectUrl` touched.
+The About page binds this value via `AboutPage.xaml` `Tag="{Binding ProjectUrl}"`, so
+the Parakeet model card now opens the v3 NVIDIA Hugging Face page. Build succeeds
+(0 errors). Single-line copy fix — no test added (no UI test infrastructure; verified by
+inspection and clean build).

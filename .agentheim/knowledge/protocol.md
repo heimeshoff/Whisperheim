@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:16 -- Task verified and completed: main-r8m4q - About-page Parakeet link points to v2, app uses v3
+
+**Type:** Work / Task completion
+**Task:** main-r8m4q - About-page Parakeet link points to v2, app uses v3
+**Summary:** The Parakeet model card's `ProjectUrl` now points at the v3 NVIDIA Hugging Face card, matching the int8 sherpa-onnx v3 build the app actually runs (was the English-only v2 card).
+**Verification:** PASS (iteration 1) — diff is a single literal change; About-page binding pre-exists from main-056; no other model's ProjectUrl touched. No build needed (string literal in a record ctor).
+**Files changed:** 1
+**Tests added:** 0
+**ADRs written:** none
+
+---
+
+## 2026-06-29 16:15 -- Batch started: [main-r8m4q]
+
+**Type:** Work / Batch start
+**Tasks:** main-r8m4q - About-page Parakeet link points to v2, app uses v3
+**Parallel:** no (1 worker) — only ready task, no dependencies. Single-line `ProjectUrl` copy fix in `ModelManagerService.cs` (Parakeet v2 → v3).
+
+---
+
 ## 2026-06-29 16:05 -- Modeling / Captured: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
 
 **Type:** Modeling / Capture
