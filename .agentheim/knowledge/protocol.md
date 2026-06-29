@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:17 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** main-r8m4q (Parakeet model-card `ProjectUrl` v2 → v3). Single ready task, no dependencies. Todo/doing now empty across all BCs; only the two unrefined infrastructure backlog items (infrastructure-v8k2m, infrastructure-p4w7n) remain — they need `modeling` refinement before `work` can pick them up.
+**ADRs written:** 0 — a one-line URL copy fix, no architectural decision.
+
+---
+
 ## 2026-06-29 16:16 -- Task verified and completed: main-r8m4q - About-page Parakeet link points to v2, app uses v3
 
 **Type:** Work / Task completion
