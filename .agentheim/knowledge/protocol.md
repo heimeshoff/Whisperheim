@@ -5,6 +5,29 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:10 -- Modeling / Captured: main-r8m4q - About-page Parakeet link points to v2, app uses v3
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** The About page's Parakeet model card links to the v2 Hugging Face card, but the app runs Parakeet TDT 0.6B v3. Fix is a one-line `ProjectUrl` change in `ModelManagerService.cs:61` (v2 → v3). Well-scoped, filed straight to todo.
+
+---
+
+## 2026-06-29 15:50 -- Research: Velopack in-app auto-update via GitHub Releases
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/velopack-in-app-update-github-2026-06-29.md
+**Review:** PASS (iteration 2)
+**Summary:**
+- Feasible with zero pipeline changes — the `RELEASES` manifest + nupkgs already uploaded on each `v*` tag are exactly what a runtime `UpdateManager` + `GithubSource(repo, null, false)` consume; remaining work is one client-side `UpdateService` + tray wiring.
+- Notify-only / apply-on-quit is the supported, correct shape: `CheckForUpdatesAsync` → background `DownloadUpdatesAsync` → `WaitExitThenApplyUpdates(asset, silent:true, restart:false)` (or auto-apply-on-next-launch); `ApplyUpdatesAndRestart` is the "Restart now" button only.
+- Two must-do guards: `if (!mgr.IsInstalled) return;` (unpacked dev runs throw `NotInstalledException`) and gentle polling (startup + multi-hour timer; unauthenticated GitHub API = 60 req/hr/IP). Unsigned releases update fine (hash-based integrity ≠ Authenticode); `%APPDATA%` model/FFmpeg files are outside the install dir and untouched by the swap.
+- Provenance caveat: API signatures verified against the docs' Velopack **1.2.0** reference (no 0.0.1298-stamped page exists); 0.0.1298-exact signatures are assumed-stable but marked ⚠️ UNVERIFIED — confirmable in ~5 min via IntelliSense/decompile.
+
+---
+
 ## 2026-06-29 12:12 -- Work session ended
 
 **Type:** Work / Session end

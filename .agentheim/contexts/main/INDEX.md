@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 123
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **main-r8m4q** -- About-page Parakeet link points to v2, app uses v3 -- `todo/main-r8m4q-about-page-parakeet-v3-link.md`
 <!-- todo-list:end -->
 
 ### Doing
