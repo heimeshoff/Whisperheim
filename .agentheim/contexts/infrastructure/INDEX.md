@@ -10,15 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
-- **Todo:** 0
+- **Backlog:** 1
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 6
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **infrastructure-p4w7n** -- Source the displayed app version from the packed release version (dictation, settings, about pages) -- `todo/infrastructure-p4w7n-version-from-packed-release.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -39,7 +39,6 @@ research touching this BC, and concept synthesis pages.
 ### Backlog
 <!-- backlog-list:start -->
 - **infrastructure-v8k2m** -- In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases -- `backlog/infrastructure-v8k2m-in-app-auto-update-notify.md`
-- **infrastructure-p4w7n** -- Source the displayed app version from the packed release version (dictation, settings, about pages) -- `backlog/infrastructure-p4w7n-version-from-packed-release.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

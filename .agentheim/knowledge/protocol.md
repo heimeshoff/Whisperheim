@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:30 -- Modeling / Refined: infrastructure-p4w7n - Source displayed app version from packed release
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Resolved the open source-of-truth decision: read the version from Velopack's installed-version metadata (`VelopackLocator`, = the `--packVersion` tag), **no release.yml change** (maintainer's call). Key consequence baked in — since the pipeline stays unchanged, the assembly informational version is permanently `1.0.0`, so the "assembly fallback" tier is dropped: the honest logic is two tiers (`installed → "v"+version; else → "dev"`), never surfacing a misleading `v1.0.0`. Added: read via `VelopackLocator` (not `UpdateManager`, to avoid coupling display to a `GithubSource`/network); single `IAppVersionProvider` shape; unit-test AC for the UI-free resolve/format/fallback. Sibling `infrastructure-v8k2m` confirmed independent (agree-by-construction, no hard dependency). Refinement made it ready → promoted to todo.
+**Split into:** none
+**ADRs written:** none (small generic-BC refactor; decision recorded in task Notes)
+
+---
+
 ## 2026-06-29 16:17 -- Work session ended
 
 **Type:** Work / Session end
