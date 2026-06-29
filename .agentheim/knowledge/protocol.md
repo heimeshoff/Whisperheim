@@ -5,6 +5,24 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:05 -- Modeling / Captured: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Client-side `UpdateService` (UpdateManager + GithubSource against the public repo) that detects a freshly-tagged GitHub Release, notifies "new version available" without forcing a restart, downloads silently, and applies on quit/restart. Guards on `IsInstalled` for dev, polls gently (60 req/hr GitHub limit). Distribution half already exists; this is the missing client side. Grounded in the velopack-in-app-update-github-2026-06-29 report. Open UX decision (where the notice appears) left for refine.
+
+---
+
+## 2026-06-29 16:05 -- Modeling / Captured: infrastructure-p4w7n - Source displayed app version from the packed release version
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Replace the hardcoded `v1.0` literal on the Dictation, Settings (GeneralPage), and About pages with a single runtime-sourced version derived from the packed release version (the `v*` tag via `vpk pack --packVersion`). Open source-of-truth decision: Velopack CurrentVersion vs. assembly informational version (latter needs a one-line release.yml injection). Sibling of infrastructure-v8k2m.
+
+---
+
 ## 2026-06-29 16:10 -- Modeling / Captured: main-r8m4q - About-page Parakeet link points to v2, app uses v3
 
 **Type:** Modeling / Capture

@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
+- **Backlog:** 2
 - **Todo:** 0
 - **Doing:** 0
 - **Done:** 6
@@ -38,7 +38,8 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-<!-- no tasks in backlog -->
+- **infrastructure-v8k2m** -- In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases -- `backlog/infrastructure-v8k2m-in-app-auto-update-notify.md`
+- **infrastructure-p4w7n** -- Source the displayed app version from the packed release version (dictation, settings, about pages) -- `backlog/infrastructure-p4w7n-version-from-packed-release.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
@@ -53,7 +54,7 @@ research touching this BC, and concept synthesis pages.
 ## Research touching this BC
 
 <!-- research-local:start -->
-<!-- no research touching this BC -->
+- **Velopack in-app auto-update via GitHub Releases** (2026-06-29) — how to add the runtime update-check the existing `vpk`/GitHub-Releases pipeline already publishes for: `UpdateManager` + `GithubSource` against the public repo, a notify-only "new version available" UX that applies on quit (not forced restart), the `IsInstalled` dev-machine guard, the 60 req/hr unauthenticated GitHub limit, and why unsigned releases still update fine. API verified against Velopack 1.2.0 docs; 0.0.1298-exact signatures marked unverified. — `../../knowledge/research/velopack-in-app-update-github-2026-06-29.md`
 <!-- research-local:end -->
 
 ## Concepts (opt-in synthesis pages)
