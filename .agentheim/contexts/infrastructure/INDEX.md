@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 1
+- **Todo:** 0
 - **Doing:** 0
-- **Done:** 6
+- **Done:** 7
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **infrastructure-p4w7n** -- Source the displayed app version from the packed release version (dictation, settings, about pages) -- `todo/infrastructure-p4w7n-version-from-packed-release.md`
+<!-- no tasks in todo -->
 <!-- todo-list:end -->
 
 ### Doing
@@ -28,6 +28,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-p4w7n** -- Source the displayed app version from the packed release version (dictation, settings, about pages) -- `done/infrastructure-p4w7n-version-from-packed-release.md`
 - **infrastructure-q4t8m** -- "Warming up" overlay state when an utterance outruns the model load -- `done/infrastructure-q4t8m-warming-up-overlay-state.md`
 - **infrastructure-d2v7n** -- Lazy-load + keep-warm + idle-unload of the Parakeet model — core lifecycle -- `done/infrastructure-d2v7n-lazy-load-keep-warm-idle-unload.md`
 - **infrastructure-k9m3p** -- Spike — does disposing the Parakeet recognizer return RAM, and how fast does it reload? (GO for d2v7n) -- `done/infrastructure-k9m3p-model-unload-reload-spike.md`

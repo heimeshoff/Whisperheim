@@ -5,6 +5,26 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 16:45 -- Task verified and completed: infrastructure-p4w7n - Source displayed app version from packed release
+
+**Type:** Work / Task completion
+**Task:** infrastructure-p4w7n - Source the displayed app version from the packed release version (dictation, settings, about pages)
+**Summary:** The displayed app version is now sourced at runtime from Velopack's installed-version metadata (the packed `v*` tag) through a single shared `IAppVersionProvider`; the three hardcoded `v1.0` literals (Dictation, Settings, About) bind one formatted string — `vX.Y.Z` installed, `dev` unpacked.
+**Verification:** PASS (iteration 1) — 4/4 provider unit tests green; two-tier logic matches the RESOLVED decision (no assembly tier, no release.yml change); `VelopackLocator.CreateDefaultForPlatform`/`CurrentlyInstalledVersion` confirmed real by successful build; three XAML bindings code-read.
+**Files changed:** 7
+**Tests added:** 4
+**ADRs written:** none
+
+---
+
+## 2026-06-29 16:35 -- Batch started: [infrastructure-p4w7n]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-p4w7n - Source the displayed app version from the packed release version (dictation, settings, about pages)
+**Parallel:** no (1 worker) — only ready task; backlog sibling infrastructure-v8k2m not yet promoted.
+
+---
+
 ## 2026-06-29 16:30 -- Modeling / Refined: infrastructure-p4w7n - Source displayed app version from packed release
 
 **Type:** Modeling / Refine

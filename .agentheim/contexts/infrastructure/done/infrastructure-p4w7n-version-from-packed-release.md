@@ -1,11 +1,11 @@
 ---
 id: infrastructure-p4w7n
 title: Source the displayed app version from the packed release version (dictation, settings, about pages)
-status: todo
+status: done
 type: refactor
 context: infrastructure
 created: 2026-06-29
-completed:
+completed: 2026-06-29
 depends_on: []
 blocks: []
 tags: [velopack, versioning, release-tag, ui, about-page]
@@ -94,3 +94,37 @@ all three pages bind to the same value and a future fourth surface can't drift.
   colour) — only its *source* changes.
 - **Reference:** research report `velopack-in-app-update-github-2026-06-29` §3
   (how the current version is detected; `IsInstalled` / `CurrentVersion` gating).
+
+## Outcome
+
+Introduced `IAppVersionProvider` / `AppVersionProvider` (`src/WhisperHeim/Services/AppInfo/`)
+as the single source of truth for the displayed app version. The provider reads
+the running build's version from Velopack's installed-version metadata
+(`VelopackLocator.CreateDefaultForPlatform(null).CurrentlyInstalledVersion` — the
+`--packVersion` = `v*` tag; confirmed against Velopack `0.0.1298`:
+`CreateDefaultForPlatform` takes an optional logger and returns `IVelopackLocator`,
+`CurrentlyInstalledVersion` is a `NuGet.Versioning.SemanticVersion?` that is `null`
+when unpacked). No `UpdateManager` / `GithubSource` / network coupling.
+
+Two honest tiers as decided in Notes: `installed → "v" + version` (e.g. `v0.3.1`),
+else → `"dev"`. No assembly-version fallback (the unchanged pipeline leaves the
+assembly version at `1.0.0`, which would only ever surface a misleading `v1.0.0`).
+The Velopack read is cached behind `Lazy<T>` (once per process). `release.yml` was
+left untouched per the decision.
+
+The three hardcoded `Text="v1.0"` literals on `DictationPage.xaml`,
+`GeneralPage.xaml`, and `AboutPage.xaml` now bind the same already-formatted string
+via `{x:Static appinfo:AppVersionProvider.Display}`; a fourth surface binds the same
+static rather than copy-pasting a literal.
+
+Key files:
+- `src/WhisperHeim/Services/AppInfo/IAppVersionProvider.cs`
+- `src/WhisperHeim/Services/AppInfo/AppVersionProvider.cs`
+- `src/WhisperHeim/Views/Pages/{DictationPage,GeneralPage,AboutPage}.xaml`
+- `tests/WhisperHeim.Tests/AppVersionProviderTests.cs` (4 tests: v-prefix, null→dev,
+  blank→dev, read-once/caching — all green; full provider logic is UI-free).
+
+The three XAML bindings are verified by code-reading (repo has no WPF UI-test infra);
+the WPF project compiles with the `x:Static` bindings in place. No ADR written — the
+source-of-truth decision was already resolved during refinement and this is a small
+generic-BC refactor.
