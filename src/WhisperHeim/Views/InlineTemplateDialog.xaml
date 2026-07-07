@@ -1,0 +1,77 @@
+<Window x:Class="WhisperHeim.Views.InlineTemplateDialog"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:ui="http://schemas.lepo.co/wpfui/2022/xaml"
+        Title="Create Template"
+        Width="460" SizeToContent="Height"
+        WindowStartupLocation="CenterScreen"
+        WindowStyle="None"
+        Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
+        ResizeMode="NoResize"
+        Topmost="True"
+        ShowInTaskbar="False">
+
+    <StackPanel Margin="32">
+        <!-- Title -->
+        <TextBlock Text="No template found"
+                   FontSize="16" FontWeight="Bold"
+                   Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                   Margin="0,0,0,8" />
+        <TextBlock x:Name="PromptText"
+                   FontSize="13" TextWrapping="Wrap"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                   Margin="0,0,0,20" />
+
+        <!-- Trigger term -->
+        <TextBlock Text="Trigger term"
+                   FontSize="12" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                   Margin="0,0,0,6" />
+        <ui:TextBox x:Name="TermTextBox"
+                    PlaceholderText="What you say to trigger this template"
+                    Margin="0,0,0,16"
+                    KeyDown="TermTextBox_KeyDown" />
+
+        <!-- Replacement text -->
+        <TextBlock Text="Replacement text"
+                   FontSize="12" FontWeight="SemiBold"
+                   Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                   Margin="0,0,0,6" />
+        <TextBox x:Name="BodyTextBox"
+                 MinHeight="96"
+                 AcceptsReturn="True"
+                 TextWrapping="Wrap"
+                 VerticalScrollBarVisibility="Auto"
+                 Padding="8"
+                 Margin="0,0,0,24"
+                 KeyDown="BodyTextBox_KeyDown" />
+
+        <!-- Buttons -->
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right">
+            <Button Content="Cancel" Padding="20,10"
+                    Background="Transparent" BorderThickness="0"
+                    Foreground="{DynamicResource TextFillColorSecondaryBrush}" FontWeight="Medium"
+                    Cursor="Hand" FontSize="13"
+                    Click="Cancel_Click" />
+            <Button x:Name="CreateButton" Padding="20,10" Cursor="Hand" FontSize="13"
+                    Foreground="White" FontWeight="SemiBold"
+                    BorderThickness="0"
+                    Click="Create_Click">
+                <Button.Template>
+                    <ControlTemplate TargetType="Button">
+                        <Border CornerRadius="10" Padding="{TemplateBinding Padding}">
+                            <Border.Background>
+                                <LinearGradientBrush StartPoint="0,0" EndPoint="1,1">
+                                    <GradientStop Color="#FF005FAA" Offset="0" />
+                                    <GradientStop Color="#FF0078D4" Offset="1" />
+                                </LinearGradientBrush>
+                            </Border.Background>
+                            <ContentPresenter HorizontalAlignment="Center" VerticalAlignment="Center" />
+                        </Border>
+                    </ControlTemplate>
+                </Button.Template>
+                Create
+            </Button>
+        </StackPanel>
+    </StackPanel>
+</Window>

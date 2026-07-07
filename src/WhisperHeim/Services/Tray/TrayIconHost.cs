@@ -1,7 +1,9 @@
 using System.Diagnostics;
 using System.Globalization;
+using System.Runtime.InteropServices;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Interop;
 using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using WhisperHeim.Services.Recording;
@@ -80,7 +82,9 @@ public sealed class TrayIconHost : IDisposable
         // user never sees anything, even though the window is technically
         // "visible". WindowStyle.None removes chrome (required for
         // AllowsTransparency). ShowActivated=false prevents stealing focus at
-        // logon. ShowInTaskbar=false keeps it out of the taskbar / Alt-Tab.
+        // logon. ShowInTaskbar=false removes only the taskbar button; Alt-Tab
+        // exclusion additionally needs WS_EX_TOOLWINDOW (applied below in the
+        // SourceInitialized handler).
         _hiddenHostWindow = new Window
         {
             WindowStyle = WindowStyle.None,
@@ -95,6 +99,18 @@ public sealed class TrayIconHost : IDisposable
             Left = -32000,
             Top = -32000,
             Title = "WhisperHeim Tray Host",
+        };
+
+        // Keep the perpetually-shown host window out of Alt-Tab.
+        // ShowInTaskbar=false only drops WS_EX_APPWINDOW (the taskbar button);
+        // Alt-Tab lists every *visible*, unowned, top-level window unless it
+        // carries WS_EX_TOOLWINDOW. Without this, "WhisperHeim Tray Host"
+        // appears in the Alt-Tab switcher for the life of the process.
+        _hiddenHostWindow.SourceInitialized += (_, _) =>
+        {
+            var handle = new WindowInteropHelper(_hiddenHostWindow).Handle;
+            var exStyle = GetWindowLongPtr(handle, GWL_EXSTYLE);
+            _ = SetWindowLongPtr(handle, GWL_EXSTYLE, (nint)(exStyle.ToInt64() | WS_EX_TOOLWINDOW));
         };
 
         // Designate the hidden window as the application MainWindow so that
@@ -265,6 +281,19 @@ public sealed class TrayIconHost : IDisposable
         _notifyIcon.Dispose();
         _hiddenHostWindow.Close();
     }
+
+    // ── Win32: WS_EX_TOOLWINDOW for Alt-Tab exclusion ────────────────────
+    // x64-only app (csproj <Platforms>x64</Platforms>), so the *Ptr variants
+    // always exist.
+
+    private const int GWL_EXSTYLE = -20;
+    private const long WS_EX_TOOLWINDOW = 0x00000080;
+
+    [DllImport("user32.dll", EntryPoint = "GetWindowLongPtrW")]
+    private static extern IntPtr GetWindowLongPtr(IntPtr hWnd, int nIndex);
+
+    [DllImport("user32.dll", EntryPoint = "SetWindowLongPtrW")]
+    private static extern IntPtr SetWindowLongPtr(IntPtr hWnd, int nIndex, IntPtr dwNewLong);
 
     // ── Icon factories (moved verbatim from MainWindow) ─────────────────
 

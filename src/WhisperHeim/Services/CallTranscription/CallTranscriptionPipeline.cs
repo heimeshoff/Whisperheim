@@ -72,9 +72,11 @@ public sealed class CallTranscriptionPipeline : ICallTranscriptionPipeline
         if (!_diarization.IsLoaded)
             _diarization.LoadModels();
 
+        // Self-heal like the file/stream paths (ADR-0005): the recognizer is
+        // lazy-loaded and idle-unloaded, so it is routinely absent here — e.g.
+        // right after app start or 5+ min after the last dictation.
         if (!_transcription.IsLoaded)
-            throw new InvalidOperationException(
-                "Transcription model is not loaded. Call LoadModel() first.");
+            _transcription.LoadModel();
 
         if (session.EndTimestamp is null)
             throw new InvalidOperationException(

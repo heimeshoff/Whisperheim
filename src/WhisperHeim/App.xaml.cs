@@ -74,6 +74,7 @@ public partial class App : Application
     private FfmpegDetector? _ffmpegDetector;
     private FfmpegPromptService? _ffmpegPromptService;
     private Services.Http.TranscribeServer? _transcribeServer;
+    private Services.Update.UpdateService? _updateService;
 
     /// <summary>
     /// Process-wide FFmpeg detector. Populated in <see cref="StartupCore"/>
@@ -426,6 +427,15 @@ public partial class App : Application
             onShowSettingsRequested: ShowSettingsWindow,
             onExitRequested: RequestExit);
 
+        // ── In-app auto-update (task infrastructure-v8k2m) ─────────────
+        // Notify-only updater over Velopack + the public GitHub Releases feed.
+        // App-owned (not window-owned) so it polls even on start-minimized and a
+        // staged update survives the window being closed; MainWindow reads its
+        // StagedVersion / subscribes to UpdateStaged to render the footer signal.
+        // Start() guards on IsInstalled, so dev/unpacked runs are a clean no-op.
+        _updateService = new Services.Update.UpdateService(new Services.Update.VelopackUpdateGateway());
+        _updateService.Start();
+
         // ── Hotkeys + dictation orchestrator + overlay ─────────────────
         SetupHotkeysAndOrchestration();
 
@@ -501,8 +511,7 @@ public partial class App : Application
         _orchestrator.AudioAmplitudeChanged += OnAudioAmplitudeChanged;
         _orchestrator.PipelineError += OnPipelineError;
         _orchestrator.WarmingUpChanged += OnWarmingUpChanged;
-        _orchestrator.TemplateNoMatch += spokenText =>
-            ToastWindow.Show($"No template match for: \"{spokenText}\"");
+        _orchestrator.TemplateNoMatch += OnTemplateNoMatch;
 
         _orchestrator.Start();
 
@@ -520,6 +529,26 @@ public partial class App : Application
         bool callHkRegistered = _callRecordingHotkeyService!.Register(callHotkey);
         Trace.TraceInformation(
             "[App] Call recording hotkey registered: {0}", callHkRegistered);
+    }
+
+    /// <summary>
+    /// Handles a template-mode dictation that matched no template (task main-t9w2k).
+    /// Instead of the old dead-end bottom-right toast, shows a centered modal that lets
+    /// the user create the missing template inline (editable trigger term pre-filled
+    /// with the transcribed word + replacement body). Save-only: creating the template
+    /// does not type it into the previously-focused app.
+    ///
+    /// Raised on a background thread, so the modal is dispatched to the UI thread.
+    /// </summary>
+    private void OnTemplateNoMatch(string spokenText)
+    {
+        Dispatcher?.BeginInvoke(() =>
+        {
+            if (_templateService is null) return;
+
+            var dialog = new InlineTemplateDialog(_templateService, spokenText);
+            dialog.ShowDialog();
+        });
     }
 
     /// <summary>
@@ -650,7 +679,8 @@ public partial class App : Application
                 _ollamaService!,
                 _streamTranscriptionService!,
                 _streamStorageService!,
-                _transcribeServer);
+                _transcribeServer,
+                _updateService);
         }
 
         _settingsWindow.ShowWindow();
@@ -674,6 +704,7 @@ public partial class App : Application
 
         _idleWorkingSetTrimmer?.Dispose();
         _modelLifecycle?.Dispose();
+        _updateService?.Dispose();
         _transcribeServer?.Dispose();
         _overlayWindow?.Close();
         _orchestrator?.Dispose();

@@ -58,7 +58,7 @@ public sealed class ModelManagerService
                 "https://huggingface.co/csukuangfj/sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8/resolve/main/tokens.txt",
                 ExpectedSizeBytes: 9_600), // ~9.4 KB
         },
-        ProjectUrl: "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v2");
+        ProjectUrl: "https://huggingface.co/nvidia/parakeet-tdt-0.6b-v3");
 
     /// <summary>Silero VAD ONNX model for voice activity detection.</summary>
     public static readonly ModelDefinition SileroVad = new(

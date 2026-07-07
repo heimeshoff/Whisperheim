@@ -5,6 +5,211 @@ Newest entries on top.
 
 ---
 
+## 2026-06-29 18:42 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-v8k2m (notify-only in-app auto-update via Velopack + GitHub Releases). Single ready task, no dependencies. Todo/doing now empty across all BCs — backlog empty too; nothing left to refine or work.
+**ADRs written:** 1 — ADR-0007 (notify-only in-app auto-update via a Velopack gateway seam + status-footer signal).
+
+---
+
+## 2026-06-29 18:40 -- Task verified and completed: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
+
+**Type:** Work / Task completion
+**Task:** infrastructure-v8k2m - In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases
+**Summary:** App-owned `UpdateService` over Velopack + the public GitHub Releases feed checks → silently downloads → stages a newer release and surfaces "Update ready: vX.Y" in the always-visible status footer; applies only via Velopack's auto-apply-on-next-launch or an explicit "Restart & update now" click — never force-restarting, and a clean no-op (`IsInstalled` guard) on dev/unpacked runs.
+**Verification:** PASS (iteration 1) — builds clean against pinned Velopack 0.0.1298 (the load-bearing API-surface check); 191/191 tests green incl. 9 new orchestration tests; footer signal lives in `SttStatusFooter` Grid.Row=3 collapsed-by-default; `SetAutoApplyOnStartup` confirmed never called (default left enabled); restart only on explicit click.
+**Files changed:** 10
+**Tests added:** 9
+**ADRs written:** 0007-notify-only-in-app-update-via-velopack.md
+
+---
+
+## 2026-06-29 18:30 -- Batch started: [infrastructure-v8k2m]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-v8k2m - In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases
+**Parallel:** no (1 worker) — only ready task, no dependencies.
+
+---
+
+## 2026-06-29 16:50 -- Modeling / Refined: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Resolved the one open "refine before work" item — the notify UX. Maintainer's call: surface the "Update ready: vX.Y" signal in the **always-visible bottom status footer** (`SttStatusFooter`, `MainWindow.xaml` Grid.Row=3), not a toast/tray balloon — noticeable, never interrupts dictation. Apply mode: keep Velopack's **auto-apply-on-next-launch** default + add an explicit **"Restart & update now"** footer action (`ApplyUpdatesAndRestart`); no consent-gated install-on-quit path. Acceptance criteria rewritten around the footer placement + the two apply paths. Sibling `infrastructure-p4w7n` landed (done) during this session — its `IAppVersionProvider` is now the reuse target for the footer's current-version half. Research + verification gotchas already captured; no new ADR (generic-BC plumbing, decision recorded in task Notes). Ready → promoted to todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
+## 2026-06-29 16:47 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** infrastructure-p4w7n (displayed app version sourced from Velopack packed release via a single `IAppVersionProvider`). Single ready task, no dependencies. Todo/doing now empty across all BCs; only the unrefined infrastructure backlog item `infrastructure-v8k2m` (in-app auto-update) remains — needs `modeling` refinement before `work` can pick it up.
+**ADRs written:** 0 — small generic-BC refactor; the source-of-truth decision was already resolved and recorded in the task Notes during refinement.
+
+---
+
+## 2026-06-29 16:45 -- Task verified and completed: infrastructure-p4w7n - Source displayed app version from packed release
+
+**Type:** Work / Task completion
+**Task:** infrastructure-p4w7n - Source the displayed app version from the packed release version (dictation, settings, about pages)
+**Summary:** The displayed app version is now sourced at runtime from Velopack's installed-version metadata (the packed `v*` tag) through a single shared `IAppVersionProvider`; the three hardcoded `v1.0` literals (Dictation, Settings, About) bind one formatted string — `vX.Y.Z` installed, `dev` unpacked.
+**Verification:** PASS (iteration 1) — 4/4 provider unit tests green; two-tier logic matches the RESOLVED decision (no assembly tier, no release.yml change); `VelopackLocator.CreateDefaultForPlatform`/`CurrentlyInstalledVersion` confirmed real by successful build; three XAML bindings code-read.
+**Files changed:** 7
+**Tests added:** 4
+**ADRs written:** none
+
+---
+
+## 2026-06-29 16:35 -- Batch started: [infrastructure-p4w7n]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-p4w7n - Source the displayed app version from the packed release version (dictation, settings, about pages)
+**Parallel:** no (1 worker) — only ready task; backlog sibling infrastructure-v8k2m not yet promoted.
+
+---
+
+## 2026-06-29 16:30 -- Modeling / Refined: infrastructure-p4w7n - Source displayed app version from packed release
+
+**Type:** Modeling / Refine
+**BC:** infrastructure
+**Status after:** todo
+**Summary:** Resolved the open source-of-truth decision: read the version from Velopack's installed-version metadata (`VelopackLocator`, = the `--packVersion` tag), **no release.yml change** (maintainer's call). Key consequence baked in — since the pipeline stays unchanged, the assembly informational version is permanently `1.0.0`, so the "assembly fallback" tier is dropped: the honest logic is two tiers (`installed → "v"+version; else → "dev"`), never surfacing a misleading `v1.0.0`. Added: read via `VelopackLocator` (not `UpdateManager`, to avoid coupling display to a `GithubSource`/network); single `IAppVersionProvider` shape; unit-test AC for the UI-free resolve/format/fallback. Sibling `infrastructure-v8k2m` confirmed independent (agree-by-construction, no hard dependency). Refinement made it ready → promoted to todo.
+**Split into:** none
+**ADRs written:** none (small generic-BC refactor; decision recorded in task Notes)
+
+---
+
+## 2026-06-29 16:17 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** main-r8m4q (Parakeet model-card `ProjectUrl` v2 → v3). Single ready task, no dependencies. Todo/doing now empty across all BCs; only the two unrefined infrastructure backlog items (infrastructure-v8k2m, infrastructure-p4w7n) remain — they need `modeling` refinement before `work` can pick them up.
+**ADRs written:** 0 — a one-line URL copy fix, no architectural decision.
+
+---
+
+## 2026-06-29 16:16 -- Task verified and completed: main-r8m4q - About-page Parakeet link points to v2, app uses v3
+
+**Type:** Work / Task completion
+**Task:** main-r8m4q - About-page Parakeet link points to v2, app uses v3
+**Summary:** The Parakeet model card's `ProjectUrl` now points at the v3 NVIDIA Hugging Face card, matching the int8 sherpa-onnx v3 build the app actually runs (was the English-only v2 card).
+**Verification:** PASS (iteration 1) — diff is a single literal change; About-page binding pre-exists from main-056; no other model's ProjectUrl touched. No build needed (string literal in a record ctor).
+**Files changed:** 1
+**Tests added:** 0
+**ADRs written:** none
+
+---
+
+## 2026-06-29 16:15 -- Batch started: [main-r8m4q]
+
+**Type:** Work / Batch start
+**Tasks:** main-r8m4q - About-page Parakeet link points to v2, app uses v3
+**Parallel:** no (1 worker) — only ready task, no dependencies. Single-line `ProjectUrl` copy fix in `ModelManagerService.cs` (Parakeet v2 → v3).
+
+---
+
+## 2026-06-29 16:05 -- Modeling / Captured: infrastructure-v8k2m - In-app auto-update notify-only via Velopack + GitHub Releases
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Client-side `UpdateService` (UpdateManager + GithubSource against the public repo) that detects a freshly-tagged GitHub Release, notifies "new version available" without forcing a restart, downloads silently, and applies on quit/restart. Guards on `IsInstalled` for dev, polls gently (60 req/hr GitHub limit). Distribution half already exists; this is the missing client side. Grounded in the velopack-in-app-update-github-2026-06-29 report. Open UX decision (where the notice appears) left for refine.
+
+---
+
+## 2026-06-29 16:05 -- Modeling / Captured: infrastructure-p4w7n - Source displayed app version from the packed release version
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** backlog
+**Summary:** Replace the hardcoded `v1.0` literal on the Dictation, Settings (GeneralPage), and About pages with a single runtime-sourced version derived from the packed release version (the `v*` tag via `vpk pack --packVersion`). Open source-of-truth decision: Velopack CurrentVersion vs. assembly informational version (latter needs a one-line release.yml injection). Sibling of infrastructure-v8k2m.
+
+---
+
+## 2026-06-29 16:10 -- Modeling / Captured: main-r8m4q - About-page Parakeet link points to v2, app uses v3
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** The About page's Parakeet model card links to the v2 Hugging Face card, but the app runs Parakeet TDT 0.6B v3. Fix is a one-line `ProjectUrl` change in `ModelManagerService.cs:61` (v2 → v3). Well-scoped, filed straight to todo.
+
+---
+
+## 2026-06-29 15:50 -- Research: Velopack in-app auto-update via GitHub Releases
+
+**Type:** Research
+**Requested by:** user
+**Report:** knowledge/research/velopack-in-app-update-github-2026-06-29.md
+**Review:** PASS (iteration 2)
+**Summary:**
+- Feasible with zero pipeline changes — the `RELEASES` manifest + nupkgs already uploaded on each `v*` tag are exactly what a runtime `UpdateManager` + `GithubSource(repo, null, false)` consume; remaining work is one client-side `UpdateService` + tray wiring.
+- Notify-only / apply-on-quit is the supported, correct shape: `CheckForUpdatesAsync` → background `DownloadUpdatesAsync` → `WaitExitThenApplyUpdates(asset, silent:true, restart:false)` (or auto-apply-on-next-launch); `ApplyUpdatesAndRestart` is the "Restart now" button only.
+- Two must-do guards: `if (!mgr.IsInstalled) return;` (unpacked dev runs throw `NotInstalledException`) and gentle polling (startup + multi-hour timer; unauthenticated GitHub API = 60 req/hr/IP). Unsigned releases update fine (hash-based integrity ≠ Authenticode); `%APPDATA%` model/FFmpeg files are outside the install dir and untouched by the swap.
+- Provenance caveat: API signatures verified against the docs' Velopack **1.2.0** reference (no 0.0.1298-stamped page exists); 0.0.1298-exact signatures are assumed-stable but marked ⚠️ UNVERIFIED — confirmable in ~5 min via IntelliSense/decompile.
+
+---
+
+## 2026-06-29 12:12 -- Work session ended
+
+**Type:** Work / Session end
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Commits:** 1 task commit + this session-end line
+**Scope:** main-t9w2k (inline template-creation modal on no-match). Single ready task, no dependencies. Board now fully empty (0 todo / 0 doing / 0 backlog across all BCs).
+**ADRs written:** 0 — UI built on the existing `InlineDialog` modal pattern and `TemplateService.AddTemplate` path; save-only behavior was decided during refinement, no new architectural decision arose.
+**Follow-up:** UI-only ACs (modal vs toast, prompt copy, Cancel/Escape, multiline body) are verified by code-reading + the test-covered model, not by an automated WPF UI test (none in repo). A `/deploy` and a live template-mode dictation with a nonsense word is the honest confirmation the modal pops centered and persists.
+
+---
+
+## 2026-06-29 12:10 -- Task verified and completed: main-t9w2k - Inline template creation dialog when no template matches
+
+**Type:** Work / Task completion
+**Task:** main-t9w2k - Inline template creation dialog when no template matches
+**Summary:** A template-mode dictation that matches no template now opens a centered top-most modal to create the missing template inline (editable, pre-filled trigger term + multiline replacement body), persisted save-only via `TemplateService.AddTemplate`, replacing the old dead-end no-match toast.
+**Verification:** PASS (iteration 1) — build clean, full suite green 178/178 (9 new `InlineTemplateCreationModelTests`). UI-only ACs (centered modal vs toast, prompt copy, Cancel/Escape) wired in the diff and exercised manually per the repo's documented lack of WPF UI-test infra; validation/persistence/save-only logic factored into a UI-free `InlineTemplateCreationModel` and unit-tested.
+**Files changed:** 5
+**Tests added:** 9
+**ADRs written:** none
+
+---
+
+## 2026-06-29 12:00 -- Batch started: [main-t9w2k]
+
+**Type:** Work / Batch start
+**Tasks:** main-t9w2k - Inline template creation dialog when no template matches
+**Parallel:** no (1 worker) — only ready task, no dependencies. Touches the no-match path in `App.xaml.cs` (the `TemplateNoMatch` handler currently calling `ToastWindow.Show`) and adds a new centered modal dialog (`Views/`), reusing the `InputDialog`/`DeleteConfirmationDialog` pattern; persists via `TemplateService.AddTemplate`.
+
+---
+
+## 2026-06-29 00:00 -- Modeling / Captured: main-t9w2k - Inline template creation dialog when no template matches
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Replace the bottom-right "no template match" toast with a centered modal dialog that lets the user create the missing template inline — editable trigger term (pre-filled with the transcribed/misheard word) + editable replacement-text body, persisted via the same `TemplateService.AddTemplate` path as the start-page drawer. Save-only (no auto-insert into the focused app), per user decision. Grounded in the existing `TemplateNoMatch` event and `InputDialog` modal pattern; filed straight to todo.
+
+---
+
 ## 2026-06-28 16:10 -- Follow-up bug fix (live debug): first dictation overlay top-right on scaled ultrawide [main-p3k9d]
 
 **Type:** Bug fix / Interactive (outside work loop)

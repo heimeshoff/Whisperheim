@@ -19,6 +19,7 @@ using WhisperHeim.Services.Templates;
 using WhisperHeim.Services.Analysis;
 using WhisperHeim.Services.Streams;
 using WhisperHeim.Services.Tray;
+using WhisperHeim.Services.Update;
 using WhisperHeim.Converters;
 using WhisperHeim.Views.Pages;
 using Wpf.Ui.Controls;
@@ -61,6 +62,7 @@ public partial class MainWindow : FluentWindow
     private readonly StreamTranscriptionService _streamTranscriptionService;
     private readonly StreamStorageService _streamStorageService;
     private readonly Services.Http.TranscribeServer? _transcribeServer;
+    private readonly UpdateService? _updateService;
 
     // STT status footer health-dot brushes (Utterheim palette).
     private static readonly Brush SttGreenBrush = Freeze(Color.FromRgb(0x10, 0xB9, 0x81));
@@ -101,7 +103,8 @@ public partial class MainWindow : FluentWindow
         OllamaService ollamaService,
         StreamTranscriptionService streamTranscriptionService,
         StreamStorageService streamStorageService,
-        Services.Http.TranscribeServer? transcribeServer = null)
+        Services.Http.TranscribeServer? transcribeServer = null,
+        UpdateService? updateService = null)
     {
         _settingsService = settingsService;
         _audioCaptureService = audioCaptureService;
@@ -122,6 +125,7 @@ public partial class MainWindow : FluentWindow
         _streamTranscriptionService = streamTranscriptionService;
         _streamStorageService = streamStorageService;
         _transcribeServer = transcribeServer;
+        _updateService = updateService;
 
         InitializeComponent();
 
@@ -135,6 +139,17 @@ public partial class MainWindow : FluentWindow
         // (no self-poll); busy/idle rides the queue's existing PropertyChanged.
         _transcriptionQueueService.PropertyChanged += OnQueueStatusChangedForFooter;
         UpdateSttStatusFooter();
+
+        // In-app auto-update signal (task infrastructure-v8k2m): subscribe to the
+        // App-owned UpdateService so a release downloaded while this window was
+        // closed (start-minimized) still surfaces the moment the window opens, and
+        // future stagings flip the footer indicator live. Notify-only — the user
+        // keeps working; nothing restarts until they click "Restart & update now".
+        if (_updateService is not null)
+        {
+            _updateService.UpdateStaged += OnUpdateStaged;
+            RefreshUpdateReadyFooter();
+        }
 
         // Restore saved window position/size or center on screen
         RestoreWindowPosition();
@@ -185,6 +200,38 @@ public partial class MainWindow : FluentWindow
             SttHealthDot.Fill = SttGreenBrush;
             SttStateText.Text = "· idle";
         }
+    }
+
+    private void OnUpdateStaged(object? sender, UpdateStagedEventArgs e)
+    {
+        // Raised off the UI thread (timer/background check); marshal to the UI.
+        Dispatcher.BeginInvoke(RefreshUpdateReadyFooter);
+    }
+
+    /// <summary>
+    /// Reflects the App-owned <see cref="UpdateService"/>'s staged-update state in
+    /// the footer: shows "Update ready: vX.Y" + the restart affordance once a newer
+    /// release has been downloaded and staged, hidden otherwise. Notify-only — no
+    /// toast, no modal, no forced restart.
+    /// </summary>
+    private void RefreshUpdateReadyFooter()
+    {
+        var staged = _updateService?.StagedVersion;
+        if (string.IsNullOrWhiteSpace(staged))
+        {
+            UpdateReadyPanel.Visibility = Visibility.Collapsed;
+            return;
+        }
+
+        UpdateReadyText.Text = $"Update ready: v{staged}";
+        UpdateReadyPanel.Visibility = Visibility.Visible;
+    }
+
+    private void RestartUpdateButton_Click(object sender, RoutedEventArgs e)
+    {
+        // Explicit user consent: the only path that applies the staged update and
+        // relaunches. Velopack hands the process off, so this terminates the app.
+        _updateService?.RestartToUpdate();
     }
 
     /// <summary>

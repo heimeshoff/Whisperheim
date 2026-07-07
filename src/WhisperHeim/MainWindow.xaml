@@ -167,28 +167,59 @@
                 BorderThickness="0,1,0,0"
                 BorderBrush="{DynamicResource ControlStrokeColorDefaultBrush}"
                 Background="{DynamicResource CardBackgroundFillColorDefaultBrush}"
-                Padding="14,5"
-                ToolTip="WhisperHeim's local speech-to-text API. Point Claude or other local tools at this endpoint (POST /transcribe). Override with the WHISPERHEIM_ENDPOINT env var.">
-            <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                <Ellipse x:Name="SttHealthDot"
-                         Width="9" Height="9"
-                         Margin="0,0,8,0"
-                         VerticalAlignment="Center" />
-                <TextBlock Text="STT API"
-                           FontSize="12" FontWeight="Medium"
-                           VerticalAlignment="Center"
-                           Opacity="0.85"
-                           Margin="0,0,8,0" />
-                <TextBlock x:Name="SttEndpointText"
-                           FontSize="12" FontFamily="Consolas"
-                           VerticalAlignment="Center"
-                           Opacity="0.85" />
-                <TextBlock x:Name="SttStateText"
-                           FontSize="12"
-                           VerticalAlignment="Center"
-                           Opacity="0.55"
-                           Margin="8,0,0,0" />
-            </StackPanel>
+                Padding="14,5">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <StackPanel Grid.Column="0"
+                            Orientation="Horizontal" VerticalAlignment="Center"
+                            ToolTip="WhisperHeim's local speech-to-text API. Point Claude or other local tools at this endpoint (POST /transcribe). Override with the WHISPERHEIM_ENDPOINT env var.">
+                    <Ellipse x:Name="SttHealthDot"
+                             Width="9" Height="9"
+                             Margin="0,0,8,0"
+                             VerticalAlignment="Center" />
+                    <TextBlock Text="STT API"
+                               FontSize="12" FontWeight="Medium"
+                               VerticalAlignment="Center"
+                               Opacity="0.85"
+                               Margin="0,0,8,0" />
+                    <TextBlock x:Name="SttEndpointText"
+                               FontSize="12" FontFamily="Consolas"
+                               VerticalAlignment="Center"
+                               Opacity="0.85" />
+                    <TextBlock x:Name="SttStateText"
+                               FontSize="12"
+                               VerticalAlignment="Center"
+                               Opacity="0.55"
+                               Margin="8,0,0,0" />
+                </StackPanel>
+
+                <!-- In-app auto-update signal (task infrastructure-v8k2m): notify-only,
+                     collapsed until a newer release has been downloaded and staged.
+                     The staged update auto-applies on next launch; this affordance is
+                     the only path that restarts the running app, and only on click. -->
+                <StackPanel x:Name="UpdateReadyPanel"
+                            Grid.Column="1"
+                            Orientation="Horizontal" VerticalAlignment="Center"
+                            Visibility="Collapsed"
+                            ToolTip="A newer version has been downloaded and is ready. It installs automatically the next time WhisperHeim launches — or restart now to update immediately. Your recordings, settings and models are untouched.">
+                    <ui:SymbolIcon Symbol="ArrowSync24"
+                                   FontSize="14" Margin="0,0,6,0"
+                                   VerticalAlignment="Center" Opacity="0.85" />
+                    <TextBlock x:Name="UpdateReadyText"
+                               FontSize="12" FontWeight="Medium"
+                               VerticalAlignment="Center" Opacity="0.85"
+                               Margin="0,0,10,0" />
+                    <ui:Button x:Name="RestartUpdateButton"
+                               Content="Restart &amp; update now"
+                               Appearance="Primary"
+                               FontSize="11" Padding="8,2"
+                               Click="RestartUpdateButton_Click" />
+                </StackPanel>
+            </Grid>
         </Border>
     </Grid>
 </ui:FluentWindow>
