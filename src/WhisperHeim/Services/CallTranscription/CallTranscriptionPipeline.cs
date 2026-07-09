@@ -376,8 +376,11 @@ public sealed class CallTranscriptionPipeline : ICallTranscriptionPipeline
         // ── Stage 5: Save ───────────────────────────────────────────────
         ReportProgress(progress, PipelineStage.Saving, 0, "Saving transcript...");
 
-        // Save the transcript first to get the file path, then preserve audio alongside it
-        var filePath = await _storage.SaveAsync(transcript, cancellationToken);
+        // Save the transcript first to get the file path, then preserve audio alongside it.
+        // Pass the session directory explicitly — inferring it from the timestamp
+        // fails for dirs whose names don't start with it (e.g. recovered_* sessions).
+        var filePath = await _storage.SaveAsync(
+            transcript, Path.GetDirectoryName(session.MicWavFilePath), cancellationToken);
 
         // Audio is played back by mixing mic.wav + system.wav in real-time — no merged file needed
 

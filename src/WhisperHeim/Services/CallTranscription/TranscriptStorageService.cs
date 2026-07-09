@@ -66,12 +66,17 @@ public sealed class TranscriptStorageService : ITranscriptStorageService
     /// <inheritdoc />
     public async Task<string> SaveAsync(
         CallTranscript transcript,
+        string? sessionDir = null,
         CancellationToken cancellationToken = default)
     {
         // Determine the session directory. Since task 105, session directories
         // include a `_{machineId}` suffix (and optionally a `_{n}` collision
         // counter), so we can't reconstruct the exact name purely from the
         // start timestamp. Prefer:
+        //   0. The explicit sessionDir the caller passed (the pipeline knows the
+        //      exact directory it read the WAVs from — name-based inference fails
+        //      for dirs like `recovered_*` whose names don't start with the
+        //      timestamp, misrouting the transcript into a brand-new folder).
         //   1. An existing directory whose WAVs the in-memory transcript was
         //      built from (look up via `AudioFilePath` if it was set absolutely).
         //   2. Otherwise, the first existing directory whose name starts with
@@ -82,10 +87,13 @@ public sealed class TranscriptStorageService : ITranscriptStorageService
         var recordingsRoot = _dataPathService.RecordingsPath;
         Directory.CreateDirectory(recordingsRoot);
 
-        string? sessionDir = null;
+        // (0) Explicit session dir from the caller wins.
+        if (sessionDir is not null && !Directory.Exists(sessionDir))
+            sessionDir = null;
 
         // (1) AudioFilePath might be absolute and point inside the real session dir.
-        if (!string.IsNullOrEmpty(transcript.AudioFilePath) && Path.IsPathRooted(transcript.AudioFilePath))
+        if (sessionDir is null &&
+            !string.IsNullOrEmpty(transcript.AudioFilePath) && Path.IsPathRooted(transcript.AudioFilePath))
         {
             var parent = Path.GetDirectoryName(transcript.AudioFilePath);
             if (!string.IsNullOrEmpty(parent) && Directory.Exists(parent))

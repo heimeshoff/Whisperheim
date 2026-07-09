@@ -41,7 +41,10 @@ public partial class TranscriptsPage : UserControl
     private CallTranscript? _selectedTranscript;
     private TranscriptListItem? _selectedListItem;
     private List<SegmentViewModel>? _currentSegmentViewModels;
-    private string? _currentlyTranscribingSessionDir;
+    // Session dir whose transcript the open drawer is waiting for, so
+    // TryAutoOpenTranscriptInDrawer can transition it live when it appears.
+    // Display state ("Transcribing" section) is derived from the queue, not this.
+    private string? _drawerAutoOpenSessionDir;
     private readonly List<TranscriptGroupViewModel> _groups = new();
     private string? _externalAudioPath; // Set when audio format isn't playable inline
 
@@ -191,16 +194,6 @@ public partial class TranscriptsPage : UserControl
     /// </summary>
     public event EventHandler<CallRecordingSession>? ReTranscriptionRequested;
 
-    /// <summary>
-    /// Sets the session directory currently being transcribed so it's shown
-    /// as active rather than clickable pending.
-    /// </summary>
-    public void SetTranscribingSession(string? sessionDir)
-    {
-        _currentlyTranscribingSessionDir = sessionDir;
-        Dispatcher.Invoke(LoadPendingSessions);
-    }
-
     // --- Active Recording ---
 
     private void OnRecordingStarted(object? sender, CallRecordingSession session)
@@ -272,7 +265,7 @@ public partial class TranscriptsPage : UserControl
                 TranscriptScrollViewer.Visibility = Visibility.Visible;
 
                 // Remember the session dir so we can auto-open the transcript when done
-                _currentlyTranscribingSessionDir = Path.GetDirectoryName(session.MicWavFilePath);
+                _drawerAutoOpenSessionDir = Path.GetDirectoryName(session.MicWavFilePath);
             }
 
             // Refresh to show it moved from pending state. AutoTranscriptionService
@@ -437,7 +430,7 @@ public partial class TranscriptsPage : UserControl
         LoadPendingAudioPlayback(item.SessionDir);
 
         // Remember the session dir so TryAutoOpenTranscriptInDrawer can transition
-        _currentlyTranscribingSessionDir = item.SessionDir;
+        _drawerAutoOpenSessionDir = item.SessionDir;
 
         DrawerPanel.Visibility = Visibility.Visible;
         AnimateDrawer(open: true);
@@ -750,12 +743,25 @@ public partial class TranscriptsPage : UserControl
             }
         }
 
+        // The "Transcribing" state comes from the queue's active item — never
+        // from drawer state, which used to mark any clicked pending item as
+        // transcribing and never clear it once the queue drained.
+        string? activeSessionDir = null;
+        if (_queueService.ActiveItem is { } active &&
+            active.Stage is not (QueueItemStage.Completed or QueueItemStage.Failed))
+        {
+            activeSessionDir = active.SessionDir ??
+                (active.Session is not null
+                    ? Path.GetDirectoryName(active.Session.MicWavFilePath)
+                    : null);
+        }
+
         foreach (var dir in pendingDirs)
         {
             var dirName = Path.GetFileName(dir);
-            var isCurrentlyTranscribing = _currentlyTranscribingSessionDir is not null &&
+            var isCurrentlyTranscribing = activeSessionDir is not null &&
                 string.Equals(Path.GetFullPath(dir),
-                    Path.GetFullPath(_currentlyTranscribingSessionDir),
+                    Path.GetFullPath(activeSessionDir),
                     StringComparison.OrdinalIgnoreCase);
             var isQueued = queuedSessionDirs.Contains(Path.GetFullPath(dir));
 
@@ -1239,12 +1245,12 @@ public partial class TranscriptsPage : UserControl
     /// </summary>
     private void TryAutoOpenTranscriptInDrawer()
     {
-        if (_currentlyTranscribingSessionDir is null) return;
+        if (_drawerAutoOpenSessionDir is null) return;
         if (DrawerPanel.Visibility != Visibility.Visible) return;
         if (_isActiveRecordingDrawerOpen) return;
 
         // Find the transcript item that matches the session directory
-        var sessionDir = Path.GetFullPath(_currentlyTranscribingSessionDir);
+        var sessionDir = Path.GetFullPath(_drawerAutoOpenSessionDir);
         var matchingItem = _allItems.FirstOrDefault(item =>
         {
             var itemDir = Path.GetDirectoryName(item.FilePath);
@@ -1254,7 +1260,7 @@ public partial class TranscriptsPage : UserControl
 
         if (matchingItem is not null)
         {
-            _currentlyTranscribingSessionDir = null;
+            _drawerAutoOpenSessionDir = null;
             OpenTranscriptDrawer(matchingItem);
         }
     }
@@ -1825,7 +1831,9 @@ public partial class TranscriptsPage : UserControl
             }
             else
             {
-                startTimestamp = DateTimeOffset.UtcNow;
+                // Dir name has no parseable timestamp (e.g. recovered_* sessions) —
+                // the mic file's creation time is the closest record of the call start.
+                startTimestamp = new DateTimeOffset(File.GetCreationTimeUtc(micPath), TimeSpan.Zero);
             }
 
             var session = new CallRecordingSession(
