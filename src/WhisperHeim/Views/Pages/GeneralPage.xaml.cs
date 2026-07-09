@@ -27,6 +27,7 @@ public partial class GeneralPage : UserControl
         DataContext = _settingsService.Current.General;
         InitializeComponent();
         UpdateDataPathDisplay();
+        UpdateExportFolderDisplays();
         InitializeOllamaSettings();
         RefreshFfmpegStatus();
 
@@ -235,6 +236,92 @@ public partial class GeneralPage : UserControl
     {
         _settingsService.DataPathService.SetDataPath(null);
         UpdateDataPathDisplay();
+    }
+
+    // --- Auto-export folders (task main-m6x4v, ADR-0008) ---
+
+    private void UpdateExportFolderDisplays()
+    {
+        var bootstrap = _settingsService.DataPathService.Bootstrap;
+
+        RecordingsExportFolderDisplay.Text = string.IsNullOrEmpty(bootstrap.RecordingsExportFolder)
+            ? "Not set — auto-export disabled"
+            : bootstrap.RecordingsExportFolder;
+
+        ImportsExportFolderDisplay.Text = string.IsNullOrEmpty(bootstrap.ImportsExportFolder)
+            ? "Not set — auto-export disabled"
+            : bootstrap.ImportsExportFolder;
+    }
+
+    private void BrowseRecordingsExportFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var chosen = BrowseForExportFolder(
+            "Select export folder for recorded conversations",
+            _settingsService.DataPathService.Bootstrap.RecordingsExportFolder);
+        if (chosen is null) return;
+
+        _settingsService.DataPathService.Bootstrap.RecordingsExportFolder = chosen;
+        _settingsService.DataPathService.Save();
+        UpdateExportFolderDisplays();
+    }
+
+    private void ClearRecordingsExportFolder_Click(object sender, RoutedEventArgs e)
+    {
+        _settingsService.DataPathService.Bootstrap.RecordingsExportFolder = null;
+        _settingsService.DataPathService.Save();
+        UpdateExportFolderDisplays();
+    }
+
+    private void BrowseImportsExportFolder_Click(object sender, RoutedEventArgs e)
+    {
+        var chosen = BrowseForExportFolder(
+            "Select export folder for imported voice messages",
+            _settingsService.DataPathService.Bootstrap.ImportsExportFolder);
+        if (chosen is null) return;
+
+        _settingsService.DataPathService.Bootstrap.ImportsExportFolder = chosen;
+        _settingsService.DataPathService.Save();
+        UpdateExportFolderDisplays();
+    }
+
+    private void ClearImportsExportFolder_Click(object sender, RoutedEventArgs e)
+    {
+        _settingsService.DataPathService.Bootstrap.ImportsExportFolder = null;
+        _settingsService.DataPathService.Save();
+        UpdateExportFolderDisplays();
+    }
+
+    /// <summary>
+    /// Shared folder-picker + writability check for the two export-folder
+    /// settings, mirroring <see cref="BrowseDataPath_Click"/>'s
+    /// <c>OpenFolderDialog</c> + validate pattern. Returns the chosen path,
+    /// or null if the user cancelled or the chosen folder failed validation
+    /// (a message box has already been shown in that case).
+    /// </summary>
+    private string? BrowseForExportFolder(string title, string? initialDirectory)
+    {
+        var dialog = new Microsoft.Win32.OpenFolderDialog
+        {
+            Title = title,
+            InitialDirectory = initialDirectory,
+        };
+
+        if (dialog.ShowDialog() != true)
+            return null;
+
+        var newPath = dialog.FolderName;
+
+        if (!DataPathService.ValidatePath(newPath))
+        {
+            MessageBox.Show(
+                $"The selected folder is not writable:\n\n{newPath}\n\nPlease choose a different folder.",
+                "Invalid Folder",
+                MessageBoxButton.OK,
+                MessageBoxImage.Warning);
+            return null;
+        }
+
+        return newPath;
     }
 
     private void HighlightActiveTheme()

@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 124
+- **Doing:** 0
+- **Done:** 125
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **main-m6x4v** — Auto-export transcripts as Markdown to configured default folders (feature) — `doing/main-m6x4v-auto-export-md-to-configured-folders.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **main-m6x4v** — Auto-export transcripts as Markdown to configured default folders (feature) — `done/main-m6x4v-auto-export-md-to-configured-folders.md`
 - **main-r8m4q** -- About-page Parakeet link points to v2, app uses v3 -- 2026-06-29 -- `done/main-r8m4q-about-page-parakeet-v3-link.md`
 - **main-t9w2k** -- Inline template creation dialog when no template matches -- 2026-06-29 -- `done/main-t9w2k-inline-template-creation-on-no-match.md`
 - **main-p3k9d** -- First dictation overlay renders at wrong position (not bottom-center) -- 2026-06-28 -- `done/main-p3k9d-first-overlay-mispositioned.md`

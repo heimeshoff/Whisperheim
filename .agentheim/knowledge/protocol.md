@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-07-09 15:32 -- Task verified and completed: main-m6x4v - Auto-export transcripts as Markdown to configured default folders
+
+**Type:** Work / Task completion
+**Task:** main-m6x4v - Auto-export transcripts as Markdown to configured default folders
+**Summary:** Recorded conversations and imported voice messages auto-export as <name>.md into two independently-configurable machine-local Settings folders on transcription completion; re-transcription overwrites in place, same-titled sibling sessions disambiguate to name (2).md per ADR-0008.
+**Duration:** 19m53s
+**Verification:** PASS (iteration 1)
+**Files changed:** 13
+**Tests added:** 40
+**ADRs written:** none
+
+---
+
 ## 2026-07-09 15:12 -- Batch started: [main-m6x4v]
 
 **Type:** Work / Batch start

@@ -246,6 +246,85 @@
                 </StackPanel>
             </Border>
 
+            <!-- ═══════ Auto-Export Section ═══════ -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <ui:SymbolIcon Symbol="FolderOpen24" Foreground="#FF005FAA" Margin="0,0,10,0" />
+                <TextBlock Text="AUTO-EXPORT (MARKDOWN)"
+                           FontSize="10" FontWeight="Bold"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Recorded conversations folder"
+                               FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    <TextBlock Text="When set, every recorded call is written as &quot;&lt;recording name&gt;.md&quot; into this folder as soon as it finishes transcribing. Leave unset to disable."
+                               FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="0,4,0,16"
+                               TextWrapping="Wrap" />
+                    <DockPanel>
+                        <ui:Button x:Name="BrowseRecordingsExportFolder"
+                                   Content="Browse..."
+                                   Appearance="Primary"
+                                   DockPanel.Dock="Right"
+                                   Margin="12,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Click="BrowseRecordingsExportFolder_Click" />
+                        <ui:Button x:Name="ClearRecordingsExportFolder"
+                                   Content="Clear"
+                                   DockPanel.Dock="Right"
+                                   Margin="8,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Click="ClearRecordingsExportFolder_Click" />
+                        <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                CornerRadius="8" Padding="12,8">
+                            <TextBlock x:Name="RecordingsExportFolderDisplay"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
+            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="0,0,0,40">
+                <StackPanel>
+                    <TextBlock Text="Imported voice messages folder"
+                               FontSize="15" FontWeight="SemiBold"
+                               Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                    <TextBlock Text="Same as above, but for files transcribed via drag-and-drop or the file picker. Independent of the recordings folder — set either, both, or neither."
+                               FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                               Margin="0,4,0,16"
+                               TextWrapping="Wrap" />
+                    <DockPanel>
+                        <ui:Button x:Name="BrowseImportsExportFolder"
+                                   Content="Browse..."
+                                   Appearance="Primary"
+                                   DockPanel.Dock="Right"
+                                   Margin="12,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Click="BrowseImportsExportFolder_Click" />
+                        <ui:Button x:Name="ClearImportsExportFolder"
+                                   Content="Clear"
+                                   DockPanel.Dock="Right"
+                                   Margin="8,0,0,0"
+                                   VerticalAlignment="Center"
+                                   Click="ClearImportsExportFolder_Click" />
+                        <Border Background="{DynamicResource SubtleFillColorSecondaryBrush}"
+                                CornerRadius="8" Padding="12,8">
+                            <TextBlock x:Name="ImportsExportFolderDisplay"
+                                       FontSize="12"
+                                       Foreground="{DynamicResource TextFillColorPrimaryBrush}"
+                                       TextTrimming="CharacterEllipsis"
+                                       VerticalAlignment="Center" />
+                        </Border>
+                    </DockPanel>
+                </StackPanel>
+            </Border>
+
             <!-- ═══════ Appearance Section ═══════ -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                 <ui:SymbolIcon Symbol="PaintBrush24" Foreground="#FF005FAA" Margin="0,0,10,0" />

@@ -1,11 +1,11 @@
 ---
 id: main-m6x4v
 title: Auto-export transcripts as Markdown to configured default folders
-status: doing
+status: done
 type: feature
 context: main
 created: 2026-07-09
-completed:
+completed: 2026-07-09
 depends_on: []
 blocks: []
 tags: [export, settings, transcription, markdown]
@@ -69,32 +69,32 @@ it stays a synchronous text response).
    `transcript_{RecordingStartedUtc:yyyyMMdd_HHmmss}`.
 
 ## Acceptance criteria
-- [ ] Settings exposes two folder pickers (recorded conversations, imported voice
+- [x] Settings exposes two folder pickers (recorded conversations, imported voice
       messages), each with Browse + Clear, persisting to `BootstrapConfig`.
       Follows the `GeneralPage.BrowseDataPath_Click` pattern
       (`OpenFolderDialog` + validate). *(manual)*
-- [ ] A completed **recording** with the recordings folder configured writes
+- [x] A completed **recording** with the recordings folder configured writes
       `<sanitized name>.md`, content generated from the reloaded
       `transcript.json`. *(unit)*
-- [ ] A completed **file import** with the imports folder configured writes
+- [x] A completed **file import** with the imports folder configured writes
       `<sanitized name>.md`. *(unit)*
-- [ ] Either folder unset/empty → no export for that kind; the other kind is
+- [x] Either folder unset/empty → no export for that kind; the other kind is
       unaffected. *(unit)*
-- [ ] Missing or unwritable folder → no exception propagates, a warning is
+- [x] Missing or unwritable folder → no exception propagates, a warning is
       logged, and the queue item still reaches `Completed`. A transcription that
       succeeded must never be marked failed because an export folder was gone.
       *(unit + manual)*
-- [ ] Re-transcribing the same recording, unrenamed, overwrites the same `.md`
+- [x] Re-transcribing the same recording, unrenamed, overwrites the same `.md`
       in place. *(unit)*
-- [ ] Two different recordings sharing a title produce `name.md` and
+- [x] Two different recordings sharing a title produce `name.md` and
       `name (2).md`; the first file is never touched by the second recording.
       *(unit)*
-- [ ] `ExportFileName.Sanitize` has a table-driven test covering every branch of
+- [x] `ExportFileName.Sanitize` has a table-driven test covering every branch of
       the rule above (invalid chars, reserved names, trailing dots/spaces, length
       cap, empty-after-sanitize). *(unit)*
-- [ ] Completions carrying no `SessionDir` (STT API, `EnqueueFile`) produce no
+- [x] Completions carrying no `SessionDir` (STT API, `EnqueueFile`) produce no
       export. *(unit)*
-- [ ] `TranscriptMarkdownFormatter.Format` produces byte-identical output to
+- [x] `TranscriptMarkdownFormatter.Format` produces byte-identical output to
       today's `FormatAsMarkdown`, and is the single implementation used by both
       the manual "MD" button and auto-export. *(unit)*
 
@@ -138,3 +138,33 @@ mirror. Documented in ADR-0008 so it isn't later mistaken for a bug.
   `:2424` manual export (rewire to the extracted formatter)
 - New: `src/WhisperHeim/Services/Export/TranscriptAutoExportService.cs`,
   `src/WhisperHeim/Services/Export/ExportFileName.cs`
+
+## Outcome
+Implemented exactly per the Shape/ADR-0008 design, with one load-bearing
+resolution beyond what ADR-0008 spells out: `ReTranscribe_Click` deletes
+`transcript.json` before the pipeline rebuilds it, so the on-disk
+`CallTranscript.ExportedMarkdownPath` of a re-transcribed session is always
+reset to `null` by the time the subscriber reloads it — the ADR's literal
+"if `ExportedMarkdownPath` already equals desired, overwrite in place" check
+alone can never fire for a UI-driven re-transcription. `TranscriptAutoExportService
+.ResolveExportPath` therefore decides collisions by scanning **sibling**
+transcripts' own `ExportedMarkdownPath` claims (via `ListTranscriptFiles` +
+`LoadAsync`, excluding the current session's own file) rather than by checking
+`File.Exists` on the candidate path — matching the ADR's "ownership is decided
+from persisted memory, never by inspecting the existing file" clause and giving
+correct idempotent overwrite-in-place even after the field resets to null.
+
+**New files:**
+- `src/WhisperHeim/Services/Export/ExportFileName.cs` — `Sanitize(name, recordingStartedUtc)`, the 5-step Windows-safe filename rule.
+- `src/WhisperHeim/Services/Export/TranscriptMarkdownFormatter.cs` — `Format(CallTranscript)`, lifted verbatim from `TranscriptsPage.FormatAsMarkdown`.
+- `src/WhisperHeim/Services/Export/TranscriptAutoExportService.cs` — `ExportIfConfiguredAsync(TranscriptionQueueItem)` (public, directly unit-testable) + `OnItemCompleted` (event-handler-shaped wrapper wired in `App.xaml.cs`).
+- Tests: `tests/WhisperHeim.Tests/ExportFileNameTests.cs` (27 cases), `TranscriptMarkdownFormatterTests.cs` (3), `TranscriptAutoExportServiceTests.cs` (10).
+
+**Modified:**
+- `src/WhisperHeim/Models/BootstrapConfig.cs` — `RecordingsExportFolder` / `ImportsExportFolder`.
+- `src/WhisperHeim/Services/CallTranscription/CallTranscript.cs` — `ExportedMarkdownPath` (serialized `exportedMarkdownPath`).
+- `src/WhisperHeim/Views/Pages/TranscriptsPage.xaml.cs` — manual "MD" export, clipboard copy, and the AI-analysis Markdown feed now all call `TranscriptMarkdownFormatter.Format`; the old private `FormatAsMarkdown` is removed (single implementation, satisfying the byte-identical-output AC by construction).
+- `src/WhisperHeim/Views/Pages/GeneralPage.xaml` / `.xaml.cs` — new "AUTO-EXPORT (MARKDOWN)" section: two folder cards (Browse/Clear each), `OpenFolderDialog` + `DataPathService.ValidatePath` pattern mirroring `BrowseDataPath_Click`. Manual UI wiring — no automated UI test infra in this project, so this criterion is TDD-skipped for the picker itself; the underlying persistence (`BootstrapConfig` fields) and the consuming service are fully unit-tested.
+- `src/WhisperHeim/App.xaml.cs` — constructs `TranscriptAutoExportService` and subscribes it to `_transcriptionQueueService.ItemCompleted`, alongside `AutoTranscriptionService` and the other App-owned subscribers.
+
+Full suite: 231/231 passing (was 191 baseline; +40 new tests here).

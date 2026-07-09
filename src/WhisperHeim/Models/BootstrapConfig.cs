@@ -61,4 +61,24 @@ public sealed class BootstrapConfig
     /// </summary>
     [JsonPropertyName("machineId")]
     public string? MachineId { get; set; }
+
+    /// <summary>
+    /// Machine-local folder that recorded-conversation transcripts are
+    /// auto-exported to as Markdown (<c>&lt;recording name&gt;.md</c>) on
+    /// transcription completion. Null or empty disables auto-export for
+    /// recordings. A filesystem path (drive letters, mount points), like
+    /// <see cref="DataPath"/> — not synced. See ADR-0008 and task main-m6x4v.
+    /// </summary>
+    [JsonPropertyName("recordingsExportFolder")]
+    public string? RecordingsExportFolder { get; set; }
+
+    /// <summary>
+    /// Machine-local folder that imported voice-message transcripts are
+    /// auto-exported to as Markdown on transcription completion. Null or
+    /// empty disables auto-export for imports. Independent of
+    /// <see cref="RecordingsExportFolder"/> — either can be configured alone.
+    /// See ADR-0008 and task main-m6x4v.
+    /// </summary>
+    [JsonPropertyName("importsExportFolder")]
+    public string? ImportsExportFolder { get; set; }
 }
