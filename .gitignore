@@ -42,3 +42,4 @@ $RECYCLE.BIN/
 **/models/*.onnx
 **/models/*.bin
 .agentheim/.dashboard
+.agentheim/state/in-flight.json

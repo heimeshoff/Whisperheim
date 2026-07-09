@@ -61,6 +61,19 @@ public sealed class CallTranscript
     public string? FilePath { get; set; }
 
     /// <summary>
+    /// Absolute path to the Markdown file this transcript was last auto-exported
+    /// to (see ADR-0008 / task main-m6x4v), or null if it has never been
+    /// auto-exported. Used by <c>WhisperHeim.Services.Export.TranscriptAutoExportService</c> to
+    /// decide whether re-transcribing the same, unrenamed recording session
+    /// should overwrite this file in place rather than pick a disambiguated
+    /// name. Not touched by manual "MD" exports (SaveFileDialog), and not
+    /// updated on rename alone — a rename without re-transcription leaves this
+    /// pointing at the (now stale) previously exported file.
+    /// </summary>
+    [JsonPropertyName("exportedMarkdownPath")]
+    public string? ExportedMarkdownPath { get; set; }
+
+    /// <summary>
     /// Resolves the absolute path to the audio file, interpreting AudioFilePath
     /// relative to the transcript JSON file's directory when necessary.
     /// Returns null if no audio file is configured or the file doesn't exist.

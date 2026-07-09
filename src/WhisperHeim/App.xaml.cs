@@ -4,6 +4,7 @@ using WhisperHeim.Services.Audio;
 using WhisperHeim.Services.CallTranscription;
 using WhisperHeim.Services.Diarization;
 using WhisperHeim.Services.Dictation;
+using WhisperHeim.Services.Export;
 using WhisperHeim.Services.Hotkey;
 using WhisperHeim.Services.Input;
 using WhisperHeim.Services.Models;
@@ -71,6 +72,7 @@ public partial class App : Application
     private StreamStorageService? _streamStorageService;
     private StreamTranscriptionService? _streamTranscriptionService;
     private AutoTranscriptionService? _autoTranscriptionService;
+    private TranscriptAutoExportService? _transcriptAutoExportService;
     private FfmpegDetector? _ffmpegDetector;
     private FfmpegPromptService? _ffmpegPromptService;
     private Services.Http.TranscribeServer? _transcribeServer;
@@ -420,6 +422,16 @@ public partial class App : Application
         // when no UI page is open to observe the recording-stopped event.
         _autoTranscriptionService = new AutoTranscriptionService(
             _callRecordingService, _transcriptionQueueService, _transcriptStorageService);
+
+        // Auto-export completed transcripts as Markdown into the configured
+        // recorded-conversations / imported-voice-messages folders (task
+        // main-m6x4v, ADR-0008). A separate subscriber alongside
+        // AutoTranscriptionService and the queue's other ItemCompleted
+        // listeners — it owns no invariant of the queue itself, so it sits
+        // outside it rather than being folded into TranscriptionQueueService.
+        _transcriptAutoExportService = new TranscriptAutoExportService(
+            _transcriptStorageService, _dataPathService);
+        _transcriptionQueueService.ItemCompleted += _transcriptAutoExportService.OnItemCompleted;
 
         // The queue is in-memory only: a transcription still running at app exit
         // leaves its recording pending with nothing to pick it back up. Requeue

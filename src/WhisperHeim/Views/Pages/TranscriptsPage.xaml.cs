@@ -16,6 +16,7 @@ using WhisperHeim.Models;
 using WhisperHeim.Services.Analysis;
 using WhisperHeim.Services.Audio;
 using WhisperHeim.Services.CallTranscription;
+using WhisperHeim.Services.Export;
 using WhisperHeim.Services.FileTranscription;
 using WhisperHeim.Services.Recording;
 using WhisperHeim.Services.Transcription;
@@ -2411,7 +2412,7 @@ public partial class TranscriptsPage : UserControl
     {
         if (_selectedTranscript is null) return;
 
-        var markdown = FormatAsMarkdown(_selectedTranscript);
+        var markdown = TranscriptMarkdownFormatter.Format(_selectedTranscript);
         System.Windows.Clipboard.SetText(markdown);
 
         CopiedIndicator.Visibility = Visibility.Visible;
@@ -2434,7 +2435,7 @@ public partial class TranscriptsPage : UserControl
 
         if (dialog.ShowDialog() == true)
         {
-            var markdown = FormatAsMarkdown(_selectedTranscript);
+            var markdown = TranscriptMarkdownFormatter.Format(_selectedTranscript);
             File.WriteAllText(dialog.FileName, markdown);
             Trace.TraceInformation("[TranscriptsPage] Exported Markdown to {0}", dialog.FileName);
         }
@@ -2473,35 +2474,6 @@ public partial class TranscriptsPage : UserControl
         {
             var speaker = transcript.GetDisplaySpeaker(segment);
             sb.AppendLine($"[{segment.StartTime:hh\\:mm\\:ss}] {speaker}: {segment.Text}");
-        }
-
-        return sb.ToString();
-    }
-
-    private static string FormatAsMarkdown(CallTranscript transcript)
-    {
-        var sb = new StringBuilder();
-        sb.AppendLine($"# Call Transcript");
-        sb.AppendLine();
-        sb.AppendLine($"**Date:** {transcript.RecordingStartedUtc.LocalDateTime:yyyy-MM-dd HH:mm:ss}");
-        sb.AppendLine($"**Duration:** {transcript.Duration:hh\\:mm\\:ss}");
-        sb.AppendLine();
-        sb.AppendLine("---");
-        sb.AppendLine();
-
-        string? currentSpeaker = null;
-        foreach (var segment in transcript.Segments)
-        {
-            var speaker = transcript.GetDisplaySpeaker(segment);
-            if (speaker != currentSpeaker)
-            {
-                if (currentSpeaker is not null)
-                    sb.AppendLine();
-                sb.AppendLine($"### {speaker}");
-                currentSpeaker = speaker;
-            }
-
-            sb.AppendLine($"*[{segment.StartTime:hh\\:mm\\:ss}]* {segment.Text}");
         }
 
         return sb.ToString();
@@ -2651,7 +2623,7 @@ public partial class TranscriptsPage : UserControl
         CopyAnalysisButton.Visibility = Visibility.Collapsed;
         _isAnalysisVisible = true;
 
-        var transcriptMarkdown = FormatAsMarkdown(_selectedTranscript);
+        var transcriptMarkdown = TranscriptMarkdownFormatter.Format(_selectedTranscript);
 
         try
         {
