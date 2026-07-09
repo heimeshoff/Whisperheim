@@ -5,6 +5,16 @@ Newest entries on top.
 
 ---
 
+## 2026-07-09 -- Modeling / Captured: main-k4t8p - Speaker name for imported voice messages
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Imported voice messages (e.g. WhatsApp) always transcribe as the literal label `"Speaker"` — `SaveFileImportTranscript` hardcodes it and leaves `RemoteSpeakerNames` empty, so the existing SPEAKER NAMES panel shows no rows and a typed name renames nothing; the Markdown auto-export (main-m6x4v) inherits `### Speaker`. Capture: prompt for the speaker name at import time (one prompt per selected file, empty field, skippable → falls back to `"Speaker"`), thread it into the segment label and `RemoteSpeakerNames`. STT API / CLI path untouched. Prior art: main-037, main-073 (both recording-only). Captured straight to todo — both open decisions resolved with the builder.
+**ADRs written:** none
+
+---
+
 ## 2026-07-09 15:33 -- Work session ended
 
 **Type:** Work / Session end
