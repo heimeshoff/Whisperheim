@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 124
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **main-m6x4v** -- Auto-export transcripts as Markdown to configured default folders -- `todo/main-m6x4v-auto-export-md-to-configured-folders.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -162,7 +162,7 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
-<!-- no ADRs scoped to this BC -->
+- **ADR-0008** -- Auto-export identity is the Recording-session directory, not CallTranscript.Id -- `knowledge/decisions/0008-auto-export-identity-is-session-dir-not-transcript-id.md`
 <!-- adr-local:end -->
 
 ## Research touching this BC

@@ -5,6 +5,16 @@ Newest entries on top.
 
 ---
 
+## 2026-07-09 -- Modeling / Captured: main-m6x4v - Auto-export transcripts as Markdown to configured default folders
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Two optional machine-local settings (recorded-conversations folder, imported-voice-messages folder); on transcription completion, write `<recording name>.md` into the matching folder. Routed via `QueueItemType.Recording` vs `File` at the `ItemCompleted` seam, so no domain-model provenance flag is needed. Streams and the STT API stay out of scope. Captured straight to todo — decisions resolved with the builder, ADR-0008 written for the overwrite-identity rule.
+**ADRs written:** 0008 (auto-export identity is the Recording-session directory, not `CallTranscript.Id`, which is regenerated per transcription)
+
+---
+
 ## 2026-06-29 18:42 -- Work session ended
 
 **Type:** Work / Session end
