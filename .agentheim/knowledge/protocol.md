@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-09 15:12 -- Batch started: [main-m6x4v]
+
+**Type:** Work / Batch start
+**Tasks:** main-m6x4v - Auto-export transcripts as Markdown to configured default folders
+**Parallel:** no (1 worker) - only ready task, no dependencies
+
+---
+
 ## 2026-07-09 -- Modeling / Captured: main-m6x4v - Auto-export transcripts as Markdown to configured default folders
 
 **Type:** Modeling / Capture

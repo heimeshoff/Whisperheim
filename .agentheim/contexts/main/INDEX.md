@@ -11,18 +11,18 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
-- **Doing:** 0
+- **Todo:** 0
+- **Doing:** 1
 - **Done:** 124
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **main-m6x4v** -- Auto-export transcripts as Markdown to configured default folders -- `todo/main-m6x4v-auto-export-md-to-configured-folders.md`
 <!-- todo-list:end -->
 
 ### Doing
 <!-- doing-list:start -->
+- **main-m6x4v** — Auto-export transcripts as Markdown to configured default folders (feature) — `doing/main-m6x4v-auto-export-md-to-configured-folders.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 

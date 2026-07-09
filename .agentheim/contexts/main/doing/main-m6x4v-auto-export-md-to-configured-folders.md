@@ -1,7 +1,7 @@
 ---
 id: main-m6x4v
 title: Auto-export transcripts as Markdown to configured default folders
-status: todo
+status: doing
 type: feature
 context: main
 created: 2026-07-09
