@@ -49,15 +49,6 @@ research touching this BC, and concept synthesis pages.
 - **main-104** -- Stage WAV Writes Outside the Synced Data Folder -- 2026-05-11 -- `done/main-104-stage-wav-writes-outside-data-folder.md`
 - **main-105** -- Origin-Machine Owns Transcription (Multi-Machine Coordination) -- 2026-05-11 -- `done/main-105-origin-machine-owns-transcription.md`
 - **main-106** -- No Window Frame Flash When Start-Minimized -- 2026-05-11 -- `done/main-106-no-frame-flash-when-start-minimized.md`
-- **main-102** -- Hot-Reload Settings from Disk (Multi-Machine Sync) -- 2026-04-24 -- `done/main-102-hot-reload-settings-from-disk.md`
-- **main-103** -- Remove Text-to-Speech Feature -- 2026-04-24 -- `done/main-103-remove-text-to-speech-feature.md`
-- **main-101** -- Deterministic Clean-Text Pipeline (Filler Word Removal) -- 2026-04-20 -- `done/main-101-deterministic-clean-text-pipeline.md`
-- **main-098** -- Pending Transcription Drawer with Playback -- 2026-04-07 -- `done/main-098-pending-transcription-drawer.md`
-- **main-097** -- Enter-to-Confirm in Drawer Text Fields -- 2026-04-07 -- `done/main-097-enter-to-confirm-drawer-fields.md`
-- **main-100** -- Streams page visual polish -- 2026-04-07 -- `done/main-100-streams-visual-polish.md`
-- **main-099** -- Explicit Transcription Queuing -- 2026-04-07 -- `done/main-099-transcription-queue-explicit.md`
-- **main-096** -- Streams Tab -- Video Link Transcription -- 2026-04-02 -- `done/main-096-streams-tab-video-transcription.md`
-- **main-095** -- Unified Recording & Transcript Drawer -- 2026-04-01 -- `done/main-095-unified-recording-drawer.md`
 <!-- done-list:end -->
 
 ### Backlog
