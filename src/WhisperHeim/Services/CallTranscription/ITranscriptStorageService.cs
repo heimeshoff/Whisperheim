@@ -15,9 +15,16 @@ public interface ITranscriptStorageService
     /// Saves a transcript to persistent storage.
     /// </summary>
     /// <param name="transcript">The transcript to save.</param>
+    /// <param name="sessionDir">
+    /// The session directory the transcript belongs to, when the caller knows it
+    /// (e.g. the call pipeline, which read the session's WAVs from that directory).
+    /// When null, the directory is inferred from the transcript's start timestamp —
+    /// which fails for directories whose names don't begin with the timestamp
+    /// (e.g. <c>recovered_*</c> crash-recovery sessions).
+    /// </param>
     /// <param name="cancellationToken">Cancellation token.</param>
     /// <returns>The file path where the transcript was saved.</returns>
-    Task<string> SaveAsync(CallTranscript transcript, CancellationToken cancellationToken = default);
+    Task<string> SaveAsync(CallTranscript transcript, string? sessionDir = null, CancellationToken cancellationToken = default);
 
     /// <summary>
     /// Loads a transcript from a file path.

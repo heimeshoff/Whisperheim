@@ -419,7 +419,14 @@ public partial class App : Application
         // Headless auto-transcription: enqueues each completed recording even
         // when no UI page is open to observe the recording-stopped event.
         _autoTranscriptionService = new AutoTranscriptionService(
-            _callRecordingService, _transcriptionQueueService);
+            _callRecordingService, _transcriptionQueueService, _transcriptStorageService);
+
+        // The queue is in-memory only: a transcription still running at app exit
+        // leaves its recording pending with nothing to pick it back up. Requeue
+        // owned pending sessions once startup work has settled.
+        Dispatcher.BeginInvoke(
+            System.Windows.Threading.DispatcherPriority.ApplicationIdle,
+            () => _autoTranscriptionService?.RequeuePendingSessions());
 
         // ── Tray icon (registers a hidden host window as Application.MainWindow) ──
         _trayIconHost = new TrayIconHost(
