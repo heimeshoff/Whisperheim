@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-07-09 16:41 -- Task verified and completed: main-k4t8p - Speaker name for imported voice messages
+
+**Type:** Work / Task completion
+**Task:** main-k4t8p - Speaker name for imported voice messages
+**Summary:** Importing an audio file now prompts once per file (in selection order) for the speaker name, threading it into the transcript segment and RemoteSpeakerNames so the SPEAKER NAMES panel and Markdown export attribute it; empty or dismissed falls back to the literal "Speaker" label
+**Duration:** 11m20s
+**Verification:** PASS (iteration 1)
+**Files changed:** 6
+**Tests added:** 7
+**ADRs written:** none
+
+---
+
 ## 2026-07-09 16:29 -- Batch started: [main-k4t8p]
 
 **Type:** Work / Batch start

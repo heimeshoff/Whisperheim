@@ -74,13 +74,15 @@ public sealed class TranscriptionQueueItem : INotifyPropertyChanged
     public TranscriptionQueueItem(
         string title,
         string filePath,
-        string sessionDir)
+        string sessionDir,
+        string? speakerName = null)
     {
         Id = Guid.NewGuid();
         Title = title;
         ItemType = QueueItemType.File;
         FilePath = filePath;
         SessionDir = sessionDir;
+        SpeakerName = speakerName;
         EnqueuedAt = DateTimeOffset.Now;
     }
 
@@ -95,6 +97,13 @@ public sealed class TranscriptionQueueItem : INotifyPropertyChanged
     /// When set, a transcript.json will be saved to this directory after transcription.
     /// </summary>
     public string? SessionDir { get; }
+
+    /// <summary>
+    /// Speaker name entered at import time (imported files only). Null/empty falls back
+    /// to <see cref="FileImportTranscriptBuilder.DefaultSpeakerLabel"/> when the transcript
+    /// is saved (task main-k4t8p).
+    /// </summary>
+    public string? SpeakerName { get; }
 
     public DateTimeOffset EnqueuedAt { get; }
 
@@ -433,9 +442,9 @@ public sealed class TranscriptionQueueService : INotifyPropertyChanged
     /// Enqueues an imported audio file for transcription, producing a transcript.json
     /// in the given session directory when complete.
     /// </summary>
-    public TranscriptionQueueItem EnqueueFileImport(string title, string filePath, string sessionDir)
+    public TranscriptionQueueItem EnqueueFileImport(string title, string filePath, string sessionDir, string? speakerName = null)
     {
-        var item = new TranscriptionQueueItem(title, filePath, sessionDir);
+        var item = new TranscriptionQueueItem(title, filePath, sessionDir, speakerName);
         DispatcherInvoke(() =>
         {
             Items.Add(item);
@@ -518,7 +527,7 @@ public sealed class TranscriptionQueueService : INotifyPropertyChanged
         if (item.ItemType == QueueItemType.File && item.FilePath is not null)
         {
             if (item.SessionDir is not null)
-                newItem = EnqueueFileImport(item.Title, item.FilePath, item.SessionDir);
+                newItem = EnqueueFileImport(item.Title, item.FilePath, item.SessionDir, item.SpeakerName);
             else
                 newItem = EnqueueFile(item.FilePath);
         }
@@ -776,33 +785,10 @@ public sealed class TranscriptionQueueService : INotifyPropertyChanged
     /// </summary>
     private async Task SaveFileImportTranscript(TranscriptionQueueItem item, FileTranscription.FileTranscriptionResult result)
     {
-        var now = DateTimeOffset.Now;
         var audioFileName = System.IO.Path.GetFileName(item.FilePath!);
 
-        // Build a single-speaker transcript
-        var segments = new List<CallTranscription.TranscriptSegment>();
-
-        if (!string.IsNullOrWhiteSpace(result.Text))
-        {
-            segments.Add(new CallTranscription.TranscriptSegment
-            {
-                Speaker = "Speaker",
-                StartTime = TimeSpan.Zero,
-                EndTime = result.AudioDuration,
-                Text = result.Text,
-                IsLocalSpeaker = false,
-            });
-        }
-
-        var transcript = new CallTranscription.CallTranscript
-        {
-            Id = Guid.NewGuid().ToString(),
-            Name = item.Title,
-            RecordingStartedUtc = item.EnqueuedAt,
-            RecordingEndedUtc = item.EnqueuedAt + result.AudioDuration,
-            Segments = segments,
-            AudioFilePath = audioFileName,
-        };
+        var transcript = FileImportTranscriptBuilder.Build(
+            item.Title, audioFileName, item.EnqueuedAt, result.AudioDuration, result.Text, item.SpeakerName);
 
         // Write transcript.json to the session directory
         var transcriptPath = System.IO.Path.Combine(item.SessionDir!, "transcript.json");

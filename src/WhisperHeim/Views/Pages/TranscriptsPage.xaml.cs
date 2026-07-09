@@ -636,11 +636,22 @@ public partial class TranscriptsPage : UserControl
             if (!_fileTranscriptionService.IsSupported(filePath))
                 continue;
 
-            ImportAudioFile(filePath);
+            var fileName = Path.GetFileName(filePath);
+            var nameDialog = new InputDialog("Speaker Name", $"Who is speaking in \"{fileName}\"?")
+            {
+                Owner = Window.GetWindow(this)
+            };
+            nameDialog.ShowDialog();
+
+            // Dismissing (Esc/Cancel) discards whatever was typed; the import still
+            // proceeds and falls back to the default "Speaker" label downstream.
+            var speakerName = nameDialog.Confirmed ? nameDialog.InputText : null;
+
+            ImportAudioFile(filePath, speakerName);
         }
     }
 
-    private void ImportAudioFile(string sourceFilePath)
+    private void ImportAudioFile(string sourceFilePath, string? speakerName = null)
     {
         if (_storageService is not TranscriptStorageService concreteStorage)
         {
@@ -678,7 +689,7 @@ public partial class TranscriptsPage : UserControl
 
         // Enqueue for transcription via the queue service (file-based transcription)
         // The queue service ProcessFileItem will be updated to produce a transcript.json
-        var queueItem = _queueService.EnqueueFileImport(title, destPath, sessionDir);
+        var queueItem = _queueService.EnqueueFileImport(title, destPath, sessionDir, speakerName);
 
         Trace.TraceInformation("[TranscriptsPage] Imported and enqueued '{0}' from '{1}'", title, sourceFilePath);
 

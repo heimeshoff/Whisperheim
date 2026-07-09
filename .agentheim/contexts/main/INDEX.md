@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 125
+- **Doing:** 0
+- **Done:** 126
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **main-k4t8p** — Speaker name for imported voice messages (feature) — `doing/main-k4t8p-speaker-name-for-imported-voice-messages.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent 30; older entries archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
 <!-- done-list:start -->
+- **main-k4t8p** — Speaker name for imported voice messages (feature) — `done/main-k4t8p-speaker-name-for-imported-voice-messages.md`
 - **main-m6x4v** — Auto-export transcripts as Markdown to configured default folders (feature) — `done/main-m6x4v-auto-export-md-to-configured-folders.md`
 - **main-r8m4q** -- About-page Parakeet link points to v2, app uses v3 -- 2026-06-29 -- `done/main-r8m4q-about-page-parakeet-v3-link.md`
 - **main-t9w2k** -- Inline template creation dialog when no template matches -- 2026-06-29 -- `done/main-t9w2k-inline-template-creation-on-no-match.md`

@@ -1,11 +1,11 @@
 ---
 id: main-k4t8p
 title: Speaker name for imported voice messages
-status: doing
+status: done
 type: feature
 context: main
 created: 2026-07-09
-completed:
+completed: 2026-07-09
 depends_on: []
 blocks: []
 tags: [import, speaker, transcription, ui]
@@ -83,3 +83,32 @@ recording-only. This task extends their reach to imports rather than adding a pa
 mechanism. `main-m6x4v` (Markdown auto-export) is the downstream consumer whose output
 changes; `TranscriptMarkdownFormatter.Format` already calls `GetDisplaySpeaker`, so it
 needs no change once the segment carries the right label.
+
+## Outcome
+- `TranscriptsPage.BrowseFiles_Click` now shows an `InputDialog` ("Speaker Name",
+  `Who is speaking in "<file>"?`, empty default) once per selected file, in selection
+  order, before calling `ImportAudioFile(filePath, speakerName)`. Confirmed-but-empty
+  or dismissed (Esc/Cancel) both pass `null` through; the import always proceeds.
+- `ImportAudioFile` threads the optional `speakerName` into
+  `TranscriptionQueueService.EnqueueFileImport(title, destPath, sessionDir, speakerName)`.
+- `TranscriptionQueueItem` gained a `SpeakerName` property (set via the `sessionDir`
+  constructor overload) so the name survives the queue hop and `Retry()` re-enqueue.
+- Extracted a new pure, unit-testable static class `FileImportTranscriptBuilder`
+  (`Services/Transcription/FileImportTranscriptBuilder.cs`) out of
+  `TranscriptionQueueService.SaveFileImportTranscript`. It resolves the entered name
+  (trim; empty/whitespace/null -> `"Speaker"`, the pre-existing default) and writes it
+  to both `TranscriptSegment.Speaker` and `CallTranscript.RemoteSpeakerNames` (a
+  single-item list), which seeds the SPEAKER NAMES panel for imports "for free" per the
+  notes above — no changes needed to the panel or `RenameSpeakerGlobally` itself.
+  `TranscriptMarkdownFormatter.Format` needed no change either, confirmed by a
+  formatter-level test.
+- STT API (`POST /transcribe`) and `whisperheim-transcribe` are untouched: both call
+  `EnqueueFile` (no session dir), so `ProcessFileItem` never reaches
+  `SaveFileImportTranscript`.
+
+**Files changed:**
+- `src/WhisperHeim/Services/Transcription/FileImportTranscriptBuilder.cs` (new)
+- `src/WhisperHeim/Services/Transcription/TranscriptionQueueService.cs`
+- `src/WhisperHeim/Views/Pages/TranscriptsPage.xaml.cs`
+- `tests/WhisperHeim.Tests/FileImportTranscriptBuilderTests.cs` (new, 7 test cases)
+- `.agentheim/contexts/main/README.md`
