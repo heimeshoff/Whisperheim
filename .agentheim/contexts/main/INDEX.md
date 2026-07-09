@@ -11,18 +11,18 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
-- **Doing:** 0
+- **Todo:** 0
+- **Doing:** 1
 - **Done:** 125
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **main-k4t8p** — Speaker name for imported voice messages (feature) — `todo/main-k4t8p-speaker-name-for-imported-voice-messages.md`
 <!-- todo-list:end -->
 
 ### Doing
 <!-- doing-list:start -->
+- **main-k4t8p** — Speaker name for imported voice messages (feature) — `doing/main-k4t8p-speaker-name-for-imported-voice-messages.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 

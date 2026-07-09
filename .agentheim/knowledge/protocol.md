@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-09 16:29 -- Batch started: [main-k4t8p]
+
+**Type:** Work / Batch start
+**Tasks:** main-k4t8p - Speaker name for imported voice messages
+**Parallel:** no (1 worker) - only ready task, no dependencies
+
+---
+
 ## 2026-07-09 -- Modeling / Captured: main-k4t8p - Speaker name for imported voice messages
 
 **Type:** Modeling / Capture

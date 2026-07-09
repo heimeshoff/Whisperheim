@@ -1,7 +1,7 @@
 ---
 id: main-k4t8p
 title: Speaker name for imported voice messages
-status: todo
+status: doing
 type: feature
 context: main
 created: 2026-07-09
