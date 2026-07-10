@@ -10,7 +10,7 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 0
+- **Backlog:** 1
 - **Todo:** 0
 - **Doing:** 0
 - **Done:** 126
@@ -53,7 +53,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-<!-- no tasks in backlog -->
+- **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid — `backlog/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

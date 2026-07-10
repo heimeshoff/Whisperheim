@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-07-10 -- Capture / Captured: main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
+
+**Type:** Capture
+**BC:** main
+**Filed to:** backlog
+**Summary:** Compare WhisperHeim against the Handy and Fluid (https://altic.dev/fluid) dictation tools.
+
+---
+
 ## 2026-07-09 16:42 -- Work session ended
 
 **Type:** Work / Session end
