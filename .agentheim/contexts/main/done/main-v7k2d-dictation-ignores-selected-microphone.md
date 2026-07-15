@@ -1,15 +1,15 @@
 ---
 id: main-v7k2d
 title: Hotkey dictation ignores the selected microphone (always captures WaveIn device 0)
-status: doing
+status: done
 type: bug
 context: main
 created: 2026-07-15
-completed:
+completed: 2026-07-15
 depends_on: []
 blocks: []
 tags: [dictation, audio, microphone, device-selection, regression]
-related_adrs: []
+related_adrs: [0009-honor-system-default-capture-device]
 related_research: []
 prior_art: []
 ---
@@ -42,15 +42,15 @@ and pass it to `StartCapture(deviceIndex)`. When the saved device is absent/unre
 `-1` (system default) is the correct fallback — but note the separate latent issue below.
 
 ## Acceptance criteria
-- [ ] Holding the dictation hotkey captures from the microphone selected on the
+- [x] Holding the dictation hotkey captures from the microphone selected on the
       Dictation settings page, not always WaveIn device 0.
-- [ ] With "Microphone (Elgato Wave:3)" selected (at a non-zero WaveIn index),
+- [x] With "Microphone (Elgato Wave:3)" selected (at a non-zero WaveIn index),
       dictation produces correct transcribed text instead of `""`.
-- [ ] The resolved device index is logged at capture start (so
+- [x] The resolved device index is logged at capture start (so
       `[AudioCaptureService] Starting capture on device N` reflects the real choice).
-- [ ] Changing the selected device in settings takes effect on the next hotkey
+- [x] Changing the selected device in settings takes effect on the next hotkey
       press without an app restart.
-- [ ] When no device is saved or the saved device is gone, capture falls back to
+- [x] When no device is saved or the saved device is gone, capture falls back to
       the system default and dictation still works.
 
 ## Notes
@@ -66,3 +66,33 @@ and pass it to `StartCapture(deviceIndex)`. When the saved device is absent/unre
   `WaveInEvent` accepts `DeviceNumber = -1` before relying on it.)
 - Consider whether `CallRecordingService` / other WaveIn call sites share the same
   `-1 → 0` fallback assumption.
+
+## Outcome
+Fixed both halves of the bug:
+1. `DictationOrchestrator.OnHotkeyPressed` now calls the new internal
+   `StartCaptureForDevice(savedDeviceName)`, which resolves the saved device
+   name via `AudioDeviceResolver.ResolveDeviceIndex(_audioCapture, savedDeviceName)`
+   and passes the resulting index to `_audioCapture.StartCapture(deviceIndex)`,
+   logging the resolution. Resolved fresh on every hotkey press (no caching), so
+   a settings change takes effect on the very next press. Covered by 4 new xUnit
+   tests in `tests/WhisperHeim.Tests/DictationOrchestratorDeviceSelectionTests.cs`
+   driving the extracted seam directly (the real hotkey event can only be raised
+   from `GlobalHotkeyService` itself).
+2. Decided and fixed the latent secondary issue: `AudioCaptureService.StartCapture`
+   was clamping any negative `deviceIndex` to `0` ("NAudio maps to device 0" —
+   a wrong assumption). Removed the clamp so `-1` passes straight through to
+   `WaveInEvent.DeviceNumber`, which NAudio treats as `WAVE_MAPPER` (the real
+   Windows-preferred capture device) — otherwise the resolver's own "system
+   default" fallback (AC5) would have silently opened device 0 instead. See
+   ADR-0009-honor-system-default-capture-device for the full rationale. Left
+   `HighQualityRecorderService`'s identical clamp untouched (different feature,
+   not reported broken) and filed backlog item `main-c3x7q` to evaluate it
+   separately.
+
+Full suite (242 tests) passes after the fix. Files touched:
+`src/WhisperHeim/Services/Orchestration/DictationOrchestrator.cs`,
+`src/WhisperHeim/Services/Audio/AudioCaptureService.cs`,
+`tests/WhisperHeim.Tests/DictationOrchestratorDeviceSelectionTests.cs` (new),
+`.agentheim/contexts/main/README.md`,
+`.agentheim/knowledge/decisions/0009-honor-system-default-capture-device.md` (new),
+`.agentheim/contexts/main/backlog/main-c3x7q-highqualityrecorder-honor-system-default-device.md` (new).

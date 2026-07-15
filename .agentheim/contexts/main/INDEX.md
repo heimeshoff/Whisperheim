@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 2
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 126
+- **Doing:** 0
+- **Done:** 127
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **main-v7k2d** — Hotkey dictation ignores the selected microphone (always captures WaveIn device 0) (bug) — `doing/main-v7k2d-dictation-ignores-selected-microphone.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent 30; older entries archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
 <!-- done-list:start -->
+- **main-v7k2d** — Hotkey dictation ignores the selected microphone (always captures WaveIn device 0) (bug) — `done/main-v7k2d-dictation-ignores-selected-microphone.md`
 - **main-k4t8p** — Speaker name for imported voice messages (feature) — `done/main-k4t8p-speaker-name-for-imported-voice-messages.md`
 - **main-m6x4v** — Auto-export transcripts as Markdown to configured default folders (feature) — `done/main-m6x4v-auto-export-md-to-configured-folders.md`
 - **main-r8m4q** -- About-page Parakeet link points to v2, app uses v3 -- 2026-06-29 -- `done/main-r8m4q-about-page-parakeet-v3-link.md`
@@ -54,12 +54,14 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
+- **main-c3x7q** — HighQualityRecorderService clamps -1 to device 0 instead of honoring WAVE_MAPPER — `backlog/main-c3x7q-highqualityrecorder-honor-system-default-device.md`
 - **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid — `backlog/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0009** -- Honor NAudio WAVE_MAPPER (-1) as the real system default capture device -- `knowledge/decisions/0009-honor-system-default-capture-device.md`
 - **ADR-0008** -- Auto-export identity is the Recording-session directory, not CallTranscript.Id -- `knowledge/decisions/0008-auto-export-identity-is-session-dir-not-transcript-id.md`
 <!-- adr-local:end -->
 

@@ -142,7 +142,7 @@ public sealed class DictationOrchestrator : IDisposable
 
         try
         {
-            _audioCapture.StartCapture();
+            StartCaptureForDevice(_settingsService?.Current.Dictation.AudioDevice);
         }
         catch (Exception ex)
         {
@@ -154,6 +154,27 @@ public sealed class DictationOrchestrator : IDisposable
         }
 
         NotifyStateChanged(true);
+    }
+
+    /// <summary>
+    /// Resolves <paramref name="savedDeviceName"/> to a WaveIn device index via
+    /// <see cref="AudioDeviceResolver"/> and starts capture on it — so the hotkey
+    /// path honors the microphone selected on the Dictation settings page instead
+    /// of always opening WaveIn device 0. Falls back to the system default (-1)
+    /// when no device is saved or the saved device is no longer present. Resolved
+    /// fresh on every call (no caching), so a device change in settings takes
+    /// effect on the very next hotkey press without an app restart.
+    /// Internal so tests can drive it directly without wiring the low-level
+    /// keyboard hook (mirrors <see cref="ShouldWarmUpOnRelease"/>'s test seam).
+    /// </summary>
+    internal int StartCaptureForDevice(string? savedDeviceName)
+    {
+        var deviceIndex = AudioDeviceResolver.ResolveDeviceIndex(_audioCapture, savedDeviceName);
+        Trace.TraceInformation(
+            "[DictationOrchestrator] Resolved dictation microphone \"{0}\" -> device {1}.",
+            savedDeviceName ?? "<default>", deviceIndex);
+        _audioCapture.StartCapture(deviceIndex);
+        return deviceIndex;
     }
 
     private void OnHotkeyReleased(object? sender, EventArgs e)

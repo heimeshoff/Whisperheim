@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 10:24 -- Task verified and completed: main-v7k2d - Hotkey dictation ignores the selected microphone (always captures WaveIn device 0)
+
+**Type:** Work / Task completion
+**Task:** main-v7k2d - Hotkey dictation ignores the selected microphone (always captures WaveIn device 0)
+**Summary:** Hotkey dictation resolves the saved microphone name to a WaveIn device index on every press (via AudioDeviceResolver) instead of always opening device 0; also removed an incorrect -1 to 0 clamp so the system-default fallback reaches NAudio WAVE_MAPPER
+**Duration:** 8m
+**Verification:** PASS (iteration 1)
+**Files changed:** 6
+**Tests added:** 4
+**ADRs written:** 0009-honor-system-default-capture-device.md
+
+---
+
 ## 2026-07-15 10:07 -- Batch started: [main-v7k2d]
 
 **Type:** Work / Batch start

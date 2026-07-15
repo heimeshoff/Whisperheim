@@ -61,9 +61,14 @@ public sealed class AudioCaptureService : IAudioCaptureService
         if (_isCapturing)
             return;
 
-        // Resolve default device (-1 means system default, which NAudio maps to device 0)
-        if (deviceIndex < 0)
-            deviceIndex = 0;
+        // deviceIndex < 0 (typically -1) is passed straight through to NAudio's
+        // WaveInEvent.DeviceNumber, which treats a negative device number as
+        // WAVE_MAPPER -- the actual Windows-preferred default capture device.
+        // Earlier code forced this to device 0 ("NAudio maps to device 0"), which
+        // was wrong: it silently opened the first enumerated device instead of the
+        // real system default, defeating the fallback path in
+        // AudioDeviceResolver.ResolveDeviceIndex (task main-v7k2d; see
+        // ADR-0009-honor-system-default-capture-device).
 
         int deviceCount = WaveInEvent.DeviceCount;
         System.Diagnostics.Trace.TraceInformation(
