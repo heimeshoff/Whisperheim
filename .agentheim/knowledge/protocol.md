@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:27 -- Modeling / Refined: main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
+
+**Type:** Modeling / Refine
+**BC:** main
+**Status after:** todo
+**Summary:** Pinned the blank purpose (gap-finding, not positioning), the four comparison axes (latency/model, features/workflows, UX/polish, cost/privacy/platform), and the deliverable (research report only — the report enumerates WhisperHeim gaps but does not auto-spawn captures; builder triages afterward). Wrote concrete acceptance criteria (per-axis × per-tool matrix, cited primary sources, dedicated "WhisperHeim gaps" section, research-review gate). Cited the two existing STT-model reports as the WhisperHeim-side baseline in Notes (below auto-link threshold). Auto-promoted to todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-07-15 12:21 -- Work session ended
 
 **Type:** Work / Session end
