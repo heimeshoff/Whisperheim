@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 126
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **main-v7k2d** — Hotkey dictation ignores the selected microphone (always captures WaveIn device 0) (bug) — `todo/main-v7k2d-dictation-ignores-selected-microphone.md`
 <!-- todo-list:end -->
 
 ### Doing

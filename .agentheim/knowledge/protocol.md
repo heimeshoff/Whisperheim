@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 -- Modeling / Captured: main-v7k2d - Hotkey dictation ignores the selected microphone
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Diagnosed from whisperheim.log — the hotkey path (`DictationOrchestrator.OnHotkeyPressed`) calls `StartCapture()` with no device index, so it always opens WaveIn device 0 and ignores the saved microphone. Fix: resolve the saved device name and pass the index through.
+
+---
+
 ## 2026-07-10 -- Capture / Captured: main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
 
 **Type:** Capture
