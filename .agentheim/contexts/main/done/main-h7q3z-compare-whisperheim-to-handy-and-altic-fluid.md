@@ -1,16 +1,16 @@
 ---
 id: main-h7q3z
 title: Compare WhisperHeim to Handy and Altic Fluid
-status: doing
+status: done
 type: spike
 context: main
 created: 2026-07-10
-completed:
+completed: 2026-07-15
 depends_on: []
 blocks: []
 tags: [competitive-analysis, research]
 related_adrs: []
-related_research: []
+related_research: [competitive-teardown-handy-fluid-2026-07-15]
 prior_art: []
 ---
 
@@ -42,16 +42,35 @@ teardown surfaces is *listed in the report as a candidate*, but this spike does 
 backlog tasks — the builder triages the report afterward and captures whichever gaps are worth pursuing.
 
 ## Acceptance criteria
-- [ ] A cited research report exists under `.agentheim/knowledge/research/` covering all three tools
+- [x] A cited research report exists under `.agentheim/knowledge/research/` covering all three tools
       (WhisperHeim, Handy, Fluid), passing the standard `research-review` gate.
-- [ ] Each of the four axes above is addressed for **each** tool (a per-axis × per-tool matrix, with
+- [x] Each of the four axes above is addressed for **each** tool (a per-axis × per-tool matrix, with
       "unknown / not publicly documented" called out explicitly rather than guessed).
-- [ ] The report includes a dedicated **"WhisperHeim gaps"** section: a concrete, enumerated list of
+- [x] The report includes a dedicated **"WhisperHeim gaps"** section: a concrete, enumerated list of
       capabilities/UX/workflows Handy or Fluid have that WhisperHeim lacks, each tagged with a rough
       relevance note (aligned with WhisperHeim's local/free/private/Windows identity, or a poor fit for it).
-- [ ] Claims about Handy and Fluid are grounded in primary sources (product sites, docs, repos, release
+- [x] Claims about Handy and Fluid are grounded in primary sources (product sites, docs, repos, release
       notes) with citations — no unsourced assertions about competitor capabilities.
-- [ ] The report does **not** create follow-up backlog tasks; gap-capture is left to the builder's triage.
+- [x] The report does **not** create follow-up backlog tasks; gap-capture is left to the builder's triage.
+
+## Outcome
+Produced `.agentheim/knowledge/research/competitive-teardown-handy-fluid-2026-07-15.md`: a four-axis
+(latency/model, features/workflows, UX/polish, cost/privacy/platform) teardown of WhisperHeim vs
+**Handy** (github.com/cjpais/Handy — MIT, Windows/Mac/Linux, user-selectable ASR model menu incl.
+Parakeet TDT v3, fully local, no cloud) vs **Fluid** (altic.dev/fluid — GPLv3, mature shipped macOS
+app whose Windows build is a days-old waitlist-gated beta as of this report's date, with local-first
+default plus optional opt-in cloud providers). Includes an 11-item enumerated "WhisperHeim gaps"
+section (each tagged for identity fit — e.g. model-picker and CLI-scriptable dictation control flagged
+"worth considering"; Fluid's voice-driven OS Command Mode flagged "poor fit" against WhisperHeim's
+non-goal; cross-platform flagged "not applicable"), a "notable non-gaps" callout (call transcription
+w/ diarization, voice-message transcription, and voice-triggered templates remain WhisperHeim
+differentiators — not found in either competitor), 10 numbered primary-source citations, and an Open
+Questions section. Passed the `research-reviewer` gate on the first iteration (PASS, no re-dispatch
+needed) — all decision-critical checkable claims about Handy and Fluid verified against primary
+sources (GitHub repos/READMEs, docs, release history, product pages); WhisperHeim's own baseline
+column was drawn from `vision.md` + the BC README + the two prior STT-model reports per the task's
+Notes, not independently re-researched. No backlog tasks were created; gap triage is left to the
+builder per the task's scope.
 
 ## Notes
 Captured via `quick-capture` on 2026-07-10; refined 2026-07-15 (purpose, axes, and deliverable pinned

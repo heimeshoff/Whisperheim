@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 129
+- **Doing:** 0
+- **Done:** 130
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid (spike) — `doing/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent 30; older entries archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
 <!-- done-list:start -->
+- **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid (spike) — `done/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 - **main-d8m3p** — Delete unused HighQualityRecorderService / IHighQualityRecorderService (chore) — `done/main-d8m3p-delete-unused-high-quality-recorder-service.md`
 - **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) (bug) — `done/main-c3x7q-recording-ignores-saved-microphone.md`
 - **main-v7k2d** — Hotkey dictation ignores the selected microphone (always captures WaveIn device 0) (bug) — `done/main-v7k2d-dictation-ignores-selected-microphone.md`
