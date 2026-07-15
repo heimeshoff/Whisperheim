@@ -11,18 +11,18 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 1
-- **Todo:** 1
-- **Doing:** 0
+- **Todo:** 0
+- **Doing:** 1
 - **Done:** 127
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) (bug) — `todo/main-c3x7q-recording-ignores-saved-microphone.md`
 <!-- todo-list:end -->
 
 ### Doing
 <!-- doing-list:start -->
+- **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) (bug) — `doing/main-c3x7q-recording-ignores-saved-microphone.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 

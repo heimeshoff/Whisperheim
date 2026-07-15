@@ -1,7 +1,7 @@
 ---
 id: main-c3x7q
 title: Call/voice-message recording ignores the saved microphone (always records from system default)
-status: todo
+status: doing
 type: bug
 context: main
 created: 2026-07-15

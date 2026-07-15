@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 11:51 -- Batch started: [main-c3x7q]
+
+**Type:** Work / Batch start
+**Tasks:** main-c3x7q - Call/voice-message recording ignores the saved microphone (always records from system default)
+**Parallel:** no (1 worker) - only ready task, no dependencies
+
+---
+
 ## 2026-07-15 11:19 -- Modeling / Promoted: main-c3x7q - Call/voice-message recording ignores the saved microphone (always records from system default)
 
 **Type:** Modeling / Promote
