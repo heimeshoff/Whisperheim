@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:42 -- Work session ended
+
+**Type:** Work / Session end
+**Duration:** 12m
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Dispatches:** main-h7q3z: 1
+**Commits:** 2 (batch start, task integration)
+**Vision-conformance:** none — batch aligns with vision (a research-only competitive teardown; touches no cloud, web-UI, cross-platform, voice-command, per-app-capture, or real-time-subtitle surface, and actively reinforces the no-voice-assistant non-goal by flagging Fluid's Command Mode as a poor fit)
+**Carry-over:** none — working tree clean
+
+---
+
 ## 2026-07-15 12:41 -- Task verified and completed: main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
 
 **Type:** Work / Task completion
