@@ -67,7 +67,6 @@ public partial class App : Application
     private CallRecordingHotkeyService? _callRecordingHotkeyService;
     private TranscriptionQueueService? _transcriptionQueueService;
     private HighQualityLoopbackService? _highQualityLoopbackService;
-    private HighQualityRecorderService? _highQualityRecorderService;
     private OllamaService? _ollamaService;
     private StreamStorageService? _streamStorageService;
     private StreamTranscriptionService? _streamTranscriptionService;
@@ -381,7 +380,6 @@ public partial class App : Application
         _transcribeServer.Start();
 
         _highQualityLoopbackService = new HighQualityLoopbackService();
-        _highQualityRecorderService = new HighQualityRecorderService(_dataPathService);
         _ollamaService = new OllamaService(_settingsService);
 
         // FFmpeg detection + install-prompt seam. The detector is a process-wide
@@ -692,7 +690,6 @@ public partial class App : Application
                 _callRecordingHotkeyService!,
                 _transcriptStorageService!,
                 _highQualityLoopbackService!,
-                _highQualityRecorderService!,
                 _dataPathService,
                 _transcriptionQueueService!,
                 _ollamaService!,

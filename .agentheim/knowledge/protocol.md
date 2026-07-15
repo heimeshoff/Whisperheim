@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:20 -- Task verified and completed: main-d8m3p - Delete unused HighQualityRecorderService / IHighQualityRecorderService
+
+**Type:** Work / Task completion
+**Task:** main-d8m3p - Delete unused HighQualityRecorderService / IHighQualityRecorderService
+**Summary:** Deleted the confirmed-dead HighQualityRecorderService / IHighQualityRecorderService (44.1kHz voice-message recorder, never invoked) and its DI wiring in App.xaml.cs and MainWindow.xaml.cs.
+**Duration:** 6m
+**Verification:** PASS (iteration 1)
+**Files changed:** 4
+**Tests added:** 0
+**ADRs written:** none
+
+---
+
 ## 2026-07-15 12:15 -- Batch started: [main-d8m3p]
 
 **Type:** Work / Batch start

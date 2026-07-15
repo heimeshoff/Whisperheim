@@ -71,7 +71,3 @@ instead of duplicated in each caller. `-1` from the resolver means "use the
 real system default" (NAudio `WAVE_MAPPER`) and is passed straight through to
 `WaveInEvent.DeviceNumber` — it must **not** be clamped to device `0`, which
 is a different (and possibly wrong) device.
-`HighQualityRecorderService`/`IHighQualityRecorderService` still has that
-clamp, but that service is unused dead code (nothing calls its
-`StartRecording`) — deleting it is an out-of-scope tidy item noted on
-main-c3x7q, not a live bug.

@@ -55,7 +55,6 @@ public partial class MainWindow : FluentWindow
     private readonly ITranscriptStorageService _transcriptStorageService;
     private readonly IFileTranscriptionService _fileTranscriptionService;
     private readonly IHighQualityLoopbackService _highQualityLoopbackService;
-    private readonly IHighQualityRecorderService _highQualityRecorderService;
     private readonly DataPathService _dataPathService;
     private readonly TranscriptionQueueService _transcriptionQueueService;
     private readonly OllamaService _ollamaService;
@@ -97,7 +96,6 @@ public partial class MainWindow : FluentWindow
         CallRecordingHotkeyService callRecordingHotkeyService,
         ITranscriptStorageService transcriptStorageService,
         IHighQualityLoopbackService highQualityLoopbackService,
-        IHighQualityRecorderService highQualityRecorderService,
         DataPathService dataPathService,
         TranscriptionQueueService transcriptionQueueService,
         OllamaService ollamaService,
@@ -118,7 +116,6 @@ public partial class MainWindow : FluentWindow
         _callRecordingHotkeyService = callRecordingHotkeyService;
         _transcriptStorageService = transcriptStorageService;
         _highQualityLoopbackService = highQualityLoopbackService;
-        _highQualityRecorderService = highQualityRecorderService;
         _dataPathService = dataPathService;
         _transcriptionQueueService = transcriptionQueueService;
         _ollamaService = ollamaService;

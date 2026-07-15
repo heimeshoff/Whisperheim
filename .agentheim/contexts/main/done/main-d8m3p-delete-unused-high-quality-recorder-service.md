@@ -1,11 +1,11 @@
 ---
 id: main-d8m3p
 title: Delete unused HighQualityRecorderService / IHighQualityRecorderService
-status: doing
+status: done
 type: chore
 context: main
 created: 2026-07-15
-completed:
+completed: 2026-07-15
 depends_on: []
 blocks: []
 tags: [audio, dead-code, tidy]
@@ -62,19 +62,35 @@ below is the gate that decides which branch runs.
   path's event args, unrelated to the deleted `RecordingStoppedEventArgs`.
 
 ## Acceptance criteria
-- [ ] Re-confirm at pickup that `HighQualityRecorderService.StartRecording` /
+- [x] Re-confirm at pickup that `HighQualityRecorderService.StartRecording` /
       `.StopRecording` / `.SaveRecording` have no live callers (grep the `src/`
       tree). If a caller now exists, switch to the ADR-0009 fallback fix above
       and skip the remaining deletion criteria.
-- [ ] `HighQualityRecorderService.cs` and `IHighQualityRecorderService.cs` are
+- [x] `HighQualityRecorderService.cs` and `IHighQualityRecorderService.cs` are
       deleted.
-- [ ] All DI wiring for the service is removed from `App.xaml.cs` (field,
+- [x] All DI wiring for the service is removed from `App.xaml.cs` (field,
       construction, `MainWindow` argument) and `MainWindow.xaml.cs` (field,
       constructor parameter, assignment).
-- [ ] `HighQualityLoopbackService` / `IHighQualityLoopbackService` and
+- [x] `HighQualityLoopbackService` / `IHighQualityLoopbackService` and
       `CallRecordingStoppedEventArgs` are untouched.
-- [ ] The solution builds with no errors or new warnings, and the existing test
+- [x] The solution builds with no errors or new warnings, and the existing test
       suite passes.
+
+## Outcome
+Re-confirmed at pickup (grep of `src/`) that `HighQualityRecorderService` had
+zero callers of `StartRecording`/`StopRecording`/`SaveRecording` — the fallback
+branch was not needed. Deleted `Services/Audio/HighQualityRecorderService.cs`
+and `Services/Audio/IHighQualityRecorderService.cs` (the latter also removed
+`RecordingStoppedEventArgs`, confirmed unused elsewhere; `CallRecordingStoppedEventArgs`
+in `Services/Recording/ICallRecordingService.cs` is unrelated and untouched).
+Removed the DI wiring: field, construction, and constructor-argument in
+`App.xaml.cs` (`_highQualityRecorderService`); field, constructor parameter,
+and assignment in `MainWindow.xaml.cs`. `HighQualityLoopbackService` /
+`IHighQualityLoopbackService` left entirely alone. Dropped the now-stale
+"unused dead code ... out-of-scope tidy item" sentence from the BC README's
+microphone-device-selection note. Solution builds clean (same 12 pre-existing
+warnings, no new ones) and the full test suite passes (260/260: 246 in
+WhisperHeim.Tests, 14 in WhisperHeim.Cli.Tests).
 
 ## Notes
 Captured during main-c3x7q, refined 2026-07-15. Not required for main-c3x7q's own
