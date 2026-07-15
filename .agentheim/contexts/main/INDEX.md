@@ -54,7 +54,7 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **main-c3x7q** — HighQualityRecorderService clamps -1 to device 0 instead of honoring WAVE_MAPPER — `backlog/main-c3x7q-highqualityrecorder-honor-system-default-device.md`
+- **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) — `backlog/main-c3x7q-recording-ignores-saved-microphone.md`
 - **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid — `backlog/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 <!-- backlog-list:end -->
 

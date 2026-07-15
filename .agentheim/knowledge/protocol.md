@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 11:18 -- Modeling / Refined: main-c3x7q - Call/voice-message recording ignores the saved microphone
+
+**Type:** Modeling / Refine
+**BC:** main
+**Status after:** todo
+**Summary:** Investigated the original "HighQualityRecorderService clamps -1 to device 0" premise and found it doesn't manifest — that clamp is dead code (the service is injected into MainWindow but its StartRecording is never called), and the live recording path (CallRecordingService → AudioCaptureService) already honors WAVE_MAPPER via main-v7k2d. Surfaced the real adjacent gap: recording never resolves the saved Dictation.AudioDevice, so it always records from the system default mic. Re-scoped the task (renamed slug) to fix that, with concrete acceptance criteria mirroring the dictation-side fix, and auto-promoted to todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-07-15 10:26 -- Work session ended
 
 **Type:** Work / Session end
