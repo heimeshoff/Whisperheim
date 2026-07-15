@@ -1,4 +1,4 @@
-# WhisperHeim -- Vision
+# Vision: WhisperHeim
 
 ## Problem
 
