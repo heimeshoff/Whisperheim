@@ -53,15 +53,25 @@ This BC *is* the product. There are no supporting or generic domains carved out 
 ## Notes
 This BC's task numbering is flat (no `main-` prefix in the original `.workflow/`); the migration to `.agentheim/` adopted the `main-NNN` convention for filenames and frontmatter ids while preserving the existing numeric sequence.
 
-**Microphone device selection (main-v7k2d, ADR-0009):** the saved microphone
-name in `Dictation.AudioDevice` is only honored where a code path explicitly
-resolves it. `DictationOrchestrator.OnHotkeyPressed` (hold-to-talk) resolves it
-via `AudioDeviceResolver.ResolveDeviceIndex(_audioCapture, savedDeviceName)` on
+**Microphone device selection (main-v7k2d, main-c3x7q, ADR-0009):** the saved
+microphone name in `Dictation.AudioDevice` is honored by every live capture
+path — it is the single setting shared across dictation and recording, not a
+per-feature device choice. `DictationOrchestrator.OnHotkeyPressed`
+(hold-to-talk) resolves it via
+`AudioDeviceResolver.ResolveDeviceIndex(_audioCapture, savedDeviceName)` on
 every hotkey press (no caching, so a settings change takes effect on the very
 next press) and passes the result to `AudioCaptureService.StartCapture`.
-`DictationPipeline` (VAD path) does the same. `-1` from the resolver means
-"use the real system default" (NAudio `WAVE_MAPPER`) and is passed straight
-through to `WaveInEvent.DeviceNumber` — it must **not** be clamped to device
-`0`, which is a different (and possibly wrong) device. `HighQualityRecorderService`
-(voice-message/call recording) still has that clamp; see backlog item
-`main-c3x7q` before assuming its saved-device fallback is correct.
+`DictationPipeline` (VAD path) does the same. `CallRecordingService.StartRecording`
+(driven by both the `TranscriptsPage` record button and the call-recording
+hotkey) resolves it the same way via the internal
+`ResolveMicDeviceIndex(captureService, savedDeviceName)` seam, fresh on every
+recording start — `StartRecording()`/`ToggleRecording()` no longer take a
+`micDeviceIndex` parameter; resolution is centralized inside the service
+instead of duplicated in each caller. `-1` from the resolver means "use the
+real system default" (NAudio `WAVE_MAPPER`) and is passed straight through to
+`WaveInEvent.DeviceNumber` — it must **not** be clamped to device `0`, which
+is a different (and possibly wrong) device.
+`HighQualityRecorderService`/`IHighQualityRecorderService` still has that
+clamp, but that service is unused dead code (nothing calls its
+`StartRecording`) — deleting it is an out-of-scope tidy item noted on
+main-c3x7q, not a live bug.

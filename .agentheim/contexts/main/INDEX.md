@@ -10,10 +10,10 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 1
+- **Backlog:** 2
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 127
+- **Doing:** 0
+- **Done:** 128
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) (bug) — `doing/main-c3x7q-recording-ignores-saved-microphone.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent 30; older entries archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
 <!-- done-list:start -->
+- **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) (bug) — `done/main-c3x7q-recording-ignores-saved-microphone.md`
 - **main-v7k2d** — Hotkey dictation ignores the selected microphone (always captures WaveIn device 0) (bug) — `done/main-v7k2d-dictation-ignores-selected-microphone.md`
 - **main-k4t8p** — Speaker name for imported voice messages (feature) — `done/main-k4t8p-speaker-name-for-imported-voice-messages.md`
 - **main-m6x4v** — Auto-export transcripts as Markdown to configured default folders (feature) — `done/main-m6x4v-auto-export-md-to-configured-folders.md`
@@ -56,6 +56,7 @@ research touching this BC, and concept synthesis pages.
 ### Backlog
 <!-- backlog-list:start -->
 - **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid — `backlog/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
+- **main-d8m3p** — Delete unused HighQualityRecorderService / IHighQualityRecorderService (chore) — `backlog/main-d8m3p-delete-unused-high-quality-recorder-service.md`
 <!-- backlog-list:end -->
 
 ## ADRs scoped to this BC

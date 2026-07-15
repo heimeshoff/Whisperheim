@@ -21,8 +21,10 @@ public sealed class CallRecordingService : ICallRecordingService
     private readonly object _lock = new();
     private readonly DispatcherTimer _durationTimer;
     private readonly DataPathService? _dataPathService;
+    private readonly SettingsService? _settingsService;
+    private readonly Func<IAudioCaptureService> _micCaptureFactory;
 
-    private AudioCaptureService? _micCapture;
+    private IAudioCaptureService? _micCapture;
     private LoopbackCaptureService? _loopbackCapture;
     private WaveFileWriter? _micWaveWriter;
     private string? _micWavFilePath;
@@ -37,9 +39,14 @@ public sealed class CallRecordingService : ICallRecordingService
     private bool _systemStreamActive;
     private bool _disposed;
 
-    public CallRecordingService(DataPathService? dataPathService = null)
+    public CallRecordingService(
+        DataPathService? dataPathService = null,
+        SettingsService? settingsService = null,
+        Func<IAudioCaptureService>? micCaptureFactory = null)
     {
         _dataPathService = dataPathService;
+        _settingsService = settingsService;
+        _micCaptureFactory = micCaptureFactory ?? (() => new AudioCaptureService());
         _durationTimer = new DispatcherTimer
         {
             Interval = TimeSpan.FromSeconds(1),
@@ -69,7 +76,7 @@ public sealed class CallRecordingService : ICallRecordingService
     public CallRecordingSession? CurrentSession => _currentSession;
 
     /// <inheritdoc />
-    public void StartRecording(int micDeviceIndex = -1)
+    public void StartRecording()
     {
         ObjectDisposedException.ThrowIf(_disposed, this);
 
@@ -139,12 +146,21 @@ public sealed class CallRecordingService : ICallRecordingService
                 _micWavFilePath, systemWavFilePath, startTimestamp);
 
             // Start mic capture with WAV file writer
-            _micCapture = new AudioCaptureService();
+            _micCapture = _micCaptureFactory();
             var micFormat = WaveFormat.CreateIeeeFloatWaveFormat(TargetSampleRate, TargetChannels);
             _micWaveWriter = new WaveFileWriter(_micWavFilePath, micFormat);
 
             _micCapture.AudioDataAvailable += OnMicDataAvailable;
             _micCapture.CaptureStopped += OnMicCaptureStopped;
+
+            // Resolve the saved microphone (Dictation.AudioDevice) the same way
+            // DictationOrchestrator.StartCaptureForDevice does, so recording honors
+            // the same device selection dictation does instead of always opening the
+            // system default (task main-c3x7q; ADR-0009-honor-system-default-capture-device).
+            // Resolved fresh on every StartRecording call -- no caching -- so a
+            // settings change takes effect on the very next recording.
+            var savedMicDeviceName = _settingsService?.Current.Dictation.AudioDevice;
+            var micDeviceIndex = ResolveMicDeviceIndex(_micCapture, savedMicDeviceName);
 
             // Start loopback capture — write directly to session directory
             _loopbackCapture = new LoopbackCaptureService();
@@ -242,12 +258,35 @@ public sealed class CallRecordingService : ICallRecordingService
     }
 
     /// <inheritdoc />
-    public void ToggleRecording(int micDeviceIndex = -1)
+    public void ToggleRecording()
     {
         if (IsRecording)
             StopRecording();
         else
-            StartRecording(micDeviceIndex);
+            StartRecording();
+    }
+
+    /// <summary>
+    /// Resolves <paramref name="savedDeviceName"/> to a WaveIn device index via
+    /// <see cref="AudioDeviceResolver"/>, using <paramref name="captureService"/>
+    /// for device enumeration. Falls back to the system default (-1, NAudio
+    /// WAVE_MAPPER) when no device is saved or the saved device is no longer
+    /// present -- never clamped to device 0 (ADR-0009-honor-system-default-capture-device).
+    /// Static and side-effect-free (beyond a trace log) so it mirrors
+    /// <see cref="Orchestration.DictationOrchestrator.StartCaptureForDevice"/>'s
+    /// no-caching, resolve-fresh-every-call semantics without needing a live
+    /// NAudio device: tests drive it directly with a fake capture service
+    /// (mirrors <c>DictationOrchestratorDeviceSelectionTests</c>), since
+    /// exercising the real <see cref="AudioCaptureService"/> requires actual
+    /// capture hardware.
+    /// </summary>
+    internal static int ResolveMicDeviceIndex(IAudioCaptureService captureService, string? savedDeviceName)
+    {
+        var deviceIndex = AudioDeviceResolver.ResolveDeviceIndex(captureService, savedDeviceName);
+        Trace.TraceInformation(
+            "[CallRecordingService] Resolved recording microphone \"{0}\" -> device {1}.",
+            savedDeviceName ?? "<default>", deviceIndex);
+        return deviceIndex;
     }
 
     public void Dispose()

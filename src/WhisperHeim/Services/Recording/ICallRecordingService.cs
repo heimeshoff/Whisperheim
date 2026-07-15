@@ -40,11 +40,13 @@ public interface ICallRecordingService : IDisposable
 
     /// <summary>
     /// Starts recording both microphone and system audio simultaneously.
+    /// The microphone device is resolved internally from the saved
+    /// <c>Dictation.AudioDevice</c> setting (task main-c3x7q; see
+    /// ADR-0009-honor-system-default-capture-device) -- falling back to the
+    /// system default when nothing is saved or the saved device is gone --
+    /// so callers never need to pass or look up a device index themselves.
     /// </summary>
-    /// <param name="micDeviceIndex">
-    /// Microphone device index, or -1 for the default device.
-    /// </param>
-    void StartRecording(int micDeviceIndex = -1);
+    void StartRecording();
 
     /// <summary>
     /// Stops the current recording and finalizes the WAV files.
@@ -53,8 +55,9 @@ public interface ICallRecordingService : IDisposable
 
     /// <summary>
     /// Toggles recording on/off. Convenience method for hotkey binding.
+    /// See <see cref="StartRecording"/> for microphone device resolution.
     /// </summary>
-    void ToggleRecording(int micDeviceIndex = -1);
+    void ToggleRecording();
 }
 
 /// <summary>

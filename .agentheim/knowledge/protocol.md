@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:02 -- Task verified and completed: main-c3x7q - Call/voice-message recording ignores the saved microphone (always records from system default)
+
+**Type:** Work / Task completion
+**Task:** main-c3x7q - Call/voice-message recording ignores the saved microphone (always records from system default)
+**Summary:** Recording (TranscriptsPage record button and call-recording hotkey) now resolves the saved Dictation.AudioDevice microphone via a new CallRecordingService.ResolveMicDeviceIndex seam before mic capture, instead of always opening the system default; the redundant micDeviceIndex parameter was removed from StartRecording/ToggleRecording since resolution is centralized in the service.
+**Duration:** 10m
+**Verification:** PASS (iteration 1)
+**Files changed:** 6
+**Tests added:** 4
+**ADRs written:** none
+
+---
+
 ## 2026-07-15 11:51 -- Batch started: [main-c3x7q]
 
 **Type:** Work / Batch start

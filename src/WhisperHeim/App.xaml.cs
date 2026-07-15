@@ -358,7 +358,7 @@ public partial class App : Application
         _fileTranscriptionService = new FileTranscriptionService(_transcriptionService);
         _templateService = new TemplateService(_settingsService);
 
-        _callRecordingService = new CallRecordingService(_dataPathService);
+        _callRecordingService = new CallRecordingService(_dataPathService, _settingsService);
         _transcriptStorageService = new TranscriptStorageService(_dataPathService);
         _speakerDiarizationService = new SpeakerDiarizationService();
         _callTranscriptionPipeline = new CallTranscriptionPipeline(

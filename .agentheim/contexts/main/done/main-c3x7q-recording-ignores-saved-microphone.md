@@ -1,11 +1,11 @@
 ---
 id: main-c3x7q
 title: Call/voice-message recording ignores the saved microphone (always records from system default)
-status: doing
+status: done
 type: bug
 context: main
 created: 2026-07-15
-completed:
+completed: 2026-07-15
 depends_on: []
 blocks: []
 tags: [audio, microphone, device-selection, voice-messages, call-recording]
@@ -58,24 +58,24 @@ lookup in each caller. `AudioDeviceResolver.ResolveDeviceIndex` already returns
 `AudioCaptureService` already honors `-1` as `WAVE_MAPPER`.
 
 ## Acceptance criteria
-- [ ] Starting a recording via **both** the `TranscriptsPage` record button and
+- [x] Starting a recording via **both** the `TranscriptsPage` record button and
       the call-recording hotkey resolves the saved mic name
       (`Dictation.AudioDevice`) to a device index via
       `AudioDeviceResolver.ResolveDeviceIndex` before mic capture starts —
       instead of always passing `-1`.
-- [ ] Resolution happens at recording-start time with **no caching**: changing
+- [x] Resolution happens at recording-start time with **no caching**: changing
       the selected microphone in settings takes effect on the very next
       recording (same no-cache semantics as `DictationOrchestrator.OnHotkeyPressed`).
-- [ ] When no device is saved, or the saved device is no longer present,
+- [x] When no device is saved, or the saved device is no longer present,
       resolution yields `-1` and recording falls back to the true system default
       (`WAVE_MAPPER`) and still records successfully (no clamp to device 0).
-- [ ] The resolved index flows `CallRecordingService.StartRecording` →
+- [x] The resolved index flows `CallRecordingService.StartRecording` →
       `AudioCaptureService.StartCapture` unchanged — it is not re-clamped
       anywhere along the way.
-- [ ] System-audio (loopback) capture is unaffected — the device index is
+- [x] System-audio (loopback) capture is unaffected — the device index is
       correctly ignored for `LoopbackCaptureService`, and dual mic+loopback
       recording still produces both `mic.wav` and `system.wav`.
-- [ ] A unit test covers resolution feeding recording start (saved device
+- [x] A unit test covers resolution feeding recording start (saved device
       present → its index; saved absent/removed → `-1`), mirroring
       `DictationOrchestratorDeviceSelectionTests`.
 
@@ -93,3 +93,40 @@ Out of scope (candidates for a separate tidy task, not required here):
 
 See ADR-0009-honor-system-default-capture-device for the dictation-side
 rationale and the `WAVE_MAPPER` contract this reuses.
+
+## Outcome
+`CallRecordingService.StartRecording` now resolves `Dictation.AudioDevice` to
+a WaveIn device index via the new internal `ResolveMicDeviceIndex(captureService,
+savedDeviceName)` seam (wraps `AudioDeviceResolver.ResolveDeviceIndex`), fresh
+on every call — same no-cache semantics as `DictationOrchestrator.StartCaptureForDevice`.
+Both live callers (`TranscriptsPage.StartStopRecording_Click` and
+`CallRecordingHotkeyService.OnHotkeyPressed`, via `ToggleRecording`) already
+called `StartRecording()`/`ToggleRecording()` with no explicit device index, so
+centralizing resolution inside the service (per the task's preferred shape)
+let the now-unused `micDeviceIndex` parameter be removed from both methods on
+`ICallRecordingService`/`CallRecordingService` rather than left as dead API
+surface. The mic `AudioCaptureService` instance is now created via an
+injectable `Func<IAudioCaptureService> _micCaptureFactory` (defaults to
+`() => new AudioCaptureService()`) so tests can substitute a fake without
+touching real NAudio hardware — mirrors why `DictationOrchestrator` takes
+`IAudioCaptureService` via constructor injection. `AudioCaptureService.StartCapture`
+already passed a negative index straight through to `WAVE_MAPPER` (main-v7k2d,
+ADR-0009), so the resolved index flows through unchanged; loopback capture
+(`LoopbackCaptureService`) was untouched.
+
+4 new tests in `tests/WhisperHeim.Tests/CallRecordingServiceDeviceSelectionTests.cs`
+drive `CallRecordingService.ResolveMicDeviceIndex` directly with a fake
+`IAudioCaptureService` (saved device present/absent/removed, and fresh
+resolution on repeated calls) — mirroring `DictationOrchestratorDeviceSelectionTests`'
+approach of testing the extracted seam rather than the full hardware-dependent
+capture path. Full suite: 246 tests passing (was 242 before this task).
+
+Filed backlog item `main-d8m3p` for the out-of-scope tidy item (deleting the
+confirmed-dead `HighQualityRecorderService`/`IHighQualityRecorderService`).
+
+Files touched: `src/WhisperHeim/Services/Recording/CallRecordingService.cs`,
+`src/WhisperHeim/Services/Recording/ICallRecordingService.cs`,
+`src/WhisperHeim/App.xaml.cs`,
+`tests/WhisperHeim.Tests/CallRecordingServiceDeviceSelectionTests.cs` (new),
+`.agentheim/contexts/main/README.md`,
+`.agentheim/contexts/main/backlog/main-d8m3p-delete-unused-high-quality-recorder-service.md` (new).
