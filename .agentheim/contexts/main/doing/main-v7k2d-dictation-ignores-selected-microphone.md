@@ -1,7 +1,7 @@
 ---
 id: main-v7k2d
 title: Hotkey dictation ignores the selected microphone (always captures WaveIn device 0)
-status: todo
+status: doing
 type: bug
 context: main
 created: 2026-07-15

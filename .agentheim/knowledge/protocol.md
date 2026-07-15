@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 10:07 -- Batch started: [main-v7k2d]
+
+**Type:** Work / Batch start
+**Tasks:** main-v7k2d - Hotkey dictation ignores the selected microphone (always captures WaveIn device 0)
+**Parallel:** no (1 worker) - only ready task, no dependencies
+
+---
+
 ## 2026-07-15 -- Modeling / Captured: main-v7k2d - Hotkey dictation ignores the selected microphone
 
 **Type:** Modeling / Capture
