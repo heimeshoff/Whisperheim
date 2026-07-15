@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:03 -- Work session ended
+
+**Type:** Work / Session end
+**Duration:** 12m
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Dispatches:** main-c3x7q: 1
+**Commits:** 4 (batch start, task integration, stranded-vision reconciliation, this session-end line)
+**Vision-conformance:** none — batch aligns with vision (making recording honor the saved microphone reuses the single Dictation.AudioDevice setting for consistency; pulls toward the "Dictation accuracy" / consistent-device success criteria; no cloud, web-UI, cross-platform, voice-command, or per-app-capture surface touched)
+**Carry-over:** .agentheim/vision.md: committed (stranded cosmetic vision-title edit `# WhisperHeim -- Vision` → `# Vision: WhisperHeim`, left behind across prior sessions; reconciled this session per user disposition)
+
+---
+
 ## 2026-07-15 12:02 -- Task verified and completed: main-c3x7q - Call/voice-message recording ignores the saved microphone (always records from system default)
 
 **Type:** Work / Task completion
