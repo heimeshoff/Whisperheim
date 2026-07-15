@@ -10,14 +10,15 @@ research touching this BC, and concept synthesis pages.
 ## Tasks by status
 
 <!-- task-counts:start -->
-- **Backlog:** 2
-- **Todo:** 0
+- **Backlog:** 1
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 127
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) (bug) — `todo/main-c3x7q-recording-ignores-saved-microphone.md`
 <!-- todo-list:end -->
 
 ### Doing
@@ -54,7 +55,6 @@ research touching this BC, and concept synthesis pages.
 
 ### Backlog
 <!-- backlog-list:start -->
-- **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) — `backlog/main-c3x7q-recording-ignores-saved-microphone.md`
 - **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid — `backlog/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 <!-- backlog-list:end -->
 

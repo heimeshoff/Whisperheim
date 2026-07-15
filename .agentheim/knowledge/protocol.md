@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 11:19 -- Modeling / Promoted: main-c3x7q - Call/voice-message recording ignores the saved microphone (always records from system default)
+
+**Type:** Modeling / Promote
+**BC:** main
+**From → To:** backlog → todo
+
+---
+
 ## 2026-07-15 11:18 -- Modeling / Refined: main-c3x7q - Call/voice-message recording ignores the saved microphone
 
 **Type:** Modeling / Refine
