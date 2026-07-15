@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 10:26 -- Work session ended
+
+**Type:** Work / Session end
+**Duration:** 19m
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Dispatches:** main-v7k2d: 1 (resumed from a prior interrupted session; verified PASS on iteration 1)
+**Commits:** 2 (task integration, this session-end line)
+**Vision-conformance:** none — batch aligns with vision (fixing dictation to honor the selected microphone pulls toward the "Dictation accuracy" and "Always available" success criteria; no cloud, web-UI, cross-platform, or voice-command surface touched)
+**Carry-over:** .agentheim/vision.md: left behind (owner: user / pre-existing, a vision-title cosmetic edit present before this session, not this session's work)
+
+---
+
 ## 2026-07-15 10:24 -- Task verified and completed: main-v7k2d - Hotkey dictation ignores the selected microphone (always captures WaveIn device 0)
 
 **Type:** Work / Task completion
