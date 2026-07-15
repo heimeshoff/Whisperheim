@@ -5,6 +5,17 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:15 -- Modeling / Refined: main-d8m3p - Delete unused HighQualityRecorderService / IHighQualityRecorderService
+
+**Type:** Modeling / Refine
+**BC:** main
+**Status after:** todo
+**Summary:** Verified the dead-code premise against current source — `HighQualityRecorderService` is constructed in `App.xaml.cs` and injected into `MainWindow` but never invoked (no `StartRecording`/`StopRecording`/`SaveRecording` caller anywhere). Wrote a precise deletion map (2 files + DI wiring in `App.xaml.cs` and `MainWindow.xaml.cs`), confirmed `RecordingStoppedEventArgs` dies cleanly with the interface, and fenced off the genuinely-live `HighQualityLoopbackService` sibling and `CallRecordingStoppedEventArgs`. Concrete acceptance criteria + an ADR-0009 fallback branch if a caller has reappeared. Auto-promoted to todo.
+**Split into:** none
+**ADRs written:** none
+
+---
+
 ## 2026-07-15 12:03 -- Work session ended
 
 **Type:** Work / Session end
