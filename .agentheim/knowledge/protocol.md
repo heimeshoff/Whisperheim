@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:09 -- Modeling / Promoted: main-d8m3p - Delete unused HighQualityRecorderService / IHighQualityRecorderService
+
+**Type:** Modeling / Promote
+**BC:** main
+**From → To:** backlog → todo
+
+---
+
 ## 2026-07-15 12:15 -- Modeling / Refined: main-d8m3p - Delete unused HighQualityRecorderService / IHighQualityRecorderService
 
 **Type:** Modeling / Refine
