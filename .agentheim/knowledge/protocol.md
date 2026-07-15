@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:30 -- Batch started: [main-h7q3z]
+
+**Type:** Work / Batch start
+**Tasks:** main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
+**Parallel:** no (1 worker) - only ready task, no dependencies
+
+---
+
 ## 2026-07-15 12:28 -- Modeling / Promoted: main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
 
 **Type:** Modeling / Promote

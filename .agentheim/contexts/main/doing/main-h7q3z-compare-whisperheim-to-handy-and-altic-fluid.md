@@ -1,7 +1,7 @@
 ---
 id: main-h7q3z
 title: Compare WhisperHeim to Handy and Altic Fluid
-status: todo
+status: doing
 type: spike
 context: main
 created: 2026-07-10

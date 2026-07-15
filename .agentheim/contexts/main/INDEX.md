@@ -11,18 +11,18 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
-- **Doing:** 0
+- **Todo:** 0
+- **Doing:** 1
 - **Done:** 129
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid (spike) — `todo/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 <!-- todo-list:end -->
 
 ### Doing
 <!-- doing-list:start -->
+- **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid (spike) — `doing/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
