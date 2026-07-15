@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:28 -- Modeling / Promoted: main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
+
+**Type:** Modeling / Promote
+**BC:** main
+**From → To:** backlog → todo
+
+---
+
 ## 2026-07-15 12:27 -- Modeling / Refined: main-h7q3z - Compare WhisperHeim to Handy and Altic Fluid
 
 **Type:** Modeling / Refine
