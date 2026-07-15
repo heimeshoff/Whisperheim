@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-07-15 12:15 -- Batch started: [main-d8m3p]
+
+**Type:** Work / Batch start
+**Tasks:** main-d8m3p - Delete unused HighQualityRecorderService / IHighQualityRecorderService
+**Parallel:** no (1 worker) - only ready task, no dependencies
+
+---
+
 ## 2026-07-15 12:09 -- Modeling / Promoted: main-d8m3p - Delete unused HighQualityRecorderService / IHighQualityRecorderService
 
 **Type:** Modeling / Promote

@@ -1,7 +1,7 @@
 ---
 id: main-d8m3p
 title: Delete unused HighQualityRecorderService / IHighQualityRecorderService
-status: todo
+status: doing
 type: chore
 context: main
 created: 2026-07-15
