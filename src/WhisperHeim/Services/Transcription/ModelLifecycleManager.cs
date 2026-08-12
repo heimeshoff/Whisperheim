@@ -64,6 +64,7 @@ public sealed class ModelLifecycleManager : IDisposable
     private readonly Action _unload;
     private readonly TimeSpan _idleThreshold;
     private readonly Func<DateTime> _utcNow;
+    private readonly Func<bool> _keepLoaded;
     private readonly object _gate = new();
 
     private ModelResidencyState _state = ModelResidencyState.Unloaded;
@@ -84,16 +85,26 @@ public sealed class ModelLifecycleManager : IDisposable
     /// How long with no activity before the model is unloaded (5 min default).
     /// </param>
     /// <param name="utcNow">Clock source; defaults to <see cref="DateTime.UtcNow"/>.</param>
+    /// <param name="keepLoaded">
+    /// Injected predicate for the user-facing "keep model loaded" toggle
+    /// (task infrastructure-n3p8w). When it returns <c>true</c>, <see cref="PollOnce"/>
+    /// never unloads, regardless of elapsed idle. Deliberately a <see cref="Func{TResult}"/>
+    /// rather than a direct <c>SettingsService</c> dependency so this class stays
+    /// UI-free, settings-free and unit-testable without the real settings stack.
+    /// Defaults to always-<c>false</c> (today's unconditional idle-unload behaviour).
+    /// </param>
     public ModelLifecycleManager(
         Func<CancellationToken, Task> loadAsync,
         Action unload,
         TimeSpan idleThreshold,
-        Func<DateTime>? utcNow = null)
+        Func<DateTime>? utcNow = null,
+        Func<bool>? keepLoaded = null)
     {
         _loadAsync = loadAsync ?? throw new ArgumentNullException(nameof(loadAsync));
         _unload = unload ?? throw new ArgumentNullException(nameof(unload));
         _idleThreshold = idleThreshold;
         _utcNow = utcNow ?? (() => DateTime.UtcNow);
+        _keepLoaded = keepLoaded ?? (() => false);
         _lastActivityUtc = _utcNow();
     }
 
@@ -165,9 +176,10 @@ public sealed class ModelLifecycleManager : IDisposable
     }
 
     /// <summary>
-    /// Runs one idle poll: if the model is loaded, no dictation is in flight, and the
-    /// idle threshold has elapsed, unloads the model and returns <c>true</c>. The
-    /// unload action runs outside the lock.
+    /// Runs one idle poll: if the model is loaded, no dictation is in flight, the
+    /// "keep model loaded" toggle is off, and the idle threshold has elapsed,
+    /// unloads the model and returns <c>true</c>. The unload action runs outside
+    /// the lock.
     /// </summary>
     public bool PollOnce()
     {
@@ -179,7 +191,39 @@ public sealed class ModelLifecycleManager : IDisposable
                 return false;
             if (_busyCount > 0)
                 return false;
+            if (_keepLoaded())
+                return false;
             if (_utcNow() - _lastActivityUtc < _idleThreshold)
+                return false;
+
+            _state = ModelResidencyState.Unloaded;
+            _loadTask = null;
+        }
+
+        _unload();
+        return true;
+    }
+
+    /// <summary>
+    /// Force-unloads the model right now, bypassing the idle threshold and the
+    /// "keep model loaded" toggle — used when the user flips the toggle OFF and
+    /// wants the memory back immediately rather than waiting out the idle timer
+    /// (task infrastructure-n3p8w). Still honours the busy guard: a dictation in
+    /// flight defers the unload to the next normal <see cref="PollOnce"/>, which
+    /// is the correctness-preserving choice — the shared decode/load/unload lock
+    /// (ADR-0006) is what actually prevents disposing mid-decode; this guard is
+    /// only a latency optimisation, but skipping it here would mean re-loading
+    /// the model out from under an in-flight decode's next self-heal.
+    /// </summary>
+    public bool UnloadNow()
+    {
+        lock (_gate)
+        {
+            if (_disposed)
+                return false;
+            if (_state != ModelResidencyState.Loaded)
+                return false;
+            if (_busyCount > 0)
                 return false;
 
             _state = ModelResidencyState.Unloaded;

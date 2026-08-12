@@ -81,4 +81,16 @@ public sealed class BootstrapConfig
     /// </summary>
     [JsonPropertyName("importsExportFolder")]
     public string? ImportsExportFolder { get; set; }
+
+    /// <summary>
+    /// Machine-local toggle: when <c>true</c>, the Parakeet recognizer is never
+    /// idle-unloaded (<see cref="WhisperHeim.Services.Transcription.ModelLifecycleManager"/>
+    /// stays resident for the process lifetime once loaded) instead of the default
+    /// 5-minute idle-unload (ADR-0005/0006). A per-machine RAM-vs-latency trade,
+    /// so it is deliberately not synced. Defaults to <c>false</c> (today's
+    /// behaviour) so existing users see no change on upgrade. See task
+    /// infrastructure-n3p8w.
+    /// </summary>
+    [JsonPropertyName("keepModelLoaded")]
+    public bool KeepModelLoaded { get; set; }
 }

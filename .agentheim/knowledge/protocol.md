@@ -5,6 +5,30 @@ Newest entries on top.
 
 ---
 
+## 2026-08-12 19:26 -- Task verified and completed: infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
+
+**Type:** Work / Task completion
+**Task:** infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
+**Summary:** Machine-local keep-model-loaded toggle (tray + GeneralPage, symmetric immediate load/unload, default off) gating the idle-unload via injected predicate on ModelLifecycleManager
+**Duration:** 23m
+**Verification:** PASS (iteration 2)
+**Files changed:** 10
+**Tests added:** 5
+**ADRs written:** 0010-keep-model-loaded-user-toggle.md
+
+---
+
+## 2026-08-12 19:23 -- Verification failed: infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
+
+**Type:** Work / Verification failure
+**Task:** infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
+**Iteration:** 1 of 3
+**Reasons:** ADR-0010 written without the standard YAML frontmatter (scope/status/date folded into the H1 as prose — breaks the convention consistent across ADRs 0001–0009 and makes the ADR non-machine-discoverable), missing related_tasks/supersedes/superseded_by fields. Code, tests (265 green) and scope all audited clean.
+**Iteration hint:** likely-fixable
+**Next:** re-dispatched worker
+
+---
+
 ## 2026-08-12 19:04 -- Batch started: [infrastructure-n3p8w]
 
 **Type:** Work / Batch start

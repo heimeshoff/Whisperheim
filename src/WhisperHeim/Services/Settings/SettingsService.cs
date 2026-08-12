@@ -174,6 +174,7 @@ public sealed class SettingsService : IDisposable
         _current.Dictation.AudioDevice = bootstrap.AudioDevice;
         _current.Ollama.Endpoint = bootstrap.OllamaEndpoint;
         _current.Ollama.Model = bootstrap.OllamaModel;
+        _current.General.KeepModelLoaded = bootstrap.KeepModelLoaded;
     }
 
     /// <summary>
@@ -187,6 +188,7 @@ public sealed class SettingsService : IDisposable
         bootstrap.AudioDevice = _current.Dictation.AudioDevice;
         bootstrap.OllamaEndpoint = _current.Ollama.Endpoint;
         bootstrap.OllamaModel = _current.Ollama.Model;
+        bootstrap.KeepModelLoaded = _current.General.KeepModelLoaded;
         _dataPathService.Save();
     }
 

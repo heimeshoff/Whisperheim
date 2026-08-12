@@ -298,4 +298,102 @@ public class ModelLifecycleManagerTests
         Assert.Throws<ArgumentNullException>(
             () => new ModelLifecycleManager(_ => Task.CompletedTask, null!, Idle5Min));
     }
+
+    // ── Keep model loaded toggle (task infrastructure-n3p8w) ───────────────
+
+    [Fact]
+    public async Task PollOnce_DoesNotUnload_WhenKeepLoadedIsTrue_EvenWellPastIdleThreshold()
+    {
+        var clock = new FakeClock();
+        int unloads = 0;
+        var keepLoaded = true;
+        using var mgr = new ModelLifecycleManager(
+            _ => Task.CompletedTask, () => Interlocked.Increment(ref unloads),
+            Idle5Min, clock.Now, () => keepLoaded);
+
+        await mgr.EnsureLoadedAsync();
+        clock.Advance(TimeSpan.FromMinutes(30)); // well past the 5-min threshold
+
+        Assert.False(mgr.PollOnce());
+        Assert.Equal(0, unloads);
+        Assert.Equal(ModelResidencyState.Loaded, mgr.State);
+    }
+
+    [Fact]
+    public async Task PollOnce_ResumesUnloading_OnceKeepLoadedFlipsOff()
+    {
+        var clock = new FakeClock();
+        int unloads = 0;
+        var keepLoaded = true;
+        using var mgr = new ModelLifecycleManager(
+            _ => Task.CompletedTask, () => Interlocked.Increment(ref unloads),
+            Idle5Min, clock.Now, () => keepLoaded);
+
+        await mgr.EnsureLoadedAsync();
+        clock.Advance(TimeSpan.FromMinutes(30));
+        Assert.False(mgr.PollOnce());
+        Assert.Equal(0, unloads);
+
+        keepLoaded = false;
+        Assert.True(mgr.PollOnce());
+        Assert.Equal(1, unloads);
+        Assert.Equal(ModelResidencyState.Unloaded, mgr.State);
+    }
+
+    [Fact]
+    public async Task UnloadNow_UnloadsImmediately_WhenLoadedAndIdle_BypassingTheIdleThreshold()
+    {
+        var clock = new FakeClock();
+        int unloads = 0;
+        using var mgr = new ModelLifecycleManager(
+            _ => Task.CompletedTask, () => Interlocked.Increment(ref unloads),
+            Idle5Min, clock.Now);
+
+        await mgr.EnsureLoadedAsync();
+
+        // No time has passed: a normal PollOnce would not unload yet.
+        Assert.False(mgr.PollOnce());
+        Assert.Equal(0, unloads);
+
+        Assert.True(mgr.UnloadNow());
+        Assert.Equal(1, unloads);
+        Assert.Equal(ModelResidencyState.Unloaded, mgr.State);
+    }
+
+    [Fact]
+    public async Task UnloadNow_DoesNotUnload_WhileDictationInFlight_AndDefersToNextIdlePoll()
+    {
+        var clock = new FakeClock();
+        int unloads = 0;
+        using var mgr = new ModelLifecycleManager(
+            _ => Task.CompletedTask, () => Interlocked.Increment(ref unloads),
+            Idle5Min, clock.Now);
+
+        await mgr.EnsureLoadedAsync();
+        mgr.EnterDictation();
+
+        // Toggling OFF mid-dictation must not unload mid-decode.
+        Assert.False(mgr.UnloadNow());
+        Assert.Equal(0, unloads);
+        Assert.Equal(ModelResidencyState.Loaded, mgr.State);
+
+        // Deferred to the next normal idle poll once the dictation ends.
+        mgr.ExitDictation();
+        clock.Advance(TimeSpan.FromMinutes(6));
+        Assert.True(mgr.PollOnce());
+        Assert.Equal(1, unloads);
+    }
+
+    [Fact]
+    public void UnloadNow_ReturnsFalse_WhenNotLoaded()
+    {
+        var clock = new FakeClock();
+        int unloads = 0;
+        using var mgr = new ModelLifecycleManager(
+            _ => Task.CompletedTask, () => Interlocked.Increment(ref unloads),
+            Idle5Min, clock.Now);
+
+        Assert.False(mgr.UnloadNow());
+        Assert.Equal(0, unloads);
+    }
 }

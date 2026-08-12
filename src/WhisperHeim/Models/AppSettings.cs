@@ -53,6 +53,18 @@ public sealed class GeneralSettings
     /// </summary>
     [JsonPropertyName("defaultSpeakerName")]
     public string? DefaultSpeakerName { get; set; }
+
+    /// <summary>
+    /// Machine-local: keep the Parakeet recognizer resident for the process
+    /// lifetime instead of idle-unloading it after 5 minutes. Mirrored from
+    /// <see cref="WhisperHeim.Models.BootstrapConfig.KeepModelLoaded"/> by
+    /// <see cref="WhisperHeim.Services.Settings.SettingsService"/> (same
+    /// precedent as <see cref="DictationSettings.AudioDevice"/>), so this value
+    /// never travels through the cloud-synced settings.json path. Task
+    /// infrastructure-n3p8w.
+    /// </summary>
+    [JsonPropertyName("keepModelLoaded")]
+    public bool KeepModelLoaded { get; set; }
 }
 
 public sealed class DictationSettings

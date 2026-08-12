@@ -352,7 +352,12 @@ public partial class App : Application
                 GC.Collect();
                 _workingSetTrimmer.Trim();
             },
-            idleThreshold: TimeSpan.FromMinutes(5));
+            idleThreshold: TimeSpan.FromMinutes(5),
+            // "Keep model loaded" user toggle (task infrastructure-n3p8w): a
+            // machine-local, per-user RAM-vs-latency judgment call, deliberately
+            // injected as a predicate rather than a direct SettingsService
+            // dependency so the state machine stays settings-free and testable.
+            keepLoaded: () => _settingsService?.Current.General.KeepModelLoaded ?? false);
         _inputSimulator = new InputSimulator();
         _fileTranscriptionService = new FileTranscriptionService(_transcriptionService);
         _templateService = new TemplateService(_settingsService);
@@ -442,7 +447,9 @@ public partial class App : Application
         _trayIconHost = new TrayIconHost(
             _callRecordingService,
             onShowSettingsRequested: ShowSettingsWindow,
-            onExitRequested: RequestExit);
+            onExitRequested: RequestExit,
+            keepModelLoadedInitial: _settingsService.Current.General.KeepModelLoaded,
+            onKeepModelLoadedToggled: ToggleKeepModelLoaded);
 
         // ── In-app auto-update (task infrastructure-v8k2m) ─────────────
         // Notify-only updater over Velopack + the public GitHub Releases feed.
@@ -480,7 +487,20 @@ public partial class App : Application
         {
             _ = _startupMemoryCompactor.ScheduleAsync(
                 TimeSpan.FromSeconds(5),
-                postCompactionStep: () => _workingSetTrimmer.Trim());
+                postCompactionStep: () =>
+                {
+                    _workingSetTrimmer.Trim();
+
+                    // "Keep model loaded" (task infrastructure-n3p8w): if the user
+                    // already had the toggle on at launch, warm the recognizer here
+                    // -- after the compact+trim, off the UI thread -- rather than
+                    // eagerly in StartupCore, so ADR-0006's lazy-on-at-startup rule
+                    // (and fast boot) survive for the default (off) path.
+                    if (_settingsService?.Current.General.KeepModelLoaded == true)
+                    {
+                        _modelLifecycle?.BeginLoad();
+                    }
+                });
         }
 
         // Idle working-set trim (infrastructure-w7k9p): after ~3 min with no
@@ -666,6 +686,39 @@ public partial class App : Application
             _overlayWindow?.SetMicState(OverlayMicState.Error);
             Trace.TraceError("[App] Pipeline error reflected in overlay: {0}", ex.Message);
         });
+    }
+
+    /// <summary>
+    /// Flips the "keep model loaded" setting (task infrastructure-n3p8w) from
+    /// either surface -- the tray menu item or the Settings/GeneralPage toggle --
+    /// persists it immediately, and drives the lifecycle action symmetrically:
+    /// turning it ON loads the model right away if it is currently unloaded;
+    /// turning it OFF unloads it right away (unless a dictation is in flight, in
+    /// which case the busy guard defers to the next normal idle poll rather than
+    /// unloading mid-decode). Also pushes the new state onto the tray label so
+    /// the two surfaces never go out of sync.
+    /// </summary>
+    public void ToggleKeepModelLoaded(bool keepLoaded)
+    {
+        if (_settingsService is null)
+            return;
+
+        _settingsService.Current.General.KeepModelLoaded = keepLoaded;
+        _settingsService.Save();
+
+        if (keepLoaded)
+        {
+            // Idempotent no-op if already Loading/Loaded (ADR-0006 lazy-load shape).
+            _modelLifecycle?.BeginLoad();
+        }
+        else
+        {
+            // UnloadNow() honours the busy guard: a dictation in flight defers the
+            // unload to the next normal idle poll instead of unloading mid-decode.
+            _modelLifecycle?.UnloadNow();
+        }
+
+        _trayIconHost?.UpdateKeepModelLoadedState(keepLoaded);
     }
 
     /// <summary>

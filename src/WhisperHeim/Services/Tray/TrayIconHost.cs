@@ -50,6 +50,7 @@ public sealed class TrayIconHost : IDisposable
     private readonly ICallRecordingService _callRecordingService;
     private readonly Action _onShowSettingsRequested;
     private readonly Action _onExitRequested;
+    private readonly Action<bool> _onKeepModelLoadedToggled;
 
     // Tray icon images (idle, dictation, call-recording)
     private readonly ImageSource _idleIcon;
@@ -59,16 +60,35 @@ public sealed class TrayIconHost : IDisposable
     private readonly Window _hiddenHostWindow;
     private readonly NotifyIcon _notifyIcon;
     private readonly Wpf.Ui.Controls.MenuItem _callRecordingMenuItem;
+    private readonly Wpf.Ui.Controls.MenuItem _keepModelLoadedMenuItem;
+    private bool _keepModelLoaded;
     private bool _disposed;
 
+    /// <summary>
+    /// Constructs the tray host and registers the icon + context menu.
+    /// </summary>
+    /// <param name="keepModelLoadedInitial">
+    /// Whether "keep model loaded" is on at construction time (task
+    /// infrastructure-n3p8w), so the tray label reflects the persisted setting
+    /// from the very first render rather than a stale default.
+    /// </param>
+    /// <param name="onKeepModelLoadedToggled">
+    /// Raised with the new desired state when the user clicks the menu item.
+    /// The caller (App) owns persisting the setting and driving the model
+    /// lifecycle action; this class only renders the label.
+    /// </param>
     public TrayIconHost(
         ICallRecordingService callRecordingService,
         Action onShowSettingsRequested,
-        Action onExitRequested)
+        Action onExitRequested,
+        bool keepModelLoadedInitial,
+        Action<bool> onKeepModelLoadedToggled)
     {
         _callRecordingService = callRecordingService;
         _onShowSettingsRequested = onShowSettingsRequested;
         _onExitRequested = onExitRequested;
+        _onKeepModelLoadedToggled = onKeepModelLoadedToggled;
+        _keepModelLoaded = keepModelLoadedInitial;
 
         // Generate the three icon states up-front.
         _idleIcon = CreateTwoToneTrayIcon();
@@ -135,6 +155,19 @@ public sealed class TrayIconHost : IDisposable
         };
         _callRecordingMenuItem.Click += (_, _) => _callRecordingService.ToggleRecording();
         contextMenu.Items.Add(_callRecordingMenuItem);
+
+        // "Keep model loaded" toggle (task infrastructure-n3p8w). Positioned
+        // directly below "Start Call Recording", above the first separator.
+        // Action-verb label mirrors the call-recording item's toggling idiom:
+        // the label names the action a click will perform, not the current state.
+        _keepModelLoadedMenuItem = new Wpf.Ui.Controls.MenuItem
+        {
+            Header = KeepModelLoadedHeader(_keepModelLoaded),
+            Icon = new SymbolIcon { Symbol = SymbolRegular.BrainCircuit24 },
+        };
+        _keepModelLoadedMenuItem.Click += (_, _) => _onKeepModelLoadedToggled(!_keepModelLoaded);
+        contextMenu.Items.Add(_keepModelLoadedMenuItem);
+
         contextMenu.Items.Add(new Separator());
 
         var settingsMenuItem = new Wpf.Ui.Controls.MenuItem
@@ -215,6 +248,29 @@ public sealed class TrayIconHost : IDisposable
             Trace.TraceInformation("[TrayIconHost] Dictation state changed. Active: {0}", isActive);
         });
     }
+
+    /// <summary>
+    /// Pushes the current "keep model loaded" state onto the tray menu label
+    /// (task infrastructure-n3p8w). Called by the owner (App) whenever the
+    /// setting changes from any surface — the Settings page toggle, or a
+    /// disk-driven reload — so the tray label never goes stale while the
+    /// Settings window is closed.
+    /// </summary>
+    public void UpdateKeepModelLoadedState(bool keepLoaded)
+    {
+        Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            _keepModelLoaded = keepLoaded;
+            _keepModelLoadedMenuItem.Header = KeepModelLoadedHeader(keepLoaded);
+        });
+    }
+
+    /// <summary>
+    /// Action-verb label mirroring <see cref="_callRecordingMenuItem"/>'s idiom:
+    /// the label names what a click will do, not the current state.
+    /// </summary>
+    private static string KeepModelLoadedHeader(bool keepLoaded) =>
+        keepLoaded ? "Unload Model When Idle" : "Keep Model Loaded";
 
     private void OnCallRecordingStarted(object? sender, CallRecordingSession session)
     {

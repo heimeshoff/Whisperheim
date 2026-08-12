@@ -18,6 +18,13 @@ public partial class GeneralPage : UserControl
     private readonly StartupService _startupService = new();
     private readonly FfmpegDetector? _ffmpegDetector;
 
+    // Guards against the Checked/Unchecked handler re-firing when
+    // RefreshFromSettings() pushes an externally-changed value (tray toggle, or
+    // a disk reload) onto KeepModelLoadedToggle -- without this, that programmatic
+    // assignment would itself raise Checked/Unchecked and re-trigger a save
+    // (task infrastructure-n3p8w).
+    private bool _suppressKeepModelLoadedToggleEvent;
+
     public GeneralPage(SettingsService settingsService, OllamaService ollamaService)
     {
         _settingsService = settingsService;
@@ -136,12 +143,45 @@ public partial class GeneralPage : UserControl
         }
 
         HighlightActiveTheme();
+
+        // Push the current "keep model loaded" state onto the toggle without
+        // relying on its (absent) two-way binding refresh -- General doesn't
+        // implement INotifyPropertyChanged, so re-assigning DataContext to the
+        // same instance above does not by itself re-evaluate bound values.
+        // Mirrors the manual push already used for OllamaEndpointBox/Combo above.
+        // Suppressed so setting IsChecked here does not re-fire Checked/Unchecked
+        // and re-trigger a save (task infrastructure-n3p8w).
+        _suppressKeepModelLoadedToggleEvent = true;
+        try
+        {
+            KeepModelLoadedToggle.IsChecked = _settingsService.Current.General.KeepModelLoaded;
+        }
+        finally
+        {
+            _suppressKeepModelLoadedToggleEvent = false;
+        }
     }
 
     private void OnSettingChanged(object sender, RoutedEventArgs e)
     {
         _settingsService.Save();
         _startupService.SetEnabled(_settingsService.Current.General.LaunchAtStartup);
+    }
+
+    /// <summary>
+    /// Handles the "keep transcription model loaded" toggle (task
+    /// infrastructure-n3p8w). Delegates to <c>App.ToggleKeepModelLoaded</c>,
+    /// which persists the setting and drives the symmetric load/unload action --
+    /// GeneralPage does not own the recognizer lifecycle itself, mirroring how
+    /// FFmpeg detection is resolved via <c>Application.Current as App</c> above.
+    /// </summary>
+    private void KeepModelLoadedToggle_Toggled(object sender, RoutedEventArgs e)
+    {
+        if (_suppressKeepModelLoadedToggleEvent)
+            return;
+
+        var keepLoaded = KeepModelLoadedToggle.IsChecked == true;
+        (Application.Current as App)?.ToggleKeepModelLoaded(keepLoaded);
     }
 
     private void ThemeLight_Click(object sender, MouseButtonEventArgs e) => ApplyTheme("Light");

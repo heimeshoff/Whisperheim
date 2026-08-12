@@ -101,6 +101,36 @@
                 </DockPanel>
             </Border>
 
+            <!-- ═══════ Performance Section ═══════ -->
+            <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
+                <ui:SymbolIcon Symbol="BrainCircuit24" Foreground="#FF005FAA" Margin="0,0,10,0" />
+                <TextBlock Text="PERFORMANCE"
+                           FontSize="10" FontWeight="Bold"
+                           Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                           VerticalAlignment="Center" />
+            </StackPanel>
+
+            <!-- Keep model loaded card (task infrastructure-n3p8w) -->
+            <Border Background="{DynamicResource CardBackgroundFillColorDefaultBrush}" CornerRadius="12" Padding="24" Margin="0,0,0,40">
+                <DockPanel>
+                    <StackPanel DockPanel.Dock="Left" VerticalAlignment="Center" MaxWidth="540">
+                        <TextBlock Text="Keep transcription model loaded"
+                                   FontSize="15" FontWeight="SemiBold"
+                                   Foreground="{DynamicResource TextFillColorPrimaryBrush}" />
+                        <TextBlock Text="Uses ~700 MB of RAM while idle, but avoids the ~4 s model reload after a pause."
+                                   FontSize="13" Foreground="{DynamicResource TextFillColorSecondaryBrush}"
+                                   Margin="0,4,0,0"
+                                   TextWrapping="Wrap" />
+                    </StackPanel>
+                    <ui:ToggleSwitch x:Name="KeepModelLoadedToggle"
+                                     Checked="KeepModelLoadedToggle_Toggled"
+                                     Unchecked="KeepModelLoadedToggle_Toggled"
+                                     DockPanel.Dock="Right"
+                                     HorizontalAlignment="Right"
+                                     VerticalAlignment="Center" />
+                </DockPanel>
+            </Border>
+
             <!-- ═══════ Dependencies Section ═══════ -->
             <StackPanel Orientation="Horizontal" Margin="0,0,0,20">
                 <ui:SymbolIcon Symbol="Toolbox24" Foreground="#FF005FAA" Margin="0,0,10,0" />
