@@ -1,7 +1,7 @@
 ---
 id: infrastructure-n3p8w
 title: Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
-status: todo
+status: doing
 type: feature
 context: infrastructure
 created: 2026-08-12

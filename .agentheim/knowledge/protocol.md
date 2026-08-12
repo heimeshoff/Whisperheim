@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-08-12 19:04 -- Batch started: [infrastructure-n3p8w]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
+**Parallel:** no (1 worker) - only ready task, no dependencies
+
+---
+
 ## 2026-08-12 -- Modeling / Captured: infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
 
 **Type:** Modeling / Capture
