@@ -5,6 +5,15 @@ Newest entries on top.
 
 ---
 
+## 2026-08-12 -- Modeling / Captured: infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo
+**Summary:** A machine-local boolean (default off = today's 5-min idle-unload) that, when on, keeps the Parakeet recognizer resident for the process lifetime — surfaced as a toggling-label tray item directly below "Start Call Recording" and as a ToggleSwitch card on GeneralPage. Symmetric on toggle (on → load now, off → unload now, deferred if a dictation is in flight); warmed from the post-startup housekeeping hook when already on at launch, so ADR-0006's lazy-on-in-StartupCore rule survives for the default path. Deliberately narrower than the dismissed `infrastructure-b3n6p` (no configurable idle timeout) and wider in one respect (b3n6p had no tray affordance). Captured straight to todo — every implementation hook is named against the tree and all design forks are resolved.
+
+---
+
 ## 2026-07-15 12:42 -- Work session ended
 
 **Type:** Work / Session end

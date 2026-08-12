@@ -11,14 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 8
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-<!-- no tasks in todo -->
+- **infrastructure-n3p8w** -- Keep the transcription model loaded — user-toggleable idle-unload (tray + settings) (feature) -- `todo/infrastructure-n3p8w-keep-model-loaded-toggle.md`
 <!-- todo-list:end -->
 
 ### Doing
