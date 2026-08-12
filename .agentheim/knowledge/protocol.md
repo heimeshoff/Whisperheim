@@ -5,6 +5,21 @@ Newest entries on top.
 
 ---
 
+## 2026-08-12 19:28 -- Work session ended
+
+**Type:** Work / Session end
+**Duration:** 24m
+**Completed:** 1 (first-try PASS: 0, re-dispatched: 1, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Dispatches:** infrastructure-n3p8w: 2
+**Commits:** 2 (batch start, task integration)
+**Vision-conformance:** none — batch aligns with vision (the keep-model-loaded toggle is default-off, preserving the "under 2 GB RAM while idle" success criterion for existing users; opting in trades RAM within that same stated budget for the "always available" / sub-2 s dictation-latency criteria; touches no cloud, web-UI, cross-platform, voice-command, per-app-capture, or live-subtitle non-goal)
+**Carry-over:** none — working tree clean
+
+---
+
 ## 2026-08-12 19:26 -- Task verified and completed: infrastructure-n3p8w - Keep the transcription model loaded — user-toggleable idle-unload (tray + settings)
 
 **Type:** Work / Task completion
