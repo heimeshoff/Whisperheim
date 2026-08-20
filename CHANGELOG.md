@@ -5,6 +5,55 @@ All notable changes to Whisperheim are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.4] - 2026-08-20
+
+Recording and transcript-handling release: recordings finally use the
+microphone you picked, transcripts can be named and auto-exported as Markdown,
+and the app tells you when a new version is out.
+
+### Added
+- **Keep the transcription model loaded** — machine-local toggle (tray menu and
+  Settings → General) that pins the Parakeet recognizer in memory instead of
+  letting it idle-unload. Off by default; toggling loads or unloads immediately.
+- **Markdown auto-export** — recorded conversations and imported voice messages
+  export as `<name>.md` into two independently-configurable folders on
+  transcription completion. Re-transcription overwrites in place; same-titled
+  sibling sessions disambiguate to `name (2).md` (ADR-0008).
+- **Speaker name on import** — importing audio files prompts once per file for
+  the speaker name, which flows into the transcript segments, the SPEAKER NAMES
+  panel, and the Markdown export. Dismissing falls back to `Speaker`.
+- **Naming of active recordings** — title and speaker names can be edited while
+  a recording is still pending transcription.
+- **Startup requeue** — sessions whose transcription was interrupted by an app
+  exit are re-enqueued on the next start instead of sitting pending forever.
+- **Inline template creation** — when a spoken trigger matches no template, a
+  dialog offers to create one on the spot.
+- **In-app update notification** — notify-only update check via Velopack against
+  the GitHub Release feed, surfaced in the status footer.
+
+### Changed
+- The displayed app version is now read from the packed Velopack release rather
+  than assembly metadata.
+- Call transcription self-heals a missing recognizer by loading it on demand
+  (ADR-0005), instead of throwing when the model had been idle-unloaded.
+
+### Fixed
+- Hotkey dictation recorded from device 0 regardless of the microphone selected
+  in Settings; it now resolves the saved device name on every press, and the
+  system-default fallback reaches NAudio's `WAVE_MAPPER`.
+- Call and voice-message recording always opened the system default microphone;
+  it now resolves the saved Dictation microphone too.
+- The "Transcribing" state in the transcripts list is derived from the queue's
+  active item, so it clears when the queue drains — previously any clicked
+  pending item was marked transcribing and stayed that way.
+- The hidden tray host window appeared in the Alt-Tab switcher for the life of
+  the process (`WS_EX_TOOLWINDOW` is now applied).
+- The About page's Parakeet model card link pointed at v2 while the app runs v3.
+
+### Removed
+- `HighQualityRecorderService` / `IHighQualityRecorderService` — a 44.1 kHz
+  voice-message recorder that was never invoked — and its DI wiring.
+
 ## [0.1.3] - 2026-06-28
 
 RAM-optimization release: the idle footprint of the Parakeet recognizer is now
@@ -83,6 +132,7 @@ cloud, no subscription, no internet at runtime.
 - Text-to-Speech (Kyutai Pocket TTS) — built during development and then removed
   before release (Task 103).
 
+[0.1.4]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.1...v0.1.2
 [0.1.1]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.0...v0.1.1
