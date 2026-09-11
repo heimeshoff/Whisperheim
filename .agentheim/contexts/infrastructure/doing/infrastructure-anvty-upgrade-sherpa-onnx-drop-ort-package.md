@@ -1,7 +1,7 @@
 ---
 id: infrastructure-anvty
 title: Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*`
-status: todo
+status: doing
 type: chore
 context: infrastructure
 created: 2026-09-11

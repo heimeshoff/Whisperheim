@@ -11,20 +11,20 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 3
-- **Doing:** 0
+- **Todo:** 2
+- **Doing:** 1
 - **Done:** 130
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
 - **main-hh6zw** — Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug) (bug) — `todo/main-hh6zw-peak-normalize-audio-before-decode.md`
-- **main-ma9j8** — Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline (feature) — `todo/main-ma9j8-diagnostics-on-empty-dictation-result.md`
 - **main-rc541** — Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived (feature) — `todo/main-rc541-overlay-nothing-recognized-state.md`
 <!-- todo-list:end -->
 
 ### Doing
 <!-- doing-list:start -->
+- **main-ma9j8** — Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline (feature) — `doing/main-ma9j8-diagnostics-on-empty-dictation-result.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 

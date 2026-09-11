@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 10:49 -- Batch started: [infrastructure-anvty, main-ma9j8]
+
+**Type:** Work / Batch start
+**Tasks:** infrastructure-anvty - Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*`, main-ma9j8 - Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline
+**Parallel:** yes (2 workers — 4 ready; main-hh6zw held to next wave: shares the quiet-audio regression test with infrastructure-anvty, whose task text says whichever lands first creates it; main-rc541 held to next wave: shares the empty-result hook in TranscribeFinalAsync with main-ma9j8, whose task text says whichever lands first introduces it and the other subscribes)
+
+---
+
 ## 2026-09-11 10:40 -- Modeling / Captured: main-rc541 - Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing
 
 **Type:** Modeling / Capture

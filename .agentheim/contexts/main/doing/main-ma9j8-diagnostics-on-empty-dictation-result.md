@@ -1,7 +1,7 @@
 ---
 id: main-ma9j8
 title: Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline
-status: todo
+status: doing
 type: feature
 context: main
 created: 2026-09-11
