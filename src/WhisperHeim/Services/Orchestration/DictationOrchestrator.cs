@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using WhisperHeim.Models;
 using WhisperHeim.Services.Audio;
+using WhisperHeim.Services.Diagnostics;
 using WhisperHeim.Services.Hotkey;
 using WhisperHeim.Services.Input;
 using WhisperHeim.Services.Settings;
@@ -10,6 +11,26 @@ using WhisperHeim.Services.TextProcessing;
 using WhisperHeim.Services.Transcription;
 
 namespace WhisperHeim.Services.Orchestration;
+
+/// <summary>
+/// Payload for <see cref="DictationOrchestrator.EmptyResult"/> (task main-ma9j8):
+/// carries the duration/levels/decode context of a hold-to-talk dictation whose
+/// transcript came back empty, plus the raw samples for anyone that wants to act
+/// on them (e.g. the orchestrator's own diagnostics dump). This is the single
+/// explicit hook for the "empty result for a real recording" moment -- the
+/// sibling task main-rc541 (overlay "Nothing recognized" state) subscribes to
+/// the same event rather than adding a second ad-hoc branch in
+/// <see cref="DictationOrchestrator.TranscribeFinalAsync"/>.
+/// </summary>
+public sealed record EmptyDictationResult(
+    float[] Samples,
+    TimeSpan AudioDuration,
+    int SampleCount,
+    double Rms,
+    double Peak,
+    double DecodeMs,
+    bool TemplateMode,
+    ModelResidencyState? ResidencyState);
 
 /// <summary>
 /// Hold-to-talk dictation orchestrator.
@@ -34,6 +55,7 @@ public sealed class DictationOrchestrator : IDisposable
     private readonly SettingsService? _settingsService;
     private readonly Action<bool> _onDictationStateChanged;
     private readonly ModelLifecycleManager? _modelLifecycle;
+    private readonly EmptyDictationDumpService? _emptyDictationDumpService;
 
     private readonly object _lock = new();
     private readonly List<float> _recordedSamples = new();
@@ -44,6 +66,14 @@ public sealed class DictationOrchestrator : IDisposable
 
     private const int MinSamples = 8000; // 0.5s at 16kHz
     private const int SampleRate = 16000;
+
+    /// <summary>
+    /// Below this audio duration, an empty transcript is logged at Information
+    /// level (short empties are usually legitimate -- muted mic, accidental
+    /// press) and no WAV dump is attempted. At or above it, the same event is
+    /// logged at Warning level and, unless disabled, dumped to disk.
+    /// </summary>
+    private const double EmptyResultWarnThresholdSeconds = 3.0;
 
     /// <summary>
     /// Raised on a background thread with the RMS amplitude of each audio chunk.
@@ -72,6 +102,17 @@ public sealed class DictationOrchestrator : IDisposable
     /// </summary>
     public event Action<bool>? WarmingUpChanged;
 
+    /// <summary>
+    /// Raised when a hold-to-talk dictation's raw transcript comes back empty
+    /// (task main-ma9j8) -- the single explicit hook for the "empty result for a
+    /// real recording" moment. The orchestrator's own diagnostics (Warning/Info
+    /// trace line + capped WAV dump) react to this event like any other
+    /// subscriber; <c>main-rc541</c>'s overlay "Nothing recognized" state
+    /// subscribes to the same event rather than adding a second ad-hoc branch.
+    /// Raised on a background thread.
+    /// </summary>
+    public event Action<EmptyDictationResult>? EmptyResult;
+
     public DictationOrchestrator(
         GlobalHotkeyService hotkeyService,
         IAudioCaptureService audioCapture,
@@ -80,7 +121,8 @@ public sealed class DictationOrchestrator : IDisposable
         Action<bool> onDictationStateChanged,
         ITemplateService? templateService = null,
         SettingsService? settingsService = null,
-        ModelLifecycleManager? modelLifecycle = null)
+        ModelLifecycleManager? modelLifecycle = null,
+        EmptyDictationDumpService? emptyDictationDumpService = null)
     {
         _hotkeyService = hotkeyService ?? throw new ArgumentNullException(nameof(hotkeyService));
         _audioCapture = audioCapture ?? throw new ArgumentNullException(nameof(audioCapture));
@@ -90,6 +132,11 @@ public sealed class DictationOrchestrator : IDisposable
         _templateService = templateService;
         _settingsService = settingsService;
         _modelLifecycle = modelLifecycle;
+        _emptyDictationDumpService = emptyDictationDumpService;
+
+        // The orchestrator's own diagnostics are just the first subscriber of its
+        // own public event -- see EmptyResult's doc comment.
+        EmptyResult += OnEmptyResult;
     }
 
     public void Start()
@@ -296,7 +343,84 @@ public sealed class DictationOrchestrator : IDisposable
         return Math.Sqrt(sumSquares / samples.Length);
     }
 
-    private async Task TranscribeFinalAsync(float[] samples, bool templateMode, bool warming)
+    /// <summary>
+    /// Computes RMS and peak amplitude of a full dictation buffer in a single
+    /// pass -- used both for the "Final:" success log line and the empty-result
+    /// diagnostics, so a successful dictation's levels give a baseline to
+    /// compare a lost one against.
+    /// </summary>
+    private static (double Rms, double Peak) CalculateLevels(float[] samples)
+    {
+        if (samples.Length == 0) return (0.0, 0.0);
+
+        double sumSquares = 0;
+        float peak = 0f;
+        for (int i = 0; i < samples.Length; i++)
+        {
+            var s = samples[i];
+            sumSquares += s * (double)s;
+            var abs = Math.Abs(s);
+            if (abs > peak) peak = abs;
+        }
+
+        return (Math.Sqrt(sumSquares / samples.Length), peak);
+    }
+
+    /// <summary>
+    /// The orchestrator's own reaction to <see cref="EmptyResult"/> (task main-ma9j8):
+    /// logs a Warning (audio &gt;= <see cref="EmptyResultWarnThresholdSeconds"/>) or
+    /// Information (shorter) trace line naming the situation and carrying its
+    /// numbers, and -- only at Warning level, and only if a dump service is wired
+    /// and dumping isn't disabled -- writes the raw samples to a capped-ring WAV
+    /// via <see cref="EmptyDictationDumpService"/>. Dump I/O failures are caught
+    /// inside the dump service itself; this handler never throws and never
+    /// changes what gets typed.
+    /// </summary>
+    private void OnEmptyResult(EmptyDictationResult info)
+    {
+        var warnLevel = info.AudioDuration.TotalSeconds >= EmptyResultWarnThresholdSeconds;
+        var residency = info.ResidencyState?.ToString() ?? "n/a";
+
+        string dumpNote;
+        if (!warnLevel)
+        {
+            dumpNote = "dump disabled (audio below 3s threshold)";
+        }
+        else if (_emptyDictationDumpService is null)
+        {
+            dumpNote = "dump disabled";
+        }
+        else
+        {
+            var dump = _emptyDictationDumpService.TryDump(info.Samples, SampleRate);
+            dumpNote = dump.Disabled
+                ? "dump disabled"
+                : dump.Success
+                    ? $"dump={dump.Path}"
+                    : "dump failed";
+        }
+
+        // Formatted with InvariantCulture (not the ambient culture Trace.TraceX's
+        // own {0:F2}-style overloads use) so the numeric fields are always
+        // period-decimal regardless of the machine's locale.
+        var message = string.Format(
+            System.Globalization.CultureInfo.InvariantCulture,
+            "[DictationOrchestrator] Empty transcript for {0:F2}s audio ({1} samples, rms={2:F3}, peak={3:F3}, decode={4:F0}ms, template={5}, residency={6}, {7}).",
+            info.AudioDuration.TotalSeconds, info.SampleCount, info.Rms, info.Peak,
+            info.DecodeMs, info.TemplateMode, residency, dumpNote);
+
+        if (warnLevel)
+            Trace.TraceWarning(message);
+        else
+            Trace.TraceInformation(message);
+    }
+
+    /// <summary>
+    /// Internal so tests can drive it directly with a fake <see cref="ITranscriptionService"/>
+    /// (mirrors <see cref="StartCaptureForDevice"/>'s test seam) -- the real hold-to-talk
+    /// path can only be exercised via the low-level keyboard hook.
+    /// </summary>
+    internal async Task TranscribeFinalAsync(float[] samples, bool templateMode, bool warming)
     {
         _modelLifecycle?.EnterDictation();
         try
@@ -315,12 +439,26 @@ public sealed class DictationOrchestrator : IDisposable
 
             var result = await _transcription.TranscribeAsync(samples, SampleRate);
             var rawText = result.Text.Trim();
-            if (string.IsNullOrEmpty(rawText)) return;
+            var (rms, peak) = CalculateLevels(samples);
+
+            if (string.IsNullOrEmpty(rawText))
+            {
+                EmptyResult?.Invoke(new EmptyDictationResult(
+                    samples,
+                    result.AudioDuration,
+                    samples.Length,
+                    rms,
+                    peak,
+                    result.TranscriptionDuration.TotalMilliseconds,
+                    templateMode,
+                    _modelLifecycle?.State));
+                return;
+            }
 
             Trace.TraceInformation(
-                "[DictationOrchestrator] Final: \"{0}\" (audio={1:F2}s, transcribe={2:F0}ms, RTF={3:F3}, template={4})",
+                "[DictationOrchestrator] Final: \"{0}\" (audio={1:F2}s, transcribe={2:F0}ms, RTF={3:F3}, template={4}, rms={5:F3}, peak={6:F3})",
                 rawText, result.AudioDuration.TotalSeconds,
-                result.TranscriptionDuration.TotalMilliseconds, result.RealTimeFactor, templateMode);
+                result.TranscriptionDuration.TotalMilliseconds, result.RealTimeFactor, templateMode, rms, peak);
 
             if (templateMode && _templateService is not null)
             {

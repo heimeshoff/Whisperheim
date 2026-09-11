@@ -2,6 +2,7 @@ using System.Diagnostics;
 using System.Windows;
 using WhisperHeim.Services.Audio;
 using WhisperHeim.Services.CallTranscription;
+using WhisperHeim.Services.Diagnostics;
 using WhisperHeim.Services.Diarization;
 using WhisperHeim.Services.Dictation;
 using WhisperHeim.Services.Export;
@@ -37,6 +38,7 @@ public partial class App : Application
     private readonly Services.Startup.WorkingSetTrimmer _workingSetTrimmer = new();
     private Services.Startup.IdleWorkingSetTrimmer? _idleWorkingSetTrimmer;
     private Services.Transcription.ModelLifecycleManager? _modelLifecycle;
+    private readonly EmptyDictationDumpService _emptyDictationDumpService = new();
     private bool _isShowingError;
 
     // ── Long-lived services that used to live on MainWindow ────────────
@@ -543,7 +545,8 @@ public partial class App : Application
             OnDictationStateChanged,
             _templateService!,
             _settingsService!,
-            _modelLifecycle);
+            _modelLifecycle,
+            _emptyDictationDumpService);
 
         _orchestrator.AudioAmplitudeChanged += OnAudioAmplitudeChanged;
         _orchestrator.PipelineError += OnPipelineError;

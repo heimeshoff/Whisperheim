@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 11:04 -- Task verified and completed: main-ma9j8 - Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline
+
+**Type:** Work / Task completion
+**Task:** main-ma9j8 - Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline
+**Summary:** DictationOrchestrator raises a single EmptyResult event (samples/duration/RMS/peak/decode-ms/residency) on empty transcripts; self-subscribed diagnostics log Warning >=3s with a capped-ring WAV dump via EmptyDictationDumpService (Information <3s, no dump), opt-out WHISPERHEIM_DISABLE_DIAG_DUMP=1; Final: line gains RMS/peak
+**Duration:** 14m
+**Verification:** PASS (iteration 1)
+**Files changed:** 8
+**Tests added:** 10
+**ADRs written:** 0011-empty-dictation-result-event-hook.md
+
+---
+
 ## 2026-09-11 10:49 -- Batch started: [infrastructure-anvty, main-ma9j8]
 
 **Type:** Work / Batch start

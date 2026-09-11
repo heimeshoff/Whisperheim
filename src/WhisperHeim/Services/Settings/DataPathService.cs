@@ -143,6 +143,24 @@ public sealed class DataPathService
     public string LogPath => Path.Combine(LocalRoot, "whisperheim.log");
 
     /// <summary>
+    /// Machine-local diagnostics dump folder (task main-ma9j8): capped ring of raw
+    /// WAV dumps captured when a dictation decodes to an empty transcript, so a
+    /// lost dictation is reproducible offline. Sibling of <see cref="RecordingStagingPath"/>
+    /// under <see cref="LocalAppDataRoot"/> — deliberately not under the (possibly
+    /// cloud-synced) <see cref="DataPath"/>, per <c>main-104</c>'s "stage WAV writes
+    /// outside the synced folder" rule. Created on first access.
+    /// </summary>
+    public string DiagnosticsPath
+    {
+        get
+        {
+            var path = Path.Combine(LocalAppDataRoot, "diagnostics");
+            Directory.CreateDirectory(path);
+            return path;
+        }
+    }
+
+    /// <summary>
     /// Loads the bootstrap config from disk. Creates with defaults on first run.
     /// </summary>
     public void Load()

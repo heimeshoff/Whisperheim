@@ -1,15 +1,15 @@
 ---
 id: main-ma9j8
 title: Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline
-status: doing
+status: done
 type: feature
 context: main
 created: 2026-09-11
-completed:
+completed: 2026-09-11
 depends_on: []
 blocks: []
 tags: [dictation, diagnostics, logging, audio]
-related_adrs: []
+related_adrs: [0011]
 related_research: []
 prior_art: [main-v7k2d, main-104]
 ---
@@ -88,3 +88,44 @@ transcript is empty **and** the audio is at least 3 s long:
   that the other then subscribes to, rather than two ad-hoc branches.
 - Consider a "Open diagnostics folder" link on the Dictation settings page later; out
   of scope here.
+- Decision recorded: `.agentheim/knowledge/decisions/0011-empty-dictation-result-event-hook.md`.
+
+## Outcome
+
+`DictationOrchestrator.TranscribeFinalAsync` now raises a new public event,
+`EmptyResult` (payload `EmptyDictationResult`: raw samples, `AudioDuration`,
+`SampleCount`, `Rms`, `Peak`, `DecodeMs`, `TemplateMode`,
+`ModelResidencyState?` residency), exactly once per empty raw transcript instead
+of silently returning. The orchestrator wires its own diagnostics as the first
+subscriber of this event in its constructor (`EmptyResult += OnEmptyResult`):
+`OnEmptyResult` logs a Warning line (>= 3 s of audio) or Information line
+(shorter) naming the situation with all the numbers, and — only at Warning level
+— hands the samples to the new `EmptyDictationDumpService`
+(`src/WhisperHeim/Services/Diagnostics/EmptyDictationDumpService.cs`), which
+writes a 16 kHz mono 16-bit PCM WAV into the machine-local
+`%LOCALAPPDATA%\WhisperHeim\diagnostics\` folder (new
+`DataPathService.DiagnosticsPath`) and keeps a ring of the 10 most recent dumps.
+`WHISPERHEIM_DISABLE_DIAG_DUMP=1` disables the WAV write only (default on); any
+I/O failure is caught inside the dump service and reported via `DumpResult`,
+never thrown, never surfacing as `PipelineError`. The successful-dictation
+`Final:` trace line now also carries RMS/peak (`CalculateLevels`, single pass).
+
+**Shared hook for main-rc541** (next wave, overlay "Nothing recognized" state):
+subscribe to `DictationOrchestrator.EmptyResult` rather than adding a second
+branch in `TranscribeFinalAsync` — see ADR-0011 for the full rationale.
+`TranscribeFinalAsync` was changed from `private` to `internal` so tests (and
+this event) can be exercised directly, mirroring the existing
+`StartCaptureForDevice` test seam.
+
+Files:
+- `src/WhisperHeim/Services/Orchestration/DictationOrchestrator.cs` — `EmptyDictationResult` record, `EmptyResult` event, `EmptyResultWarnThresholdSeconds`, `CalculateLevels`, `OnEmptyResult`, updated `Final:` line, `TranscribeFinalAsync` made internal.
+- `src/WhisperHeim/Services/Diagnostics/EmptyDictationDumpService.cs` — new.
+- `src/WhisperHeim/Services/Settings/DataPathService.cs` — new `DiagnosticsPath`.
+- `src/WhisperHeim/App.xaml.cs` — wires `EmptyDictationDumpService` into the orchestrator.
+- `tests/WhisperHeim.Tests/EmptyDictationDumpServiceTests.cs` — new (5 tests).
+- `tests/WhisperHeim.Tests/DictationOrchestratorEmptyResultTests.cs` — new (5 tests).
+- `.agentheim/contexts/main/README.md` — Ubiquitous language + Key events updated.
+- `.agentheim/knowledge/decisions/0011-empty-dictation-result-event-hook.md` — new ADR.
+
+Full suite: 275 tests passed (261 WhisperHeim.Tests + 14 WhisperHeim.Cli.Tests),
+10 new.

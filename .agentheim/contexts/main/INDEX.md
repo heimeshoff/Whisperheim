@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 2
-- **Doing:** 1
-- **Done:** 130
+- **Doing:** 0
+- **Done:** 131
 <!-- task-counts:end -->
 
 ### Todo
@@ -24,12 +24,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **main-ma9j8** — Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline (feature) — `doing/main-ma9j8-diagnostics-on-empty-dictation-result.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent 30; older entries archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
 <!-- done-list:start -->
+- **main-ma9j8** — Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline (feature) — `done/main-ma9j8-diagnostics-on-empty-dictation-result.md`
 - **main-h7q3z** — Compare WhisperHeim to Handy and Altic Fluid (spike) — `done/main-h7q3z-compare-whisperheim-to-handy-and-altic-fluid.md`
 - **main-d8m3p** — Delete unused HighQualityRecorderService / IHighQualityRecorderService (chore) — `done/main-d8m3p-delete-unused-high-quality-recorder-service.md`
 - **main-c3x7q** — Call/voice-message recording ignores the saved microphone (always records from system default) (bug) — `done/main-c3x7q-recording-ignores-saved-microphone.md`
@@ -65,6 +65,7 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0011** -- One shared `EmptyResult` orchestrator event is the single hook for every empty-dictation reaction (diagnostics dump now, overlay "Nothing recognized" next), instead of parallel ad-hoc branches in `TranscribeFinalAsync` -- `knowledge/decisions/0011-empty-dictation-result-event-hook.md`
 - **ADR-0009** -- Honor NAudio WAVE_MAPPER (-1) as the real system default capture device -- `knowledge/decisions/0009-honor-system-default-capture-device.md`
 - **ADR-0008** -- Auto-export identity is the Recording-session directory, not CallTranscript.Id -- `knowledge/decisions/0008-auto-export-identity-is-session-dir-not-transcript-id.md`
 <!-- adr-local:end -->
