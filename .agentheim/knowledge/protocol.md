@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 11:10 -- Task verified and completed: infrastructure-anvty - Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*`
+
+**Type:** Work / Task completion
+**Task:** infrastructure-anvty - Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*`
+**Summary:** Pin org.k2fsa.sherpa.onnx to exact 1.13.8 (NemoNormalizePerFeature fix for silently-empty quiet dictations), drop the unused floating Microsoft.ML.OnnxRuntime reference, add a real-model quiet-audio regression test (red on 1.13.4, green on 1.13.8)
+**Duration:** 20m
+**Verification:** PASS (iteration 1)
+**Files changed:** 7
+**Tests added:** 5
+**ADRs written:** 0012-pin-sherpa-onnx-exact-drop-unused-onnxruntime-package.md
+
+---
+
 ## 2026-09-11 11:04 -- Batch started: [main-rc541]
 
 **Type:** Work / Batch start

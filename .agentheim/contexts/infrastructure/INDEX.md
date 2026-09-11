@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 9
+- **Doing:** 0
+- **Done:** 10
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **infrastructure-anvty** — Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*` (chore) — `doing/infrastructure-anvty-upgrade-sherpa-onnx-drop-ort-package.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent first; older entries kept for prior-art search)
 <!-- done-list:start -->
+- **infrastructure-anvty** — Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*` (chore) — `done/infrastructure-anvty-upgrade-sherpa-onnx-drop-ort-package.md`
 - **infrastructure-n3p8w** — Keep the transcription model loaded — user-toggleable idle-unload (tray + settings) (feature) — `done/infrastructure-n3p8w-keep-model-loaded-toggle.md`
 - **infrastructure-v8k2m** -- In-app auto-update — notify-only "new version available" via Velopack + GitHub Releases -- `done/infrastructure-v8k2m-in-app-auto-update-notify.md`
 - **infrastructure-p4w7n** -- Source the displayed app version from the packed release version (dictation, settings, about pages) -- `done/infrastructure-p4w7n-version-from-packed-release.md`
@@ -47,6 +47,7 @@ research touching this BC, and concept synthesis pages.
 ## ADRs scoped to this BC
 
 <!-- adr-local:start -->
+- **ADR-0012** -- Pin sherpa-onnx to an exact version (1.13.8) and drop the unused Microsoft.ML.OnnxRuntime package so its floating onnxruntime.dll can never shadow the runtime sherpa bundles; any future ORT reference must be pinned to sherpa's bundled version -- `../../knowledge/decisions/0012-pin-sherpa-onnx-exact-drop-unused-onnxruntime-package.md`
 - **ADR-0010** -- Keep-model-loaded is a user-facing on/off gate on the existing idle-unload, not a new lifecycle mode -- `../../knowledge/decisions/0010-keep-model-loaded-user-toggle.md`
 - **ADR-0007** -- Notify-only in-app auto-update via a Velopack gateway seam + status-footer signal -- `../../knowledge/decisions/0007-notify-only-in-app-update-via-velopack.md`
 - **ADR-0006** -- Recognizer lifecycle ships lazy-on, and decode self-heals so every consumer survives an idle-unload -- `../../knowledge/decisions/0006-lazy-on-recognizer-lifecycle-and-self-healing-decode.md`

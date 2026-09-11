@@ -1,15 +1,15 @@
 ---
 id: infrastructure-anvty
 title: Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*`
-status: doing
+status: done
 type: chore
 context: infrastructure
 created: 2026-09-11
-completed:
+completed: 2026-09-11
 depends_on: []
 blocks: []
 tags: [sherpa-onnx, onnxruntime, parakeet, dictation, packaging, nuget]
-related_adrs: [0006]
+related_adrs: [0006, 0012]
 related_research: [parakeet-quantization-and-nemotron-2026-06-28]
 prior_art: [infrastructure-d2v7n]
 ---
@@ -95,6 +95,52 @@ produce this crash today (sherpa 1.13.8 is on NuGet since 2026-09-11, ORT 1.30.0
       ×0.05 / ×0.02 / ×0.01 yields non-empty text at every gain; the test is skipped
       (with a reason) when `ModelManagerService.ParakeetEncoderPath` does not exist.
 - [ ] `CHANGELOG.md` gets an entry naming the lost-dictation fix and the package pin.
+
+## Outcome
+
+- `src/WhisperHeim/WhisperHeim.csproj`: `org.k2fsa.sherpa.onnx` pinned to exact
+  `1.13.8` (no `*`); `Microsoft.ML.OnnxRuntime` reference removed entirely.
+  `dotnet restore` confirms `obj/project.assets.json` has zero
+  `Microsoft.ML.OnnxRuntime*` entries.
+- Added `tests/WhisperHeim.Tests/SynthesizedSpeechFixture.cs` (reusable helper —
+  `SynthesizeSpeechSamples(gain)` synthesizes an ~18s utterance via Windows TTS
+  directly to 16 kHz mono PCM samples, no binary WAV committed; the sibling task
+  `main-hh6zw` can call this same fixture) and
+  `tests/WhisperHeim.Tests/QuietAudioTranscriptionRegressionTests.cs` (5
+  `[Theory]` cases at gains 1 / 0.1 / 0.05 / 0.02 / 0.01, decoding through the
+  real `TranscriptionService`; soft-skips with a logged reason when the
+  Parakeet model files are absent — xunit 2.9.2 has no dynamic `[Fact(Skip=)]`
+  without an extra package, so absence logs `Console.WriteLine("SKIPPED: ...")`
+  and returns instead of failing).
+- **Real red/green TDD was possible** because this dev machine actually has the
+  Parakeet model files: temporarily downgrading the pin to `1.13.4` reproduced
+  the bug (`gain=0.01` on the 18s fixture decoded to empty text, test failed);
+  restoring the `1.13.8` pin made all 5 cases pass. This is genuine evidence the
+  version bump fixes the regression, not just a config-only sanity check.
+- `dotnet build WhisperHeim.sln` and `dotnet test WhisperHeim.sln` are green:
+  270 total tests (256 in WhisperHeim.Tests, up from 251 — the 5 new regression
+  cases — plus 14 in WhisperHeim.Cli.Tests), 0 failed.
+- Verified via `dotnet publish src/WhisperHeim/WhisperHeim.csproj -c Release -r
+  win-x64 --self-contained -o publish` (invoked directly rather than through
+  `scripts/publish.ps1`, which unconditionally `Stop-Process -Force`s any
+  running `WhisperHeim.exe` regardless of `-NoLaunch` — that would have violated
+  the explicit instruction not to kill the user's running process): published
+  `onnxruntime.dll` reports file version `1.28.2`, `sherpa-onnx.dll` reports
+  `1.13.8.0`, and no `Microsoft.ML.OnnxRuntime*` files are present.
+- **Manual check remaining for the user** (not run here, by instruction): launch
+  the published `publish\WhisperHeim.exe`, confirm `[TranscriptionService]
+  Parakeet TDT 0.6B model loaded successfully` in
+  `%APPDATA%\WhisperHeim\whisperheim.log`, and confirm a live hold-to-talk
+  dictation types text. The regression test suite already exercises the same
+  `LoadModelLocked` → `AcceptWaveform` → `Decode` path against the real model
+  and real sherpa-onnx 1.13.8 binaries, which is the strongest machine-side
+  proxy available without starting a second app instance alongside the user's
+  running one.
+- `CHANGELOG.md`: added an `[Unreleased]` section with the lost-dictation fix
+  (Fixed) and the package-pin change (Changed).
+- ADR: `.agentheim/knowledge/decisions/0012-pin-sherpa-onnx-exact-drop-unused-onnxruntime-package.md`.
+- BC README not touched — no new ubiquitous language, aggregate, event, or
+  command; this is a packaging/dependency fix.
 
 ## Notes
 

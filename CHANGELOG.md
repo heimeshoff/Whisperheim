@@ -5,6 +5,21 @@ All notable changes to Whisperheim are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Fixed
+- Long/quiet dictations could silently decode to an empty transcript and get
+  dropped (a genuine speech-to-text failure, not a UI bug) — root-caused to a
+  float32 catastrophic-cancellation bug in sherpa-onnx's per-feature audio
+  normalization (upstream PR #3857) that made the INT8 Parakeet encoder collapse
+  on certain quiet recordings. Fixed by upgrading sherpa-onnx to 1.13.8.
+
+### Changed
+- `org.k2fsa.sherpa.onnx` is now pinned to the exact version `1.13.8` instead of
+  a floating `1.*`, and the unused `Microsoft.ML.OnnxRuntime` package reference
+  was removed (it only served to override sherpa's bundled `onnxruntime.dll`,
+  and a stale 1.27 build crashes the recognizer against 1.13.8's required ORT
+  API 28).
 ## [0.1.4] - 2026-08-20
 
 Recording and transcript-handling release: recordings finally use the

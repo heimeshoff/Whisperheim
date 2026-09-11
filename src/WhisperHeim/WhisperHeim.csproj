@@ -44,8 +44,15 @@
     <PackageReference Include="WPF-UI" Version="3.*" />
     <PackageReference Include="WPF-UI.Tray" Version="3.*" />
     <PackageReference Include="NAudio" Version="2.*" />
-    <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.*" />
-    <PackageReference Include="Microsoft.ML.OnnxRuntime" Version="1.*" />
+    <!-- Pinned exact (not 1.*): 1.13.8 carries the NemoNormalizePerFeature fix
+         (upstream PR #3857) for the float32 catastrophic-cancellation bug that
+         silently emptied quiet/long dictations on <=1.13.4. See
+         infrastructure-anvty and ADR-0006. Microsoft.ML.OnnxRuntime is
+         intentionally NOT referenced here: it is unused (no InferenceSession/
+         OrtEnv call anywhere in src/) and its onnxruntime.dll would otherwise
+         override the ORT 1.28.2 build sherpa-onnx 1.13.8 bundles and requires
+         (API 28) — a mismatched ORT dll crashes the recognizer constructor. -->
+    <PackageReference Include="org.k2fsa.sherpa.onnx" Version="1.13.8" />
   </ItemGroup>
 
   <ItemGroup>
