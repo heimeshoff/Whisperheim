@@ -5,6 +5,42 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 10:40 -- Modeling / Captured: main-rc541 - Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** New `NothingRecognized` orchestrator event for recordings above `MinSamples` whose transcript (raw or cleaned) is empty; the pill re-shows in a grey "Nothing recognized" state for ~1.5 s (Error takes precedence) instead of fading as if text were coming. Shares the empty-result hook with main-ma9j8.
+
+---
+
+## 2026-09-11 10:40 -- Modeling / Captured: main-ma9j8 - Make an empty dictation result observable (warning with levels + capped WAV dump)
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** On an empty transcript for ≥3 s of audio the orchestrator logs a Warning with duration/RMS/peak/decode-ms/residency state and dumps the raw samples as a 16 kHz WAV into `%LOCALAPPDATA%\WhisperHeim\diagnostics\` (ring of 10, off via `WHISPERHEIM_DISABLE_DIAG_DUMP=1`, never the synced data path per main-104), so the next lost dictation is reproducible offline.
+
+---
+
+## 2026-09-11 10:40 -- Modeling / Captured: main-hh6zw - Peak-normalize audio before decode in TranscriptionService
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Pure `PeakNormalize` (never attenuates, never amplifies below a 1e-4 silence floor, target peak 0.5) applied in `TranscriptionService.DecodeAudio` before `AcceptWaveform`, protecting every consumer of the shared engine (ADR-0006). Offline sweep: 6/12 gain steps decoded to "" raw on sherpa 1.13.3/1.13.4, 0/12 with peak normalization on every version. Independent of infrastructure-anvty; both should ship.
+
+---
+
+## 2026-09-11 10:40 -- Modeling / Captured: infrastructure-anvty - Upgrade sherpa-onnx to 1.13.8, drop unused Microsoft.ML.OnnxRuntime, pin exact versions
+
+**Type:** Modeling / Capture
+**BC:** infrastructure
+**Filed to:** todo
+**Summary:** Root cause of silently lost dictations (38 lost ≥10 s dictations in the log; empty rate 1.2 % at 10–20 s rising to 4.1 % at ≥30 s): sherpa-onnx ≤1.13.4 NeMo per-feature normalization cancels in float32 on floor-pinned mel bins and the INT8 encoder collapses → decoder emits blank for the whole utterance (upstream PR #3857, fixed in 1.13.5). Reproduced offline: 6/12 quiet-gain steps empty on 1.13.3 and 1.13.4 regardless of ORT version, 0/12 on 1.13.8. Task pins sherpa-onnx 1.13.8 exactly, removes the unused `Microsoft.ML.OnnxRuntime` reference whose 1.27 dll would crash sherpa 1.13.8 (API 28 required), and adds a quiet-audio regression test.
+
+---
+
 ## 2026-08-12 19:28 -- Work session ended
 
 **Type:** Work / Session end
