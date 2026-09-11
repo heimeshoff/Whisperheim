@@ -7,12 +7,39 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.1.5] - 2026-09-11
+
+Lost-dictation fix release: quiet or long hotkey dictations no longer silently
+decode to nothing, and when a dictation genuinely produces no text the overlay
+says so instead of just disappearing.
+
+### Added
+- **"Nothing recognized" overlay state** — when a dictation decodes to an empty
+  transcript (raw, or reduced to nothing by the clean-up pipeline), the overlay
+  pill re-shows in grey for ~1.5 s before reverting, instead of vanishing
+  without feedback. An error still takes precedence, and a fresh recording
+  cancels the hold.
+- **Empty-dictation diagnostics** — an empty transcript now raises a single
+  `EmptyResult` event carrying sample count, duration, RMS, peak, decode time
+  and model residency. Dictations of 3 s or more are logged at Warning with the
+  raw audio dumped as WAV to `%LOCALAPPDATA%\WhisperHeim\diagnostics\` (capped
+  ring, newest kept); shorter ones log at Information without a dump. Set
+  `WHISPERHEIM_DISABLE_DIAG_DUMP=1` to suppress the WAV write.
+- The `Final:` dictation log line reports RMS and peak of the recorded audio.
+
 ### Fixed
 - Long/quiet dictations could silently decode to an empty transcript and get
   dropped (a genuine speech-to-text failure, not a UI bug) — root-caused to a
   float32 catastrophic-cancellation bug in sherpa-onnx's per-feature audio
   normalization (upstream PR #3857) that made the INT8 Parakeet encoder collapse
   on certain quiet recordings. Fixed by upgrading sherpa-onnx to 1.13.8.
+- As defense in depth against the same failure, every buffer is peak-normalized
+  to 0.5 before decode at the single shared choke point in
+  `TranscriptionService` — so hotkey dictation, VAD dictation, the HTTP STT
+  API, file/stream transcription and call transcription are all covered. Audio
+  is only ever amplified, never attenuated, and buffers below the 1e-4 silence
+  floor are left untouched rather than boosted into noise. Peak and applied
+  gain are reported in the `Transcribed` log line.
 
 ### Changed
 - `org.k2fsa.sherpa.onnx` is now pinned to the exact version `1.13.8` instead of
@@ -20,6 +47,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
   was removed (it only served to override sherpa's bundled `onnxruntime.dll`,
   and a stale 1.27 build crashes the recognizer against 1.13.8's required ORT
   API 28).
+- A real-model quiet-audio regression test guards the fix (red on sherpa-onnx
+  1.13.4, green on 1.13.8), extended with gain-stability and
+  pure-silence-stays-empty cases. It self-skips when the Parakeet model files
+  are not present locally.
+
 ## [0.1.4] - 2026-08-20
 
 Recording and transcript-handling release: recordings finally use the
@@ -147,6 +179,7 @@ cloud, no subscription, no internet at runtime.
 - Text-to-Speech (Kyutai Pocket TTS) — built during development and then removed
   before release (Task 103).
 
+[0.1.5]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.4...v0.1.5
 [0.1.4]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.3...v0.1.4
 [0.1.3]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.2...v0.1.3
 [0.1.2]: https://github.com/heimeshoff/WhisperHeim/compare/v0.1.1...v0.1.2
