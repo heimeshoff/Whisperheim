@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 11:04 -- Batch started: [main-rc541]
+
+**Type:** Work / Batch start
+**Tasks:** main-rc541 - Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived
+**Parallel:** yes (1 new worker joining infrastructure-anvty still in flight — 2 of 3 slots; main-rc541 was held from the first wave until main-ma9j8 landed its EmptyResult hook, now on main; main-hh6zw stays held until infrastructure-anvty lands the shared quiet-audio regression test)
+
+---
+
 ## 2026-09-11 11:04 -- Task verified and completed: main-ma9j8 - Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline
 
 **Type:** Work / Task completion

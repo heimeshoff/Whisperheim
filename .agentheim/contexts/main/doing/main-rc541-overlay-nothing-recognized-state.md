@@ -1,7 +1,7 @@
 ---
 id: main-rc541
 title: Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived
-status: todo
+status: doing
 type: feature
 context: main
 created: 2026-09-11
