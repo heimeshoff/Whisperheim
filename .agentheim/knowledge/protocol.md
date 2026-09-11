@@ -3,6 +3,22 @@
 Chronological log of everything that happens in this project.
 Newest entries on top.
 
+## 2026-09-11 11:24 -- Work session ended
+
+**Type:** Work / Session end
+**Duration:** 35m
+**Completed:** 4 (first-try PASS: 4, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Dispatches:** infrastructure-anvty: 1, main-ma9j8: 1, main-rc541: 1, main-hh6zw: 1
+**Commits:** 8 (3 batch starts, 4 task integrations, 1 session-end bookkeeping)
+**Vision-conformance:** none — batch aligns with vision (all four tasks serve the "Dictation accuracy" and "Always available" success criteria by fixing and hardening silently-lost dictations; the diagnostics WAV dump stays on the local machine under %LOCALAPPDATA%, touching no "No cloud dependency" non-goal; the overlay state is native WPF, no web UI)
+**Batch mix:** 50% product-facing / 50% harness / 0% bookkeeping (4 tasks) — by the documented classifyTask heuristic: main-ma9j8 and main-rc541 are `feature` → product-facing; main-hh6zw (`bug`) and infrastructure-anvty (`chore`) each touched a file under `.agentheim/knowledge/decisions/` (their ADRs) so they read as harness by the letter of the rule, although both are product code changes
+**Carry-over:** none — working tree clean (no stranded files, no worktrees left; the merge-back conflict in `.agentheim/contexts/main/README.md` between main-rc541 and main-hh6zw was two independently-inserted bullets and was resolved by keeping both, no line rewritten)
+
+---
+
 ---
 
 ## 2026-09-11 11:23 -- Task verified and completed: main-hh6zw - Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug)
