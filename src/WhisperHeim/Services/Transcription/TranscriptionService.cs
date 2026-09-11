@@ -151,12 +151,16 @@ public sealed class TranscriptionService : ITranscriptionService
         var realTimeFactor = audioDuration.TotalSeconds > 0
             ? transcriptionDuration.TotalSeconds / audioDuration.TotalSeconds
             : 0;
+        var gainLabel = result.Gain == 1f ? "1x" : $"{result.Gain:F1}x";
 
         Trace.TraceInformation(
-            "[TranscriptionService] Transcribed {0:F2}s audio in {1:F0}ms (RTF={2:F3}): \"{3}\"",
+            "[TranscriptionService] Transcribed {0:F2}s audio in {1:F0}ms (RTF={2:F3}, " +
+            "peak={3:F3} gain={4}): \"{5}\"",
             audioDuration.TotalSeconds,
             transcriptionDuration.TotalMilliseconds,
             realTimeFactor,
+            result.Peak,
+            gainLabel,
             result.Text);
 
         return new TranscriptionResult(
@@ -170,7 +174,8 @@ public sealed class TranscriptionService : ITranscriptionService
     /// Performs the actual decode using sherpa-onnx OfflineRecognizer.
     /// This method is thread-safe via locking.
     /// </summary>
-    private (string Text, TimeSpan Elapsed) DecodeAudio(float[] samples, int sampleRate)
+    private (string Text, TimeSpan Elapsed, float Peak, float Gain) DecodeAudio(
+        float[] samples, int sampleRate)
     {
         var sw = Stopwatch.StartNew();
 
@@ -184,15 +189,23 @@ public sealed class TranscriptionService : ITranscriptionService
             // API, file/stream transcription) survives an unload transparently this way.
             LoadModelLocked();
 
+            // Peak-normalize before decode (main-hh6zw): defense in depth against the
+            // sherpa-onnx NemoNormalizePerFeature bug that can silently decode quiet
+            // audio to an empty transcript. Single choke point — protects every
+            // consumer of this shared engine (ADR-0006).
+            var peak = AudioLevelNormalizer.MeasurePeak(samples);
+            var gain = AudioLevelNormalizer.ComputeGain(peak);
+            var normalizedSamples = AudioLevelNormalizer.ApplyGain(samples, gain);
+
             using var stream = _recognizer!.CreateStream();
-            stream.AcceptWaveform(sampleRate, samples);
+            stream.AcceptWaveform(sampleRate, normalizedSamples);
             _recognizer.Decode(stream);
 
             var result = stream.Result;
             sw.Stop();
 
             var text = (result.Text ?? string.Empty).Trim();
-            return (text, sw.Elapsed);
+            return (text, sw.Elapsed, peak, gain);
         }
     }
 

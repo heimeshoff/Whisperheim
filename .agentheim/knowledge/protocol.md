@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 11:23 -- Task verified and completed: main-hh6zw - Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug)
+
+**Type:** Work / Task completion
+**Task:** main-hh6zw - Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug)
+**Summary:** Pure AudioLevelNormalizer.PeakNormalize (target 0.5, never attenuates, never amplifies below the 1e-4 silence floor) applied at the single shared choke point in TranscriptionService.DecodeAudio before AcceptWaveform, peak/gain reported in the Transcribed log line, real-model regression extended with gain-stability and pure-silence-stays-empty cases
+**Duration:** 12m
+**Verification:** PASS (iteration 1)
+**Files changed:** 7
+**Tests added:** 11
+**ADRs written:** 0013-peak-normalize-audio-before-decode.md
+
+---
+
 ## 2026-09-11 11:21 -- Task verified and completed: main-rc541 - Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived
 
 **Type:** Work / Task completion

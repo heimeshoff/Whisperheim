@@ -1,15 +1,15 @@
 ---
 id: main-hh6zw
 title: Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug)
-status: doing
+status: done
 type: bug
 context: main
 created: 2026-09-11
-completed:
+completed: 2026-09-11
 depends_on: []
 blocks: []
 tags: [dictation, transcription, audio, parakeet, robustness]
-related_adrs: [0006]
+related_adrs: [0006, 0013]
 related_research: [parakeet-quantization-and-nemotron-2026-06-28]
 prior_art: [main-t6r2k, main-v7k2d]
 ---
@@ -95,3 +95,50 @@ Add a pure normalizer and apply it at the single choke point every consumer shar
   ship. If the bump lands first, this task's regression test already passes on raw
   input — that is expected; the unit tests on the normalizer are the proof for
   this task.
+- ADR: `.agentheim/knowledge/decisions/0013-peak-normalize-audio-before-decode.md`.
+
+## Outcome
+
+Added `AudioLevelNormalizer` (`src/WhisperHeim/Services/Transcription/AudioLevelNormalizer.cs`)
+— a pure static class with `MeasurePeak`, `ComputeGain`, `ApplyGain`, and
+`PeakNormalize` (composing the first three), plus the `TargetPeak` (0.5) and
+`SilenceFloor` (1e-4) constants carrying the sweep's provenance in doc comments.
+9 unit tests (`tests/WhisperHeim.Tests/AudioLevelNormalizerTests.cs`) cover every
+rule in the acceptance criteria: empty array, all-zero array, peak below the
+silence floor, peak above the target peak, quiet-signal scaling to the target
+peak within 1e-6, and finite output for ±1.0 full-scale inputs.
+
+Wired into `TranscriptionService.DecodeAudio` (measure peak → compute gain →
+apply gain → `AcceptWaveform`), inside the existing decode lock, after the
+ADR-0006 self-heal reload — the single choke point every consumer (dictation,
+VAD pipeline, HTTP API, file/stream, call transcription) shares. The
+`Transcribed …` trace line now reports `peak=… gain=…` (e.g. `gain=1x` when
+unchanged, `gain=41.7x` when scaled up).
+
+Extended the shared `QuietAudioTranscriptionRegressionTests` (built by sibling
+`infrastructure-anvty`, reused per this task's Notes) with two new real-model
+`[Fact]`s: a gain-1.0-vs-gain-0.05 transcript-stability check (case-insensitive
+after whitespace normalization — the two waveforms aren't bit-identical since
+×1 is already above the target peak and unchanged while ×0.05 is scaled up to
+it, and Parakeet's inverse-text-normalization casing pass isn't perfectly
+deterministic across that difference; the words themselves match, which is the
+substantive check), and a pure-3s-of-zeros-stays-empty check (never-amplify-silence,
+run through the real `TranscribeAsync`). Both soft-skip with a logged `SKIPPED:`
+reason when the Parakeet model files are absent, matching the existing theory
+tests' pattern; both ran for real on this machine (model present).
+
+Wrote `.agentheim/knowledge/decisions/0013-peak-normalize-audio-before-decode.md`
+recording the sweep data, the never-attenuate/never-amplify-silence rules, and
+the single-choke-point placement rationale. Added a "Peak normalization" entry
+to the main BC README's Ubiquitous language section.
+
+Full suite: 291 tests green (277 in `WhisperHeim.Tests` incl. the real-model
+regression tests, 14 in `WhisperHeim.Cli.Tests`).
+
+Key files:
+- `src/WhisperHeim/Services/Transcription/AudioLevelNormalizer.cs` (new)
+- `src/WhisperHeim/Services/Transcription/TranscriptionService.cs` (DecodeAudio, log line)
+- `tests/WhisperHeim.Tests/AudioLevelNormalizerTests.cs` (new)
+- `tests/WhisperHeim.Tests/QuietAudioTranscriptionRegressionTests.cs` (extended)
+- `.agentheim/contexts/main/README.md` (Ubiquitous language)
+- `.agentheim/knowledge/decisions/0013-peak-normalize-audio-before-decode.md` (new)
