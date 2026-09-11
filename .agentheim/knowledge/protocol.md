@@ -5,6 +5,14 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 11:10 -- Batch started: [main-hh6zw]
+
+**Type:** Work / Batch start
+**Tasks:** main-hh6zw - Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug)
+**Parallel:** yes (1 new worker joining main-rc541 still in flight — 2 of 3 slots; main-hh6zw was held from the first wave until infrastructure-anvty landed the shared quiet-audio regression test, now on main)
+
+---
+
 ## 2026-09-11 11:10 -- Task verified and completed: infrastructure-anvty - Upgrade sherpa-onnx to 1.13.8 (carries the NemoNormalizePerFeature fix that silently empties quiet dictations), drop the unused Microsoft.ML.OnnxRuntime package, and pin both native packages to exact versions instead of `1.*`
 
 **Type:** Work / Task completion

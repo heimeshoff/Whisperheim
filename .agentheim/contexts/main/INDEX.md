@@ -11,18 +11,18 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 1
-- **Doing:** 1
+- **Todo:** 0
+- **Doing:** 2
 - **Done:** 131
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
-- **main-hh6zw** — Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug) (bug) — `todo/main-hh6zw-peak-normalize-audio-before-decode.md`
 <!-- todo-list:end -->
 
 ### Doing
 <!-- doing-list:start -->
+- **main-hh6zw** — Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug) (bug) — `doing/main-hh6zw-peak-normalize-audio-before-decode.md`
 - **main-rc541** — Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived (feature) — `doing/main-rc541-overlay-nothing-recognized-state.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->

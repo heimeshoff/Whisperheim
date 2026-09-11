@@ -1,7 +1,7 @@
 ---
 id: main-hh6zw
 title: Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug)
-status: todo
+status: doing
 type: bug
 context: main
 created: 2026-09-11
