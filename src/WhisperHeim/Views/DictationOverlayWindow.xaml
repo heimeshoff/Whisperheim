@@ -53,6 +53,20 @@
             <Grid x:Name="BarsGrid">
                 <Canvas x:Name="BarsCanvas"
                         ClipToBounds="True" />
+
+                <!-- Shown only in the NothingRecognized state (task main-rc541), over the
+                     flat grey bars: "nothing came out of that" legible at a glance
+                     without reading the log. -->
+                <TextBlock x:Name="NothingRecognizedLabel"
+                           Text="Nothing recognized"
+                           Foreground="#FFCCCCCC"
+                           FontSize="9"
+                           FontWeight="SemiBold"
+                           HorizontalAlignment="Center"
+                           VerticalAlignment="Center"
+                           TextAlignment="Center"
+                           TextTrimming="CharacterEllipsis"
+                           Visibility="Collapsed" />
             </Grid>
         </Border>
     </Grid>

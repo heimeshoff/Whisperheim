@@ -71,3 +71,27 @@ however it needs to.
   diagnostics handler is wired first (in the constructor); external subscribers
   added afterward do not affect its behavior since it does not consume/cancel the
   event.
+
+## Amendment (2026-09-11, task main-rc541)
+Widened the rule from "raised exactly once per empty **raw** transcript" to
+"raised exactly once per empty **outcome**" — `EmptyResult` now also fires when a
+non-empty raw transcript is reduced to empty by `FillerRemovalService.Clean` (the
+second branch point in `TranscribeFinalAsync`, previously a silent
+`Trace.TraceInformation` + `return` with no event). Both branch points call the
+same new private helper, `RaiseEmptyResult`, so the "exactly once" guarantee holds
+across both.
+
+This was necessary because main-rc541's overlay "Nothing recognized" state needs
+to cover both ways a recording can end up with nothing to type (its own `What`
+section calls out "raw or cleaned"), and per this ADR's own decision, a second
+consumer must not add a second ad-hoc branch to react to a variant of "empty
+result" — it must extend the single hook instead.
+
+`DictationOrchestrator.NothingRecognized` (payload: `TimeSpan` audio duration) is
+derived from `EmptyResult` via a second internal subscription wired in the
+constructor (`EmptyResult += info => NothingRecognized?.Invoke(info.AudioDuration)`),
+alongside the existing `OnEmptyResult` diagnostics subscription — not a new branch
+in `TranscribeFinalAsync`. One side effect: the orchestrator's own diagnostics
+(Warning/Info trace + WAV dump) now also fire for the cleaned-empty case, which
+was previously silent — accepted, since from the diagnostics' perspective a
+cleaned-to-empty outcome is just as much a "lost dictation" as a raw-empty one.

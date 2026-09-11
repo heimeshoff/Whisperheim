@@ -103,15 +103,31 @@ public sealed class DictationOrchestrator : IDisposable
     public event Action<bool>? WarmingUpChanged;
 
     /// <summary>
-    /// Raised when a hold-to-talk dictation's raw transcript comes back empty
-    /// (task main-ma9j8) -- the single explicit hook for the "empty result for a
-    /// real recording" moment. The orchestrator's own diagnostics (Warning/Info
-    /// trace line + capped WAV dump) react to this event like any other
-    /// subscriber; <c>main-rc541</c>'s overlay "Nothing recognized" state
-    /// subscribes to the same event rather than adding a second ad-hoc branch.
-    /// Raised on a background thread.
+    /// Raised when a hold-to-talk dictation's transcript comes back empty (task
+    /// main-ma9j8) -- the single explicit hook for the "empty result for a real
+    /// recording" moment. Covers both ways a recording can end up with nothing to
+    /// type: an empty raw transcript, and a non-empty raw transcript that
+    /// <see cref="Services.TextProcessing.FillerRemovalService"/> reduces to empty
+    /// (see the dated amendment note on ADR-0011 -- task main-rc541 widened the
+    /// rule from "raw transcript empty" to "empty outcome", raw or cleaned). The
+    /// orchestrator's own diagnostics (Warning/Info trace line + capped WAV dump)
+    /// react to this event like any other subscriber; <c>main-rc541</c>'s overlay
+    /// "Nothing recognized" state derives its own <see cref="NothingRecognized"/>
+    /// event from the same hook rather than adding a second ad-hoc branch.
+    /// Raised on a background thread, exactly once per empty outcome.
     /// </summary>
     public event Action<EmptyDictationResult>? EmptyResult;
+
+    /// <summary>
+    /// Raised whenever <see cref="EmptyResult"/> fires (task main-rc541) -- the
+    /// overlay's "Nothing recognized" signal, carrying just the audio duration the
+    /// pill needs. Deliberately derived from <see cref="EmptyResult"/> via an
+    /// internal subscription (wired in the constructor, mirroring
+    /// <see cref="OnEmptyResult"/>) rather than a second branch in
+    /// <see cref="TranscribeFinalAsync"/>, so both events stay in lockstep with a
+    /// single predicate. Raised on a background thread; subscribers marshal.
+    /// </summary>
+    public event Action<TimeSpan>? NothingRecognized;
 
     public DictationOrchestrator(
         GlobalHotkeyService hotkeyService,
@@ -135,8 +151,10 @@ public sealed class DictationOrchestrator : IDisposable
         _emptyDictationDumpService = emptyDictationDumpService;
 
         // The orchestrator's own diagnostics are just the first subscriber of its
-        // own public event -- see EmptyResult's doc comment.
+        // own public event -- see EmptyResult's doc comment. NothingRecognized is
+        // likewise derived from EmptyResult rather than a second branch.
         EmptyResult += OnEmptyResult;
+        EmptyResult += info => NothingRecognized?.Invoke(info.AudioDuration);
     }
 
     public void Start()
@@ -262,7 +280,7 @@ public sealed class DictationOrchestrator : IDisposable
             }
         }
 
-        bool willTranscribe = transcribe && samples.Length > MinSamples;
+        bool willTranscribe = transcribe && ExceedsMinSamples(samples.Length);
 
         // Decide the warming-up state *before* the hide is dispatched: if the held
         // utterance outran the key-down load, transcribe-on-release must await the
@@ -295,6 +313,17 @@ public sealed class DictationOrchestrator : IDisposable
     /// </summary>
     internal static bool ShouldWarmUpOnRelease(ModelResidencyState? state)
         => state is { } s && s != ModelResidencyState.Loaded;
+
+    /// <summary>
+    /// Decides whether a released recording is long enough to transcribe at all
+    /// (extracted from <see cref="StopRecording"/>'s inline gate so task main-rc541's
+    /// "below <see cref="MinSamples"/> never raises <see cref="NothingRecognized"/>"
+    /// guarantee is directly testable, mirroring <see cref="ShouldWarmUpOnRelease"/>'s
+    /// seam): a recording at or below the threshold is dropped as "too short" before
+    /// <see cref="TranscribeFinalAsync"/> -- and therefore <see cref="EmptyResult"/>/
+    /// <see cref="NothingRecognized"/>, which only fire from inside it -- ever runs.
+    /// </summary>
+    internal static bool ExceedsMinSamples(int sampleCount) => sampleCount > MinSamples;
 
     private void OnAudioData(object? sender, AudioDataEventArgs e)
     {
@@ -364,6 +393,29 @@ public sealed class DictationOrchestrator : IDisposable
         }
 
         return (Math.Sqrt(sumSquares / samples.Length), peak);
+    }
+
+    /// <summary>
+    /// Builds and raises <see cref="EmptyResult"/> from the two branch points in
+    /// <see cref="TranscribeFinalAsync"/> that can end a dictation with nothing to
+    /// type: an empty raw transcript, and a non-empty raw transcript that the
+    /// clean-text pipeline reduces to empty. Kept as one call site (task
+    /// main-rc541 widened this from raw-transcript-only, see the dated amendment
+    /// on ADR-0011) so the event's "exactly once per empty outcome" guarantee
+    /// can't drift between the two branches.
+    /// </summary>
+    private void RaiseEmptyResult(
+        float[] samples, TranscriptionResult result, double rms, double peak, bool templateMode)
+    {
+        EmptyResult?.Invoke(new EmptyDictationResult(
+            samples,
+            result.AudioDuration,
+            samples.Length,
+            rms,
+            peak,
+            result.TranscriptionDuration.TotalMilliseconds,
+            templateMode,
+            _modelLifecycle?.State));
     }
 
     /// <summary>
@@ -443,15 +495,7 @@ public sealed class DictationOrchestrator : IDisposable
 
             if (string.IsNullOrEmpty(rawText))
             {
-                EmptyResult?.Invoke(new EmptyDictationResult(
-                    samples,
-                    result.AudioDuration,
-                    samples.Length,
-                    rms,
-                    peak,
-                    result.TranscriptionDuration.TotalMilliseconds,
-                    templateMode,
-                    _modelLifecycle?.State));
+                RaiseEmptyResult(samples, result, rms, peak, templateMode);
                 return;
             }
 
@@ -495,6 +539,7 @@ public sealed class DictationOrchestrator : IDisposable
             {
                 Trace.TraceInformation(
                     "[DictationOrchestrator] Clean pipeline produced empty result, nothing to type.");
+                RaiseEmptyResult(samples, result, rms, peak, templateMode);
                 return;
             }
 

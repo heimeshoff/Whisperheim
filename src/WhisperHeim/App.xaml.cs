@@ -1,5 +1,6 @@
 using System.Diagnostics;
 using System.Windows;
+using System.Windows.Threading;
 using WhisperHeim.Services.Audio;
 using WhisperHeim.Services.CallTranscription;
 using WhisperHeim.Services.Diagnostics;
@@ -102,6 +103,13 @@ public partial class App : Application
     // overlay shows WarmingUp and its hide is deferred until the load completes
     // (task infrastructure-q4t8m). UI-thread only.
     private bool _isWarmingUp;
+
+    // Sequences the "Nothing recognized" overlay hold (task main-rc541): re-shows
+    // the pill for ~1.5s then hides it, preempted by a PipelineError or a fresh
+    // dictation starting. UI-thread only; the DispatcherTimer it schedules
+    // through is created lazily on first use.
+    private NothingRecognizedOverlayCoordinator? _nothingRecognizedOverlay;
+    private DispatcherTimer? _nothingRecognizedRevertTimer;
     private TrayIconHost? _trayIconHost;
 
     // Lazy-constructed settings window. Created on first open (tray click,
@@ -552,6 +560,27 @@ public partial class App : Application
         _orchestrator.PipelineError += OnPipelineError;
         _orchestrator.WarmingUpChanged += OnWarmingUpChanged;
         _orchestrator.TemplateNoMatch += OnTemplateNoMatch;
+        _orchestrator.NothingRecognized += OnNothingRecognized;
+
+        _nothingRecognizedOverlay = new NothingRecognizedOverlayCoordinator(
+            showNothingRecognized: () =>
+            {
+                _overlayWindow?.ShowOverlay();
+                _overlayWindow?.SetMicState(OverlayMicState.NothingRecognized);
+            },
+            hide: () => _overlayWindow?.HideOverlay(),
+            scheduleRevert: (delay, callback) =>
+            {
+                _nothingRecognizedRevertTimer?.Stop();
+                _nothingRecognizedRevertTimer = new DispatcherTimer { Interval = delay };
+                _nothingRecognizedRevertTimer.Tick += (s, e) =>
+                {
+                    _nothingRecognizedRevertTimer?.Stop();
+                    callback();
+                };
+                _nothingRecognizedRevertTimer.Start();
+            },
+            cancelScheduledRevert: () => _nothingRecognizedRevertTimer?.Stop());
 
         _orchestrator.Start();
 
@@ -608,8 +637,11 @@ public partial class App : Application
         if (isActive)
         {
             // Fresh dictation — clear any stale warming flag so a previous warm-up
-            // can never suppress this session's hide.
+            // can never suppress this session's hide. Also cancel a pending
+            // "Nothing recognized" hold so its ~1.5s revert timer can never fire
+            // mid-recording and hide the overlay out from under this new session.
             _isWarmingUp = false;
+            _nothingRecognizedOverlay?.Cancel();
             _overlayWindow?.ShowOverlay();
         }
         else if (_isWarmingUp)
@@ -683,11 +715,30 @@ public partial class App : Application
         Application.Current?.Dispatcher?.BeginInvoke(() =>
         {
             // Error precedence: a pipeline error (including a load failure during
-            // warm-up) wins. Clear the warming flag so the deferred hide is released
-            // and the Error state is what the user sees.
+            // warm-up) wins. Clear the warming flag so the deferred hide is released,
+            // and preempt any pending "Nothing recognized" hold (task main-rc541) so
+            // its revert timer can't fire later and hide the Error state early.
             _isWarmingUp = false;
+            _nothingRecognizedOverlay?.Cancel();
             _overlayWindow?.SetMicState(OverlayMicState.Error);
             Trace.TraceError("[App] Pipeline error reflected in overlay: {0}", ex.Message);
+        });
+    }
+
+    /// <summary>
+    /// Reflects a recording that decoded to nothing typeable (task main-rc541,
+    /// <see cref="DictationOrchestrator.NothingRecognized"/>) on the overlay: re-shows
+    /// (or keeps showing) the pill in the neutral grey "Nothing recognized" state for
+    /// <see cref="NothingRecognizedOverlayCoordinator.HoldDuration"/>, then auto-hides —
+    /// instead of the pill silently fading as if text were about to appear. Superseded
+    /// by <see cref="OnPipelineError"/> if an error arrives meanwhile (Error precedence).
+    /// Raised on a background thread by the orchestrator; dispatched to the UI thread here.
+    /// </summary>
+    private void OnNothingRecognized(TimeSpan audioDuration)
+    {
+        Application.Current?.Dispatcher?.BeginInvoke(() =>
+        {
+            _nothingRecognizedOverlay?.Show();
         });
     }
 

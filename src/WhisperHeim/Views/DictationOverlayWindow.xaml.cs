@@ -17,12 +17,14 @@ namespace WhisperHeim.Views;
 /// primary screen. Uses WS_EX_TRANSPARENT and WS_EX_NOACTIVATE to avoid stealing
 /// focus or blocking mouse clicks.
 ///
-/// Supports five visual states (see <see cref="OverlayMicState"/>):
-///   Idle      -> grey border, grey bars with gentle movement
-///   Speaking  -> blue border, orange bars driven by RMS amplitude
-///   NoMic     -> grey border, grey static bars
-///   WarmingUp -> amber border, amber bars breathing in sync (~1 s), RMS ignored
-///   Error     -> solid red fill
+/// Supports six visual states (see <see cref="OverlayMicState"/>):
+///   Idle             -> grey border, grey bars with gentle movement
+///   Speaking         -> blue border, orange bars driven by RMS amplitude
+///   NoMic            -> grey border, grey static bars
+///   WarmingUp        -> amber border, amber bars breathing in sync (~1 s), RMS ignored
+///   Error            -> solid red fill
+///   NothingRecognized -> grey border, flat grey bars, "Nothing recognized" label,
+///                         auto-reverts after ~1.5 s (task main-rc541)
 /// </summary>
 public partial class DictationOverlayWindow : Window
 {
@@ -338,6 +340,10 @@ public partial class DictationOverlayWindow : Window
         var previousState = _currentState;
         _currentState = newState;
 
+        // Reset every transition and re-show only for NothingRecognized below --
+        // simpler than adding a Collapse call to every other case.
+        NothingRecognizedLabel.Visibility = Visibility.Collapsed;
+
         switch (newState)
         {
             case OverlayMicState.Idle:
@@ -372,6 +378,18 @@ public partial class DictationOverlayWindow : Window
                 SetBarColor(RedColor);
                 PillBorder.Background = new SolidColorBrush(RedColor);
                 _smoothedRms = 0;
+                break;
+
+            case OverlayMicState.NothingRecognized:
+                // Same neutral grey as Idle/NoMic -- no new colour (task main-rc541's
+                // Notes: reuse the existing palette) -- distinguished by the label and
+                // by the flat bars falling out of OnBarAnimationTick's static-minimal
+                // branch below (same as NoMic/Error).
+                AnimateBorderColor(GreyColor);
+                SetBarColor(GreyColor);
+                PillBorder.Background = new SolidColorBrush(Color.FromArgb(0xCC, 0x2D, 0x2D, 0x2D));
+                _smoothedRms = 0;
+                NothingRecognizedLabel.Visibility = Visibility.Visible;
                 break;
         }
 

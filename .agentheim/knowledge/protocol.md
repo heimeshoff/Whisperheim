@@ -5,6 +5,19 @@ Newest entries on top.
 
 ---
 
+## 2026-09-11 11:21 -- Task verified and completed: main-rc541 - Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived
+
+**Type:** Work / Task completion
+**Task:** main-rc541 - Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived
+**Summary:** Overlay shows a grey "Nothing recognized" state for ~1.5 s when a real dictation decodes to nothing (raw or clean-pipeline-reduced), via a NothingRecognized event derived from the widened EmptyResult hook; sequencing lives in the unit-tested NothingRecognizedOverlayCoordinator, Error keeps precedence
+**Duration:** 16m
+**Verification:** PASS (iteration 1)
+**Files changed:** 13
+**Tests added:** 11
+**ADRs written:** 0011-empty-dictation-result-event-hook.md (amended in place)
+
+---
+
 ## 2026-09-11 11:10 -- Batch started: [main-hh6zw]
 
 **Type:** Work / Batch start

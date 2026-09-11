@@ -34,5 +34,16 @@ public enum OverlayMicState
     /// A pipeline or system error has occurred.
     /// Overlay: red, static.
     /// </summary>
-    Error
+    Error,
+
+    /// <summary>
+    /// A recording above the hold-to-talk minimum decoded to nothing typeable —
+    /// either an empty raw transcript or one the clean-text pipeline reduced to
+    /// empty (task main-rc541, <c>DictationOrchestrator.NothingRecognized</c>).
+    /// Overlay: neutral grey, static flat bars, "Nothing recognized" label. The
+    /// pill re-shows (or defers its hide) for ~1.5 s then hides on its own —
+    /// distinct from Error (red), which always takes precedence if it arrives
+    /// while this hold is showing.
+    /// </summary>
+    NothingRecognized
 }

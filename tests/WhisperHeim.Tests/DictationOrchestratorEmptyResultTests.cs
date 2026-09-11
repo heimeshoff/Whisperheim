@@ -19,6 +19,15 @@ namespace WhisperHeim.Tests;
 /// threshold, the capped WAV dump, the disable switch, and that a dump I/O
 /// failure never surfaces as <see cref="DictationOrchestrator.PipelineError"/>.
 /// </summary>
+/// <remarks>
+/// Shares an xUnit collection with <see cref="DictationOrchestratorNothingRecognizedTests"/>
+/// (task main-rc541) so the two classes never run in parallel: both exercise
+/// <see cref="DictationOrchestrator.TranscribeFinalAsync"/>'s empty-result path, which logs
+/// via the process-wide <see cref="Trace"/> — a <see cref="CapturingTraceListener"/> attached
+/// here would otherwise also capture trace lines from a concurrently-running instance of the
+/// other class.
+/// </remarks>
+[Collection("DictationOrchestratorEmptyResultTrace")]
 public class DictationOrchestratorEmptyResultTests : IDisposable
 {
     private readonly string _testRoot;
