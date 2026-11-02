@@ -1,7 +1,7 @@
 ---
 id: main-p4t7w
 title: Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools
-status: doing
+status: done
 type: chore
 context: main
 created: 2026-11-02
@@ -63,3 +63,18 @@ Known places that hard-code 7777 (from a grep on 2026-11-02):
   still holds.
 - Consider whether `/health` or the bind-failure log line should name the port. It probably
   already does; check, and don't add scope.
+
+## Outcome
+
+Default port of the loopback transcribe endpoint moved 7777 -> 47777. Changed: `TranscribeServer.DefaultPort` (+ doc comment), `CliCore.DefaultEndpoint`, plugin shim `WhisperHeimDefaultEndpoint` (transcribe-lib.ps1) and header comment (transcribe.ps1), `commands/transcribe.md`, plugin `README.md`, and the tests (CliCoreTests, TranscribeServerTests default-port InlineData, Pester transcribe-lib.Tests.ps1). `plugin.json` bumped 0.1.0 -> 0.1.1. `WHISPERHEIM_TRANSCRIBE_PORT` / `WHISPERHEIM_ENDPOINT` / `-Endpoint` overrides unchanged. Verified: `dotnet test` CLI tests 14/14, server tests (filter TranscribeServer) 13/13, Pester 13/13. `git grep 7777` outside `.agentheim/` (and the inspiration png binary) shows no remaining old-port references. I did not check whether `/health` or the bind-failure log names the port; no scope added.
+
+Remaining `.agentheim/` hits outside `board/**/done/` for conductor to handle:
+- `.agentheim/knowledge/decisions/0001-transcribe-endpoint-loopback-http.md` lines 51, 109, 112 (amended text below).
+- `.agentheim/knowledge/contexts/main/README.md` line 22 (handled via README_DELTA).
+- Historical/non-actionable (leave): `board/protocol.md`, `board/protocol/2026-06.md` (history), this task file and `board/main/INDEX.md` (describe the move).
+
+Out-of-repo callers the builder must update by hand after deploying: any hotkey/AutoHotkey scripts, OBS or Stream Deck actions, other tools calling `http://127.0.0.1:7777`, any `WHISPERHEIM_ENDPOINT` env var set to the old port, and the installed `whisperheim-transcribe` plugin copy under `~/.claude/plugins/cache/whisperheim-transcribe/` (still says 7777 until the plugin is updated to 0.1.1).
+
+### ADR-0001 amendment and BC README
+
+Applied by the conductor at integration (the worker cannot write under `.agentheim/`): ADR-0001 now gives `47777` as the default bind/CLI port and carries a dated 2026-11-02 amendment note on why it moved; the main BC README's **STT API** entry says `127.0.0.1:47777`.

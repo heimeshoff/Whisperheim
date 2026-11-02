@@ -4,9 +4,10 @@ title: Expose WhisperHeim's transcribe endpoint over loopback HTTP (HttpListener
 scope: global
 status: accepted
 date: 2026-06-19
+amended: 2026-11-02
 supersedes: []
 superseded_by: []
-related_tasks: [main-h7k2p, main-q4m8t, main-r7n2k]
+related_tasks: [main-h7k2p, main-q4m8t, main-r7n2k, main-p4t7w]
 related_research: [whisperheim-stt-api-exposure-2026-06-19]
 ---
 
@@ -48,7 +49,7 @@ Two facts shape the decision:
 
 ## Decision
 Expose the engine as an **HTTP/1.1 server built on `System.Net.HttpListener`**,
-bound **loopback-only** to `http://127.0.0.1:7777/` (default; overridable — see
+bound **loopback-only** to `http://127.0.0.1:47777/` (default; overridable — see
 below), running inside the WhisperHeim tray process. BCL-only: no ASP.NET Core
 runtime, no Generic Host.
 
@@ -106,12 +107,19 @@ Utterheim's "single-user, localhost-only, by design" baseline (ADR-0003). The
 DNS-rebinding/CORS risk from the research §6 does not apply: the consumer is a CLI,
 not a browser; v1 sets no CORS headers and serves only the two endpoints above.
 
-**Config override:** default port `7777` (distinct from Utterheim's `7223` so the
+**Config override:** default port `47777` (distinct from Utterheim's `7223` so the
 two apps coexist), overridable via env var `WHISPERHEIM_TRANSCRIBE_PORT` and/or an
 `appsettings`/settings entry (mirror Utterheim's `UTTERHEIM_` scheme). The CLI
-wrapper honors `WHISPERHEIM_ENDPOINT` (default `http://127.0.0.1:7777`). Port
+wrapper honors `WHISPERHEIM_ENDPOINT` (default `http://127.0.0.1:47777`). Port
 collision surfaces a clear, logged error and the user overrides; the tray app
 still starts even if the API cannot bind (non-fatal).
+
+> **Amendment (2026-11-02, main-p4t7w):** the default port moved from `7777` to
+> `47777`. 7777 is commonly grabbed by games (e.g. Terraria and many dedicated game
+> servers) and dev tools, so the bind failed or another process answered instead. A
+> high port is very unlikely to clash. Loopback-only binding, the wire contract, the
+> override knobs and the non-fatal-bind behavior are unchanged; Utterheim's `7223` is
+> still distinct.
 
 ## Consequences
 ### Positive

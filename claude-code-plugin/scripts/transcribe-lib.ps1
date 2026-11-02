@@ -12,7 +12,7 @@
 #   Get-TranscribeUrl            - build <endpoint>/transcribe?filename=<name>
 #   Get-TranscriptText           - pull the "text" field out of a response body
 
-Set-Variable -Name WhisperHeimDefaultEndpoint -Value 'http://127.0.0.1:7777' -Option Constant -Scope Script -ErrorAction SilentlyContinue
+Set-Variable -Name WhisperHeimDefaultEndpoint -Value 'http://127.0.0.1:47777' -Option Constant -Scope Script -ErrorAction SilentlyContinue
 
 # Resolve the base endpoint: an explicit value wins, then the (already-read)
 # env value, then the loopback default. Pure — the caller passes the env value

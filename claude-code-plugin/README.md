@@ -4,7 +4,7 @@ A Claude Code plugin that transcribes audio files to text through [WhisperHeim](
 
 ## How it works
 
-- The `/transcribe <file>` slash command runs a bundled PowerShell shim that POSTs the audio file's raw bytes to WhisperHeim's loopback endpoint `http://127.0.0.1:7777/transcribe` and prints back only the transcript text.
+- The `/transcribe <file>` slash command runs a bundled PowerShell shim that POSTs the audio file's raw bytes to WhisperHeim's loopback endpoint `http://127.0.0.1:47777/transcribe` and prints back only the transcript text.
 - Transcription is **on-demand / pull** (you ask for it), unlike the narrator's push hooks. There are no hooks — nothing fires on its own.
 - **Zero dependencies:** the shim is pure PowerShell hitting the HTTP API (ADR-0001). It does not need the `whisperheim-transcribe.exe` CLI on your PATH or a path to the WhisperHeim repo.
 - The WhisperHeim tray app must be running. If it isn't, the command reports exit `3` and tells you to start it.
@@ -49,7 +49,7 @@ You can also call the shim directly (outside Claude):
 
 ### Endpoint override
 
-The shim resolves its endpoint as: `-Endpoint` parameter → `$env:WHISPERHEIM_ENDPOINT` → `http://127.0.0.1:7777`. Set `WHISPERHEIM_ENDPOINT` to point at a non-default port (matching `WHISPERHEIM_TRANSCRIBE_PORT` on the app side).
+The shim resolves its endpoint as: `-Endpoint` parameter → `$env:WHISPERHEIM_ENDPOINT` → `http://127.0.0.1:47777`. Set `WHISPERHEIM_ENDPOINT` to point at a non-default port (matching `WHISPERHEIM_TRANSCRIBE_PORT` on the app side).
 
 ### Exit codes (`scripts/transcribe.ps1`)
 

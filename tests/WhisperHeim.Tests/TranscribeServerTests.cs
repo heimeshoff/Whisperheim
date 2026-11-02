@@ -51,11 +51,11 @@ public class TranscribeServerTests
     }
 
     [Theory]
-    [InlineData(null, 7777)]
-    [InlineData("", 7777)]
-    [InlineData("garbage", 7777)]
-    [InlineData("0", 7777)]
-    [InlineData("70000", 7777)]
+    [InlineData(null, 47777)]
+    [InlineData("", 47777)]
+    [InlineData("garbage", 47777)]
+    [InlineData("0", 47777)]
+    [InlineData("70000", 47777)]
     [InlineData("8888", 8888)]
     public void ResolvePort_falls_back_to_default_for_invalid_values(string? env, int expected)
         => Assert.Equal(expected, TranscribeServer.ResolvePort(env));

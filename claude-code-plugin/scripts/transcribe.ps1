@@ -1,7 +1,7 @@
 # transcribe.ps1
 #
 # Core shim that POSTs an audio file's raw bytes to WhisperHeim's transcribe
-# endpoint (default http://127.0.0.1:7777/transcribe) and prints ONLY the
+# endpoint (default http://127.0.0.1:47777/transcribe) and prints ONLY the
 # resulting transcript text to stdout. Bundled inside the whisperheim-transcribe
 # plugin so consumers don't need a path to the WhisperHeim repo or the
 # whisperheim-transcribe.exe CLI on PATH -- pure PowerShell + the loopback API
@@ -10,7 +10,7 @@
 # Endpoint resolution (first hit wins):
 #   1. -Endpoint parameter
 #   2. $env:WHISPERHEIM_ENDPOINT
-#   3. http://127.0.0.1:7777
+#   3. http://127.0.0.1:47777
 #
 # Exit codes (mirror the whisperheim-transcribe CLI):
 #   0  success -- transcript (possibly empty for no-speech audio) printed to stdout

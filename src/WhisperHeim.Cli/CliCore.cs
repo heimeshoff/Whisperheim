@@ -8,7 +8,7 @@ namespace WhisperHeim.Cli;
 
 internal static class CliCore
 {
-    public const string DefaultEndpoint = "http://127.0.0.1:7777";
+    public const string DefaultEndpoint = "http://127.0.0.1:47777";
     public const string EndpointEnvVar = "WHISPERHEIM_ENDPOINT";
 
     /// <summary>

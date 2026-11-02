@@ -19,6 +19,19 @@ Newest entries on top.
 
 ---
 
+## 2026-11-02 11:16 -- Task verified and completed: main-p4t7w - Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools
+
+**Type:** Work / Task completion
+**Task:** main-p4t7w - Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools
+**Summary:** Move the loopback transcribe endpoint default port from 7777 to 47777 in server, CLI, Claude Code plugin shim (0.1.1), tests, docs and ADR-0001
+**Duration:** 6m
+**Verification:** PASS (iteration 1)
+**Files changed:** 10
+**Tests added:** 0
+**ADRs written:** none (ADR-0001 amended)
+
+---
+
 ## 2026-11-02 11:11 -- Batch started: [main-p4t7w]
 
 **Type:** Work / Batch start

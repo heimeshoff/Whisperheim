@@ -14,9 +14,9 @@ $here = Split-Path -Parent $MyInvocation.MyCommand.Path
 Describe 'Resolve-WhisperHeimEndpoint' {
 
     It 'uses the loopback default when nothing is supplied' {
-        Resolve-WhisperHeimEndpoint -Explicit $null -EnvValue $null | Should Be 'http://127.0.0.1:7777'
-        Resolve-WhisperHeimEndpoint -Explicit ''   -EnvValue ''     | Should Be 'http://127.0.0.1:7777'
-        Resolve-WhisperHeimEndpoint -Explicit '  ' -EnvValue '   '  | Should Be 'http://127.0.0.1:7777'
+        Resolve-WhisperHeimEndpoint -Explicit $null -EnvValue $null | Should Be 'http://127.0.0.1:47777'
+        Resolve-WhisperHeimEndpoint -Explicit ''   -EnvValue ''     | Should Be 'http://127.0.0.1:47777'
+        Resolve-WhisperHeimEndpoint -Explicit '  ' -EnvValue '   '  | Should Be 'http://127.0.0.1:47777'
     }
 
     It 'uses the env value when set and no explicit value' {
@@ -35,23 +35,23 @@ Describe 'Resolve-WhisperHeimEndpoint' {
 Describe 'Get-TranscribeUrl' {
 
     It 'appends /transcribe with a filename hint' {
-        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:7777' -FilePath 'C:\audio\clip.ogg' |
-            Should Be 'http://127.0.0.1:7777/transcribe?filename=clip.ogg'
+        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:47777' -FilePath 'C:\audio\clip.ogg' |
+            Should Be 'http://127.0.0.1:47777/transcribe?filename=clip.ogg'
     }
 
     It 'trims a trailing slash on the endpoint' {
-        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:7777/' -FilePath 'C:\audio\clip.ogg' |
-            Should Be 'http://127.0.0.1:7777/transcribe?filename=clip.ogg'
+        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:47777/' -FilePath 'C:\audio\clip.ogg' |
+            Should Be 'http://127.0.0.1:47777/transcribe?filename=clip.ogg'
     }
 
     It 'url-encodes spaces in the filename' {
-        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:7777' -FilePath 'C:\audio\voice message.m4a' |
-            Should Be 'http://127.0.0.1:7777/transcribe?filename=voice%20message.m4a'
+        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:47777' -FilePath 'C:\audio\voice message.m4a' |
+            Should Be 'http://127.0.0.1:47777/transcribe?filename=voice%20message.m4a'
     }
 
     It 'uses only the leaf filename, not the directory' {
-        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:7777' -FilePath 'C:\some\deep\path\note.wav' |
-            Should Be 'http://127.0.0.1:7777/transcribe?filename=note.wav'
+        Get-TranscribeUrl -Endpoint 'http://127.0.0.1:47777' -FilePath 'C:\some\deep\path\note.wav' |
+            Should Be 'http://127.0.0.1:47777/transcribe?filename=note.wav'
     }
 }
 

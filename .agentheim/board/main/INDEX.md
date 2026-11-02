@@ -12,8 +12,8 @@ research touching this BC, and concept synthesis pages.
 <!-- task-counts:start -->
 - **Backlog:** 0
 - **Todo:** 0
-- **Doing:** 1
-- **Done:** 133
+- **Doing:** 0
+- **Done:** 134
 <!-- task-counts:end -->
 
 ### Todo
@@ -22,12 +22,12 @@ research touching this BC, and concept synthesis pages.
 
 ### Doing
 <!-- doing-list:start -->
-- **main-p4t7w** — Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools (chore) — `doing/main-p4t7w-move-transcribe-endpoint-to-port-47777.md`
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
 ### Done (most recent 30; older entries archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
 <!-- done-list:start -->
+- **main-p4t7w** — Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools (chore) — `done/main-p4t7w-move-transcribe-endpoint-to-port-47777.md`
 - **main-hh6zw** — Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug) (bug) — `done/main-hh6zw-peak-normalize-audio-before-decode.md`
 - **main-rc541** — Overlay shows a brief "Nothing recognized" state when a real dictation decodes to nothing, instead of silently hiding — so the user knows to speak again rather than hunting for text that never arrived (feature) — `done/main-rc541-overlay-nothing-recognized-state.md`
 - **main-ma9j8** — Make an empty dictation result observable — warn with duration/RMS/peak and dump the raw samples as a WAV into a local diagnostics folder (capped ring), so the next lost dictation can be reproduced offline (feature) — `done/main-ma9j8-diagnostics-on-empty-dictation-result.md`

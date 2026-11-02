@@ -10,7 +10,7 @@ namespace WhisperHeim.Services.Http;
 /// (Claude), per ADR-0001 / task main-h7k2p. BCL-only: built on
 /// <see cref="HttpListener"/>, no ASP.NET Core / Generic Host. Binds the literal
 /// <c>127.0.0.1</c> prefix (avoids the http.sys URL-ACL wrinkle that non-localhost
-/// prefixes hit), default port 7777 (override via WHISPERHEIM_TRANSCRIBE_PORT).
+/// prefixes hit), default port 47777 (override via WHISPERHEIM_TRANSCRIBE_PORT).
 ///
 /// Synchronous block-and-return: each request enqueues onto the shared
 /// <see cref="Transcription.TranscriptionQueueService"/> and holds the connection open
@@ -19,7 +19,7 @@ namespace WhisperHeim.Services.Http;
 public sealed class TranscribeServer : IDisposable
 {
     /// <summary>Default loopback port (ADR-0001).</summary>
-    public const int DefaultPort = 7777;
+    public const int DefaultPort = 47777;
 
     /// <summary>Environment variable that overrides the default port.</summary>
     public const string PortEnvVar = "WHISPERHEIM_TRANSCRIBE_PORT";

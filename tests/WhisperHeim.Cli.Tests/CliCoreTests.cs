@@ -38,9 +38,9 @@ public class CliCoreTests
     [Fact]
     public void ResolveEndpoint_uses_default_when_env_missing()
     {
-        Assert.Equal("http://127.0.0.1:7777", CliCore.ResolveEndpoint(null));
-        Assert.Equal("http://127.0.0.1:7777", CliCore.ResolveEndpoint(""));
-        Assert.Equal("http://127.0.0.1:7777", CliCore.ResolveEndpoint("   "));
+        Assert.Equal("http://127.0.0.1:47777", CliCore.ResolveEndpoint(null));
+        Assert.Equal("http://127.0.0.1:47777", CliCore.ResolveEndpoint(""));
+        Assert.Equal("http://127.0.0.1:47777", CliCore.ResolveEndpoint("   "));
     }
 
     [Fact]
@@ -54,22 +54,22 @@ public class CliCoreTests
     [Fact]
     public void BuildTranscribeUrl_appends_transcribe_with_filename_hint()
     {
-        var url = CliCore.BuildTranscribeUrl("http://127.0.0.1:7777", @"C:\audio\clip.ogg");
-        Assert.Equal("http://127.0.0.1:7777/transcribe?filename=clip.ogg", url);
+        var url = CliCore.BuildTranscribeUrl("http://127.0.0.1:47777", @"C:\audio\clip.ogg");
+        Assert.Equal("http://127.0.0.1:47777/transcribe?filename=clip.ogg", url);
     }
 
     [Fact]
     public void BuildTranscribeUrl_trims_trailing_slash_on_endpoint()
     {
-        var url = CliCore.BuildTranscribeUrl("http://127.0.0.1:7777/", @"C:\audio\clip.ogg");
-        Assert.Equal("http://127.0.0.1:7777/transcribe?filename=clip.ogg", url);
+        var url = CliCore.BuildTranscribeUrl("http://127.0.0.1:47777/", @"C:\audio\clip.ogg");
+        Assert.Equal("http://127.0.0.1:47777/transcribe?filename=clip.ogg", url);
     }
 
     [Fact]
     public void BuildTranscribeUrl_url_encodes_spaces_in_filename()
     {
-        var url = CliCore.BuildTranscribeUrl("http://127.0.0.1:7777", @"C:\audio\voice message.m4a");
-        Assert.Equal("http://127.0.0.1:7777/transcribe?filename=voice%20message.m4a", url);
+        var url = CliCore.BuildTranscribeUrl("http://127.0.0.1:47777", @"C:\audio\voice message.m4a");
+        Assert.Equal("http://127.0.0.1:47777/transcribe?filename=voice%20message.m4a", url);
     }
 
     // --- ExtractText ---
