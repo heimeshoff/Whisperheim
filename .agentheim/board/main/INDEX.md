@@ -25,7 +25,7 @@ research touching this BC, and concept synthesis pages.
 <!-- no tasks in doing -->
 <!-- doing-list:end -->
 
-### Done (most recent 30; older entries archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
+### Done (current-month entries live; older months archived verbatim under `done-archive/` — kept for prior-art search, ADR-0039 convention)
 <!-- done-list:start -->
 - **main-p4t7w** — Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools (chore) — `done/main-p4t7w-move-transcribe-endpoint-to-port-47777.md`
 - **main-hh6zw** — Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug) (bug) — `done/main-hh6zw-peak-normalize-audio-before-decode.md`
