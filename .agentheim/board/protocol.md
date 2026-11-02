@@ -19,6 +19,15 @@ Newest entries on top.
 
 ---
 
+## 2026-11-02 10:59 -- Modeling / Captured: main-p4t7w - Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools
+
+**Type:** Modeling / Capture
+**BC:** main
+**Filed to:** todo
+**Summary:** Move the transcribe endpoint default port 7777 to 47777 across server, CLI, plugin shim, tests, docs and ADR-0001; external callers (hotkeys, OBS, Stream Deck) flagged for manual update.
+
+---
+
 ---
 
 ## 2026-09-11 11:23 -- Task verified and completed: main-hh6zw - Peak-normalize audio before decode in TranscriptionService so quiet recordings can no longer collapse to an empty transcript (defense in depth against the sherpa-onnx NemoNormalizePerFeature bug)

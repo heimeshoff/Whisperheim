@@ -11,13 +11,14 @@ research touching this BC, and concept synthesis pages.
 
 <!-- task-counts:start -->
 - **Backlog:** 0
-- **Todo:** 0
+- **Todo:** 1
 - **Doing:** 0
 - **Done:** 133
 <!-- task-counts:end -->
 
 ### Todo
 <!-- todo-list:start -->
+- **main-p4t7w** — Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools (chore) — `todo/main-p4t7w-move-transcribe-endpoint-to-port-47777.md`
 <!-- todo-list:end -->
 
 ### Doing
