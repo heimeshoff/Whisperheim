@@ -37,6 +37,6 @@ reports are listed in each BC's `INDEX.md`.
 
 - Vision: `vision.md`
 - Context map: `context-map.md` (if exists)
-- Protocol (chronological log): `knowledge/protocol.md` -- newest entries on top
+- Protocol (chronological log): `../board/protocol.md` -- newest entries on top
 - All ADRs: `knowledge/decisions/`
 - All research: `knowledge/research/`
