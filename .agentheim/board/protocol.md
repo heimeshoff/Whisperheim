@@ -19,6 +19,26 @@ Newest entries on top.
 
 ---
 
+## 2026-11-02 11:16 -- Work session ended
+
+**Type:** Work / Session end
+**Duration:** 10m
+**Completed:** 1 (first-try PASS: 1, re-dispatched: 0, skipped: 0)
+**Bounced:** 0
+**Failed:** 0
+**Escalated after verification:** 0
+**Lost-result re-dispatches:** 0
+**Lost-result escalations:** 0
+**Dispatches:** main-p4t7w: 1
+**Commits:** 3 (1 batch start, 1 task integration, 1 session-end bookkeeping)
+**Vision-conformance:** none — batch aligns with vision (moving the loopback endpoint off a commonly-contested port keeps the local STT API reliably available; still loopback-only, no cloud dependency)
+**Batch mix:** 0% product-facing / 100% harness / 0% bookkeeping (1 task) — by the classifyTask heuristic a `chore` that touches non-bookkeeping files reads as harness, although this one changes product code (server, CLI, plugin shim)
+**Carry-over:** none — working tree clean (worktree torn down, no stranded files)
+
+Note: the README_DELTA helper (applyReadmeDelta) returned appended-fallback for a valid Ubiquitous-language replace and appended a duplicate bullet; the conductor reverted it and applied the one-token port change by hand.
+
+---
+
 ## 2026-11-02 11:16 -- Task verified and completed: main-p4t7w - Move the loopback transcribe endpoint's default port from 7777 to 47777 (server, CLI, Claude Code plugin shim, docs, ADR-0001) so it stops clashing with games and dev tools
 
 **Type:** Work / Task completion
